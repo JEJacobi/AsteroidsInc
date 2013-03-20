@@ -9,6 +9,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
+using AsteroidsInc.Components;
+
 namespace AsteroidsInc
 {
     public class Game1 : Microsoft.Xna.Framework.Game
@@ -39,6 +41,7 @@ namespace AsteroidsInc
 
         protected override void Update(GameTime gameTime)
         {
+            InputHandler.Update(); //update InputHandler
             base.Update(gameTime);
         }
 
