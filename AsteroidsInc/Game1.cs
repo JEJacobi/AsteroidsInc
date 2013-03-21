@@ -15,8 +15,18 @@ namespace AsteroidsInc
 {
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        #region Declarations
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
+        float frameRate;
+
+        public Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>(); //Dictionary for textures
+        public Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>(); //Dictonary for SpriteFonts
+        
+        #endregion
+
 
         public Game1()
         {
@@ -31,6 +41,8 @@ namespace AsteroidsInc
 
         protected override void LoadContent()
         {
+            Fonts.Add("FPS", Content.Load<SpriteFont>("FPS"));
+
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
@@ -42,6 +54,9 @@ namespace AsteroidsInc
         protected override void Update(GameTime gameTime)
         {
             InputHandler.Update(); //update InputHandler
+
+            frameRate = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds; //calculate framerate
+
             base.Update(gameTime);
         }
 

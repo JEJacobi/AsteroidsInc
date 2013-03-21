@@ -12,19 +12,15 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc
 {
-    public abstract class SpriteBase //TODO: Add animation logic/methods
+    public abstract class SpriteBase
     {
-        public Texture2D Texture;
-        public Vector2 Origin = Vector2.Zero; //Default upper left origin
-        public Rectangle? SourceRectangle = null; //Default null to use entire texture
-        public Color TintColor = Color.White; //Default no tint
-        public float Rotation = 0f; //Zero rotation
-        public float Scale = 1f; //1:1 scale
-        public float Depth = 0f; //Default depth
-        public SpriteEffects Effects = SpriteEffects.None; //Default to no effects
-
-        public Vector2 SpriteCenter //TODO: Add support for animation
-        { get { return new Vector2(Texture.Width, Texture.Height); } } //Get this Sprite's center
+        public Texture2D Texture { get; set; }
+        public Vector2 Origin { get; set; }
+        public Color TintColor { get; set; }
+        public float Rotation { get; set; } //TODO: Add range check
+        public float Scale { get; set; }
+        public float Depth { get; set; }
+        public SpriteEffects Effects { get; set; }
 
         public SpriteBase( //main constructor designed to be built on top of in derived classes
             Texture2D texture,
@@ -33,7 +29,6 @@ namespace AsteroidsInc
             float rotation,
             float scale,
             float depth,
-            Rectangle? sourceRect,
             SpriteEffects effects)
         {
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
@@ -43,7 +38,6 @@ namespace AsteroidsInc
             Rotation = rotation;
             Scale = scale;
             Depth = depth; 
-            SourceRectangle = sourceRect;
             Effects = effects;
         }
 

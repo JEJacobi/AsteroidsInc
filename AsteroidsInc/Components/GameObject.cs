@@ -15,16 +15,56 @@ namespace AsteroidsInc.Components
     class GameObject : SpriteBase
     {
         #region Declarations
-        
-        public Vector2 WorldLocation = Vector2.Zero; //Used as position
-        public Vector2 Velocity = Vector2.Zero; //No velocity
-        public int CollisionRadius = 0; //Radius for bounding circle collision
-        public int BoundingXPadding = 0; 
-        public int BoundingYPadding = 0; //Padding for bounding box collision
+
+        public Vector2 WorldLocation { get; set; }
+        public Vector2 Velocity { get; set; }
+
+        public int CollisionRadius { get; set; } //Radius for bounding circle collision
+        public int BoundingXPadding { get; set; }
+        public int BoundingYPadding { get; set; } //Padding for bounding box collision
+
+        public int TotalFrames
+        {
+            get //simple get
+            { return totalFrames; }
+            set //check if given totalFrames is in possible range
+            {
+                if (value <= (Rows * Columns))
+                    totalFrames = value;
+                else
+                    throw new ArgumentOutOfRangeException();
+            }
+        } //Used in spritesheet animation
+        private int totalFrames;
+
+        public int CurrentFrame
+        {
+            get { return currentFrame; }
+            set
+            {
+                if (value <= totalFrames)
+                    currentFrame = value;
+                else
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        private int currentFrame;
+
+        public int Rows = 1;
+        public int Columns = 1;
+        public bool Animating { get; set; }
 
         #endregion
 
         #region Properties
+
+        public int GetWidth { get { return Texture.Width / Columns; } } //Width of a frame
+        public int GetHeight { get { return Texture.Height / Rows; } } //Height of a frame
+        public int GetRow { get { return (int)((float)CurrentFrame / (float)Columns); } } //Current row
+        public int GetColumn { get { return CurrentFrame % Columns; } } //Current column
+
+        public Vector2 SpriteCenter
+        { get { return new Vector2(GetWidth, GetHeight); } } //Get this Sprite's center
         
         public Rectangle WorldRectangle //get rectangle in world coords with width of sprite
         {
@@ -33,8 +73,8 @@ namespace AsteroidsInc.Components
                 return new Rectangle(
                     (int)WorldLocation.X,
                     (int)WorldLocation.Y,
-                    Texture.Width,  //TODO: Replace with spritesheet animation logic
-                    Texture.Height);
+                    GetWidth,
+                    GetHeight);
             }
         }
 
@@ -45,8 +85,8 @@ namespace AsteroidsInc.Components
                 return new Rectangle( //Get bounding box with respect to padding values
                     (int)WorldLocation.X + BoundingXPadding, 
                     (int)WorldLocation.Y + BoundingYPadding,
-                    Texture.Width - (BoundingXPadding * 2), //TODO: Replace with spritesheet animation logic
-                    Texture.Height - (BoundingYPadding * 2));
+                    GetWidth - (BoundingXPadding * 2),
+                    GetHeight - (BoundingYPadding * 2));
             }
         }
 
@@ -72,38 +112,65 @@ namespace AsteroidsInc.Components
             float rotation = 0f, //default to no rotation
             float scale = 1f, //default to 1:1 scale
             float depth = 0f, //default to 0 layerDepth
-            Rectangle? sourceRect = null, //default to full texture
+            int totalFrames = 0,
+            int rows = 1,
+            int columns = 1,
             int collisionRadius = 0, //collision radius used in bounding circle collision, default to 0 or no bounding circle
             int xPadding = 0, //amount of x padding, used in bounding box collision, default to 0, or no bounding box
             int yPadding = 0, //amount of y padding, used in bounding box collision, default to 0, or no bounding box
             SpriteEffects effects = SpriteEffects.None)
-            : base(texture, origin, tintColor, rotation, scale, depth, sourceRect, effects)
+            : base(texture, origin, tintColor, rotation, scale, depth, effects)
         {
             WorldLocation = worldLocation; //assign position data
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
+            Rows = rows; Columns = columns; this.TotalFrames = totalFrames; //assign animation data
         }
 
         #region Methods
 
-        public override void Update(GameTime gameTime)
+        public override void Update(GameTime gameTime) //TODO: Add movement logic - scale for framerate
         {
-            throw new NotImplementedException();
+            if (TotalFrames > 1 && !Animating)
+            {
+                CurrentFrame++;
+                if (CurrentFrame >= TotalFrames)
+                    CurrentFrame = 0; //Loop
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (Camera.IsObjectVisible(WorldRectangle)) //check if sprite is visible to camera
+            if (TotalFrames > 1 && Camera.IsObjectVisible(WorldRectangle)) //if multi-frame animation & object is visible
             {
+                Rectangle sourceRectangle = new Rectangle(GetWidth * GetColumn,
+                    GetHeight * GetRow, GetWidth, GetHeight); //get source rectangle to use
+
                 spriteBatch.Draw(
                     Texture,
-                    ScreenCenter, //position in local coords
-                    SourceRectangle, //source rectangle for spritesheet animation
+                    ScreenCenter,
+                    sourceRectangle, //use generated source rectangle
                     TintColor,
                     Rotation,
                     Origin,
                     Scale,
-                    Effects, //spriteeffects
-                    Depth); //layerdepth
+                    Effects,
+                    Depth);
+            }
+            else //if single frame sprite
+            {
+                if (Camera.IsObjectVisible(WorldRectangle)) //check if sprite is visible to camera
+                {
+                    spriteBatch.Draw(
+                        Texture,
+                        ScreenCenter, //center of the sprite in local coords
+                        null, //full sprite
+                        TintColor,
+                        Rotation,
+                        Origin,
+                        Scale,
+                        Effects, //spriteeffects
+                        Depth); //layerdepth
+                }
             }
         } 
 
