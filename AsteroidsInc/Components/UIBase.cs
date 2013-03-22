@@ -17,7 +17,7 @@ namespace AsteroidsInc.Components
         public bool Active { get; set; }
         public float Scale { get; set; }
         public Color Color { get; set; }
-        public Vector2 Origin { get; set; }
+        public bool IsCenterOrigin;
         public Vector2 RelativePos { get; set; }
         public Vector2 ScreenPosition
         {
@@ -35,22 +35,23 @@ namespace AsteroidsInc.Components
 
         public UIBase(
             Vector2 relativePos,
-            Vector2 origin,
             Color color,
             bool active,
             float scale,
             float rotation,
+            bool isCenterOrigin,
             SpriteEffects effects)
         {
             RelativePos = relativePos;
-            Origin = origin;
             Color = color;
             Active = active;
             Scale = scale;
             Rotation = rotation;
+            IsCenterOrigin = isCenterOrigin;
             Effects = effects;
         }
 
         public abstract void Draw(SpriteBatch spriteBatch);
+        public abstract Vector2 GetOrigin();
     }
 }

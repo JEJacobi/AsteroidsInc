@@ -20,8 +20,8 @@ namespace AsteroidsInc
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        UIString<float> fpsDisplay;
-        GameObject ball;
+        UIString<float> fpsDisplay; //TEMP
+        GameObject ball; //TEMP
 
         Dictionary<string, Texture2D> Textures; //Dictionary for textures
         Dictionary<string, SpriteFont> Fonts; //Dictonary for SpriteFonts
@@ -45,24 +45,23 @@ namespace AsteroidsInc
 
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y);
-            Camera.ViewportSize = Camera.ScreenSize;
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //TEMP
+            Camera.ViewportSize = Camera.ScreenSize; //TEMP
             base.Initialize();
         }
 
         protected override void LoadContent()
-        {
+        { 
+            //Loading into content dictionaries
             Fonts.Add("fps", Content.Load<SpriteFont>("FPS"));
             Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
 
-            ball = new GameObject(
+            ball = new GameObject( //TEMP
                 Textures["ball"],
                 new Vector2(300, 300),
-                Vector2.Zero,
                 Color.White);
 
-            fpsDisplay = new UIString<float>(60,
-                Vector2.Zero, Vector2.Zero, Fonts["fps"], Color.White, true);
+            fpsDisplay = new UIString<float>(60, Vector2.Zero, Fonts["fps"], Color.White, true, 1f, 0f, false);
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }

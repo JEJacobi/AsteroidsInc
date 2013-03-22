@@ -25,14 +25,14 @@ namespace AsteroidsInc.Components
         public UIString(
             T initialValue,
             Vector2 relativePosition,
-            Vector2 origin,
             SpriteFont font,
             Color color,
             bool active = false,
             float scale = 1f,
             float rotation = 0f,
+            bool isCenterOrigin = true,
             SpriteEffects effects = SpriteEffects.None)
-            : base(relativePosition, origin, color, active, scale, rotation, effects)
+            : base(relativePosition, color, active, scale, rotation, isCenterOrigin, effects)
         {
             Value = initialValue;
             Font = font;
@@ -47,11 +47,19 @@ namespace AsteroidsInc.Components
                     ScreenPosition,
                     Color,
                     Rotation,
-                    Origin,
+                    GetOrigin(),
                     Scale,
                     Effects,
                     UILayerDepth);
 
+        }
+
+        public override Vector2 GetOrigin()
+        {
+            if (IsCenterOrigin)
+                return new Vector2(StringLength.X / 2, StringLength.Y / 2);
+            else
+                return Vector2.Zero;
         }
     }
 }

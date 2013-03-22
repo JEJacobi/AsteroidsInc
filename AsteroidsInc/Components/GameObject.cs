@@ -72,7 +72,7 @@ namespace AsteroidsInc.Components
         public int GetColumn { get { return CurrentFrame % Columns; } } //Current column
 
         public Vector2 SpriteCenter
-        { get { return new Vector2(GetWidth, GetHeight); } } //Get this Sprite's center
+        { get { return new Vector2(GetWidth / 2, GetHeight / 2); } } //Get this Sprite's center
         
         public Rectangle WorldRectangle //get rectangle in world coords with width of sprite
         {
@@ -115,7 +115,6 @@ namespace AsteroidsInc.Components
         public GameObject( //main constructor, /w added optional parameters and call to SpriteBase init
             Texture2D texture,
             Vector2 worldLocation,
-            Vector2 origin,
             Color tintColor,
             float rotation = 0f, //default to no rotation
             float scale = 1f, //default to 1:1 scale
@@ -131,7 +130,6 @@ namespace AsteroidsInc.Components
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
             Texture = texture;
             WorldLocation = worldLocation; 
-            Origin = origin;
             TintColor = tintColor; //assign parameters
             Rotation = rotation;
             Scale = scale;
@@ -140,6 +138,8 @@ namespace AsteroidsInc.Components
 
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; //assign animation data
+
+            Origin = SpriteCenter;
         }
 
         #region Methods
