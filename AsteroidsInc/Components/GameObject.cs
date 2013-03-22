@@ -12,9 +12,17 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc.Components
 {
-    class GameObject : SpriteBase
+    public class GameObject
     {
         #region Declarations
+
+        public Texture2D Texture { get; set; }
+        public Vector2 Origin { get; set; }
+        public Color TintColor { get; set; }
+        public float Rotation { get; set; } //TODO: Add range check
+        public float Scale { get; set; }
+        public float Depth { get; set; }
+        public SpriteEffects Effects { get; set; }
 
         public Vector2 WorldLocation { get; set; }
         public Vector2 Velocity { get; set; }
@@ -112,23 +120,31 @@ namespace AsteroidsInc.Components
             float rotation = 0f, //default to no rotation
             float scale = 1f, //default to 1:1 scale
             float depth = 0f, //default to 0 layerDepth
+            SpriteEffects effects = SpriteEffects.None,
             int totalFrames = 0,
             int rows = 1,
             int columns = 1,
             int collisionRadius = 0, //collision radius used in bounding circle collision, default to 0 or no bounding circle
             int xPadding = 0, //amount of x padding, used in bounding box collision, default to 0, or no bounding box
-            int yPadding = 0, //amount of y padding, used in bounding box collision, default to 0, or no bounding box
-            SpriteEffects effects = SpriteEffects.None)
-            : base(texture, origin, tintColor, rotation, scale, depth, effects)
+            int yPadding = 0) //amount of y padding, used in bounding box collision, default to 0, or no bounding box
         {
-            WorldLocation = worldLocation; //assign position data
+            if (texture == null) { throw new NullReferenceException("Null texture reference."); }
+            Texture = texture;
+            WorldLocation = worldLocation; 
+            Origin = origin;
+            TintColor = tintColor; //assign parameters
+            Rotation = rotation;
+            Scale = scale;
+            Depth = depth;
+            Effects = effects;
+
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; //assign animation data
         }
 
         #region Methods
 
-        public override void Update(GameTime gameTime) //TODO: Add movement logic - scale for framerate
+        public void Update(GameTime gameTime) //TODO: Add movement logic - scale for framerate
         {
             if (TotalFrames > 1 && !Animating)
             {
@@ -138,7 +154,7 @@ namespace AsteroidsInc.Components
             }
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch)
         {
             if (TotalFrames > 1 && Camera.IsObjectVisible(WorldRectangle)) //if multi-frame animation & object is visible
             {

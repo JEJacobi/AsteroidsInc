@@ -20,13 +20,13 @@ namespace AsteroidsInc
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        float frameRate;
-
-        public Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>(); //Dictionary for textures
-        public Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>(); //Dictonary for SpriteFonts
+        Dictionary<string, Texture2D> Textures; //Dictionary for textures
+        Dictionary<string, SpriteFont> Fonts; //Dictonary for SpriteFonts
         
         #endregion
 
+        #region Properties & Constants
+	    #endregion
 
         public Game1()
         {
@@ -36,6 +36,8 @@ namespace AsteroidsInc
 
         protected override void Initialize()
         {
+            Textures = new Dictionary<string, Texture2D>();
+            Fonts = new Dictionary<string, SpriteFont>();
             base.Initialize();
         }
 
@@ -55,8 +57,7 @@ namespace AsteroidsInc
         {
             InputHandler.Update(); //update InputHandler
 
-            frameRate = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds; //calculate framerate
-
+            // = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds; //calculate framerate
             base.Update(gameTime);
         }
 
