@@ -172,7 +172,7 @@ namespace AsteroidsInc.Components
                     Effects,
                     Depth);
             }
-            else //if single frame sprite
+            else  //if single frame sprite
             {
                 if (Camera.IsObjectVisible(WorldRectangle)) //check if sprite is visible to camera
                 {

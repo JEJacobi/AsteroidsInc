@@ -20,6 +20,9 @@ namespace AsteroidsInc
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        UIString<float> fpsDisplay;
+        GameObject ball;
+
         Dictionary<string, Texture2D> Textures; //Dictionary for textures
         Dictionary<string, SpriteFont> Fonts; //Dictonary for SpriteFonts
         
@@ -36,14 +39,30 @@ namespace AsteroidsInc
 
         protected override void Initialize()
         {
+            this.IsMouseVisible = true;
             Textures = new Dictionary<string, Texture2D>();
             Fonts = new Dictionary<string, SpriteFont>();
+
+            Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
+            Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y);
+            Camera.ViewportSize = Camera.ScreenSize;
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            Fonts.Add("FPS", Content.Load<SpriteFont>("FPS"));
+            Fonts.Add("fps", Content.Load<SpriteFont>("FPS"));
+            Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
+
+            ball = new GameObject(
+                Textures["ball"],
+                new Vector2(300, 300),
+                Vector2.Zero,
+                Color.White);
+
+            fpsDisplay = new UIString<float>(60,
+                Vector2.Zero, Vector2.Zero, Fonts["fps"], Color.White, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }
@@ -57,13 +76,29 @@ namespace AsteroidsInc
         {
             InputHandler.Update(); //update InputHandler
 
-            // = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds; //calculate framerate
+            if(InputHandler.IsKeyDown(Keys.Left))
+                Camera.Position.X--;
+            if(InputHandler.IsKeyDown(Keys.Right))
+                Camera.Position.X++;
+            if(InputHandler.IsKeyDown(Keys.Up))
+                Camera.Position.Y--;
+            if(InputHandler.IsKeyDown(Keys.Down))
+                Camera.Position.Y++;
+
+            fpsDisplay.Value = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds; //calculate framerate
+            ball.Update(gameTime);
+
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            spriteBatch.Begin();
+            fpsDisplay.Draw(spriteBatch);
+            ball.Draw(spriteBatch);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }

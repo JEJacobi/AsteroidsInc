@@ -19,6 +19,7 @@ namespace AsteroidsInc
         public static Vector2 Position = Vector2.Zero; //Default of upper left camera position
         public static Vector2 ViewportSize = Vector2.Zero; //Default of 0 viewport size
         public static Rectangle WorldRectangle = new Rectangle(0, 0, 0, 0); //Default of empty rectangle
+        public static Vector2 ScreenSize = Vector2.Zero;
 
         public static Rectangle Viewport //returns a rectangle showing the viewport
         {
@@ -26,16 +27,6 @@ namespace AsteroidsInc
             {
                 return new Rectangle((int)Position.X, (int)Position.Y, 
                     (int)ViewportSize.X, (int)ViewportSize.Y); //cast floats to ints for rectangle init
-            }
-        }
-
-        public static Vector2 ScreenSize
-        {
-            get
-            {
-                return new Vector2(
-                    GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width,
-                    GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
             }
         }
 
