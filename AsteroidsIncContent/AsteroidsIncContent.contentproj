@@ -42,8 +42,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FPS.spritefont">
-      <Name>FPS</Name>
+    <Compile Include="lcd.spritefont">
+      <Name>lcd</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
