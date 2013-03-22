@@ -19,13 +19,13 @@ namespace AsteroidsInc.Components
         public UISprite(
             Texture2D texture,
             Vector2 relativePosition,
-            Vector2 origin,
             Color tintColor,
             bool active = false,
             float scale = 1f,
             float rotation = 0f,
+            bool isCenterOrigin = true,
             SpriteEffects effects = SpriteEffects.None)
-            : base(relativePosition, origin, tintColor, active, scale, rotation, effects)
+            : base(relativePosition, tintColor, active, scale, rotation, isCenterOrigin, effects)
         {
             Texture = texture;
         }
@@ -39,10 +39,18 @@ namespace AsteroidsInc.Components
                     null,
                     Color,
                     Rotation,
-                    Origin,
+                    GetOrigin(),
                     Scale,
                     Effects,
                     UILayerDepth);
+        }
+
+        public override Vector2 GetOrigin()
+        {
+            if (IsCenterOrigin)
+                return new Vector2(Texture.Width / 2, Texture.Height / 2);
+            else
+                return Vector2.Zero;
         }
     }
 }
