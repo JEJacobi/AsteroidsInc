@@ -23,6 +23,7 @@ namespace AsteroidsInc
         Dictionary<string, Texture2D> Textures { get; set; } //Dictionary for textures
         Dictionary<string, SpriteFont> Fonts { get; set; } //Dictonary for SpriteFonts
         Dictionary<string, SoundEffect> Effects { get; set; } //Dictionary for SFX
+        Dictionary<string, Song> Songs { get; set; } //Dictionary for songs, played via the MediaPlayer
 
         UIString<int> fpsDisplay;
 
@@ -43,6 +44,7 @@ namespace AsteroidsInc
             Textures = new Dictionary<string, Texture2D>();
             Fonts = new Dictionary<string, SpriteFont>();
             Effects = new Dictionary<string, SoundEffect>();
+            Songs = new Dictionary<string, Song>();
 
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
@@ -53,13 +55,19 @@ namespace AsteroidsInc
 
         protected override void LoadContent()
         { 
-            //Loading into content dictionaries
+            //START CONTENT LOAD
+
+            //FONTS
             Fonts.Add("lcd", Content.Load<SpriteFont>("lcd"));
+
+            //TEXTURES
             Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
+            Textures.Add("blank", ColorTextureGenerator.Get1by1ColorTexture(graphics.GraphicsDevice, Color.White));
+            //END CONTENT LOAD
 
             fpsDisplay = new UIString<int>(60, Vector2.Zero, Fonts["lcd"], Color.White, true, 1f, 0f, false);
 
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
         }
 
         protected override void UnloadContent()
