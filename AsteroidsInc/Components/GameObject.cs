@@ -115,7 +115,9 @@ namespace AsteroidsInc.Components
         public GameObject( //main constructor, /w added optional parameters and call to SpriteBase init
             Texture2D texture,
             Vector2 worldLocation,
+            Vector2 velocity,
             Color tintColor,
+            bool animating = false,
             float rotation = 0f, //default to no rotation
             float scale = 1f, //default to 1:1 scale
             float depth = 0f, //default to 0 layerDepth
@@ -135,26 +137,28 @@ namespace AsteroidsInc.Components
             Scale = scale;
             Depth = depth;
             Effects = effects;
+            Velocity = velocity;
+            Animating = animating;
 
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; //assign animation data
 
-            Origin = SpriteCenter;
+            Origin = SpriteCenter; //assign origin to the center of a frame
         }
 
         #region Methods
 
-        public void Update(GameTime gameTime) //TODO: Add movement logic - scale for framerate
+        public virtual void Update(GameTime gameTime) //TODO: Add movement logic - scale for framerate
         {
-            if (TotalFrames > 1 && !Animating)
+            if (TotalFrames > 1 && Animating)
             {
                 CurrentFrame++;
                 if (CurrentFrame >= TotalFrames)
-                    CurrentFrame = 0; //Loop
+                    CurrentFrame = 0; //Loop animation
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public virtual void Draw(SpriteBatch spriteBatch)
         {
             if (TotalFrames > 1 && Camera.IsObjectVisible(WorldRectangle)) //if multi-frame animation & object is visible
             {

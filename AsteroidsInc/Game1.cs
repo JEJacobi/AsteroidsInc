@@ -62,7 +62,7 @@ namespace AsteroidsInc
 
             //TEXTURES
             Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
-            Textures.Add("blank", ColorTextureGenerator.Get1by1ColorTexture(graphics.GraphicsDevice, Color.White));
+            Textures.Add("particle", ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
             //END CONTENT LOAD
 
             fpsDisplay = new UIString<int>(60, Vector2.Zero, Fonts["lcd"], Color.White, true, 1f, 0f, false);
