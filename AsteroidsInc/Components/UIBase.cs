@@ -16,12 +16,12 @@ namespace AsteroidsInc.Components
     {
         public bool Active { get; set; }
         public float Scale { get; set; }
-        public Color Color { get; set; }
-        public bool IsCenterOrigin;
-        public Vector2 RelativePos { get; set; }
+        public Color Color { get; set; } //Sprite/String color tint
+        public bool IsCenterOrigin; //True = Center Origin, False = Upper Left
+        public Vector2 RelativePos { get; set; } //Relative scale for position
         public Vector2 ScreenPosition
         {
-            get //TODO: Test
+            get 
             {
                 return new Vector2(
                     Camera.ScreenSize.X * RelativePos.X,
@@ -51,7 +51,7 @@ namespace AsteroidsInc.Components
             Effects = effects;
         }
 
-        public abstract void Draw(SpriteBatch spriteBatch);
+        public abstract void Draw(SpriteBatch spriteBatch); //Main draw method; UI elements don't need update()
         public abstract Vector2 GetOrigin();
     }
 }
