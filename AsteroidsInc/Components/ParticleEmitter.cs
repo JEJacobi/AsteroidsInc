@@ -19,6 +19,8 @@ namespace AsteroidsInc.Components
         public List<Particle> Particles { get; set; } //List of the particles themselves
         public List<Texture2D> Textures { get; set; } //List of textures, random one is pulled for
         public readonly int MaxParticles; //maximum amount of particles for this emitter
+        public readonly float EjectionSpeed; // inital speed of particles
+        public readonly float RandomMargin;
         public bool Emitting { get; set; } //is emitting particles?
         public List<Color> Colors { get; set; } //list of possible colors
         public int FramesToLive { get; set; } //frames to live, passed down to particles
@@ -47,6 +49,8 @@ namespace AsteroidsInc.Components
             List<Texture2D> textures,
             List<Color> colors,
             int framesToLive,
+            float ejectionSpeed = 1f,
+            float randomMargin = 0.1f,
             float initialDirectionDegrees = 0f,
             float sprayWidthDegrees = 30f,
             bool emitting = false)
@@ -56,6 +60,8 @@ namespace AsteroidsInc.Components
             Textures = textures;
             Colors = colors;
             FramesToLive = framesToLive;
+            EjectionSpeed = ejectionSpeed;
+            RandomMargin = randomMargin;
             DirectionInDegrees = initialDirectionDegrees;
             SprayWidthInDegrees = sprayWidthDegrees;
             Emitting = emitting;
@@ -76,13 +82,20 @@ namespace AsteroidsInc.Components
         public void Update(GameTime gameTime)
         {
             EmitParticle();
-            RemoveExpired();
+
+            for (int i = 0; i < Particles.Count; i++) //update particles
+            {
+                Particles[i].Update(gameTime);
+
+                if (Particles[i].TTL <= 0) //if particle is expired
+                    Particles.RemoveAt(i); //remove
+            }
 
             if (Particles.Count > MaxParticles) //if overflowing, remove random particle
                 Particles.RemoveAt(rnd.Next(Particles.Count));
         }
 
-        public void EmitParticle()
+        public void EmitParticle() //emits a particle
         {
             if (Emitting && (Particles.Count + 1 < MaxParticles)) //if emitting & not overflowing
             {
@@ -92,20 +105,25 @@ namespace AsteroidsInc.Components
                 Particles.Add(new Particle( //Add a new particle
                     Textures[rndTex],
                     WorldPosition,
-                    Vector2.Zero, //TODO: Add math for converting rotation into vector
+                    GetVelocity(),
                     Colors[rndColor],
                     FramesToLive));
 
             }
         }
 
-        public void RemoveExpired()
+        protected Vector2 GetVelocity() //gets a random starting velocity
         {
-            for (int i = 0; i < Particles.Count; i++) //if particle is expired, remove it
-            {
-                if (Particles[i].TTL <= 0)
-                    Particles.RemoveAt(i);
-            }
+            float rndSpray = (float)rnd.NextDouble(-1, 1) * SprayWidth; //gets a random amount of spraywidth
+            Vector2 tempVect = GameObject.RotationToVector(rndSpray + Direction); //gets a Vector from the result
+            tempVect = Vector2.Multiply(tempVect, RandomMultiplier()); //and multiplies the X&Y by the random margin
+            tempVect = Vector2.Multiply(tempVect, EjectionSpeed); //adds the ejection speed multiplier
+            return tempVect;
+        }
+
+        protected float RandomMultiplier()
+        {
+            return (float)rnd.NextDouble(1 - RandomMargin, 1 + RandomMargin);
         }
     }
 }

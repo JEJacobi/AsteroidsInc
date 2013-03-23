@@ -230,6 +230,18 @@ namespace AsteroidsInc.Components
             Rotation = (float)Math.Atan2(point.Y, point.X);
         }
 
+        public static Vector2 RotationToVector(float rotation) //get [1,1] vector from a rotation in ?radians?
+        {
+            return new Vector2(
+                (float)Math.Cos(rotation),
+                (float)Math.Sin(rotation));
+        }
+
+        protected Vector2 rotationToVector()
+        {
+            return RotationToVector(Rotation);
+        } //local version of above
+
         #endregion
     }
 }

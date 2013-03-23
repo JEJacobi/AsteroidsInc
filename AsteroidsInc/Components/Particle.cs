@@ -46,6 +46,8 @@ namespace AsteroidsInc.Components
         {
             TTL--;
 
+            WorldLocation += Velocity; //move the particle
+
             if (TTL <= 0 && ParticleExpired != null) //If expired, notify
                 this.ParticleExpired(this, new EventArgs());
 

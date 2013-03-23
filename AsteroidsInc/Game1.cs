@@ -79,14 +79,14 @@ namespace AsteroidsInc
         {
             InputHandler.Update(); //update InputHandler
 
-            //if(InputHandler.IsKeyDown(Keys.Left))
-            //    Camera.Position.X--;
-            //if(InputHandler.IsKeyDown(Keys.Right))
-            //    Camera.Position.X++;
-            //if(InputHandler.IsKeyDown(Keys.Up))
-            //    Camera.Position.Y--;
-            //if(InputHandler.IsKeyDown(Keys.Down))
-            //    Camera.Position.Y++;
+            if (InputHandler.IsKeyDown(Keys.Left))
+                Camera.Position.X--;
+            if (InputHandler.IsKeyDown(Keys.Right))
+                Camera.Position.X++;
+            if (InputHandler.IsKeyDown(Keys.Up))
+                Camera.Position.Y--;
+            if (InputHandler.IsKeyDown(Keys.Down))
+                Camera.Position.Y++;
 
             fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
             //calculate framerate to the nearest int
