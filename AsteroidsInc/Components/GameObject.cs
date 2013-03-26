@@ -150,6 +150,8 @@ namespace AsteroidsInc.Components
 
         public virtual void Update(GameTime gameTime) //TODO: Add movement logic - scale for framerate
         {
+            WorldLocation += Velocity; //TODO: Temporary velocity update!
+
             if (TotalFrames > 1 && Animating)
             {
                 CurrentFrame++;
@@ -176,7 +178,7 @@ namespace AsteroidsInc.Components
                     Effects,
                     Depth);
             }
-            else  //if single frame sprite
+            else //if single frame sprite
             {
                 if (Camera.IsObjectVisible(WorldRectangle)) //check if sprite is visible to camera
                 {
@@ -230,16 +232,9 @@ namespace AsteroidsInc.Components
             Rotation = (float)Math.Atan2(point.Y, point.X);
         }
 
-        public static Vector2 RotationToVector(float rotation) //get [1,1] vector from a rotation in ?radians?
-        {
-            return new Vector2(
-                (float)Math.Cos(rotation),
-                (float)Math.Sin(rotation));
-        }
-
         protected Vector2 rotationToVector()
         {
-            return RotationToVector(Rotation);
+            return Rotation.RotationToVectorFloat();
         } //local version of above
 
         #endregion

@@ -16,11 +16,33 @@ namespace AsteroidsInc
     {
         #region Declarations / Properties
 
-        public static Vector2 Position = Vector2.Zero; //Default of upper left camera position
-        public static Vector2 ViewportSize = Vector2.Zero; //Default of 0 viewport size
-        public static Rectangle WorldRectangle = new Rectangle(0, 0, 0, 0); //Default of empty rectangle
-        public static Vector2 ScreenSize = Vector2.Zero; //Size of the game screen, must be set at Init
+        public static Vector2 Position
+        {
+            get { return position; }
+            set
+            {
+                position.X = MathHelper.Clamp(value.X, WorldRectangle.X, WorldRectangle.Width - Viewport.Width);
+                position.Y = MathHelper.Clamp(value.Y, WorldRectangle.Y, WorldRectangle.Height - Viewport.Height);
+            }
+        }
+        public static Vector2 CenterPosition
+        {
+            get
+            {
+                return new Vector2(Position.X + (Viewport.Width / 2),
+                    Position.Y + (Viewport.Height / 2));
+            }
+            set
+            {
+                position.X = (value.X * 2) - Viewport.Width; //TODO: Test... again.
+                position.Y = (value.Y * 2) - Viewport.Height;
+            }
+        }
+        static Vector2 position = Vector2.Zero;
 
+        public static Vector2 ViewportSize = Vector2.Zero; //Default of 0 viewport size
+        public static Rectangle WorldRectangle = Rectangle.Empty; //Default empty rectangle
+        public static Vector2 ScreenSize = Vector2.Zero; //Size of the game screen, must be set at Init
         public static Rectangle Viewport //returns a rectangle showing the viewport
         {
             get 
@@ -29,6 +51,7 @@ namespace AsteroidsInc
                     (int)ViewportSize.X, (int)ViewportSize.Y); //cast floats to ints for rectangle init
             }
         }
+        public static const bool LOOPWORLD = true;
 
         #endregion
 
@@ -54,6 +77,8 @@ namespace AsteroidsInc
                 rectangle.Height); //return given height
         }
 
+        public static bool IsObjectInWorld(Rectangle obj)
+        { return WorldRectangle.Intersects(obj); } //Tests if the object is in the world rectangle
         #endregion
     }
 }

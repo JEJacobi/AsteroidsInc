@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc.Components
 {
-    public class Particle : GameObject
+    public class Particle : GameObject //derives from GameObject, since a particle is essentially a sprite
     {
         public int TTL { get; set; } //time to live, set by particle emitter
         public event EventHandler ParticleExpired; //particle expired event
@@ -46,12 +46,10 @@ namespace AsteroidsInc.Components
         {
             TTL--;
 
-            WorldLocation += Velocity; //move the particle
+            base.Update(gameTime); //Update GameObject base
 
             if (TTL <= 0 && ParticleExpired != null) //If expired, notify
                 this.ParticleExpired(this, new EventArgs());
-
-            base.Update(gameTime); //Update GameObject base
         }
     }
 }

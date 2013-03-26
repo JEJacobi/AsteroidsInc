@@ -30,6 +30,7 @@ namespace AsteroidsInc.Components
             Texture = texture;
         }
 
+        //Methods
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (Active)
@@ -42,9 +43,8 @@ namespace AsteroidsInc.Components
                     GetOrigin(),
                     Scale,
                     Effects,
-                    UILayerDepth);
+                    UILAYERDEPTH);
         }
-
         public override Vector2 GetOrigin()
         {
             if (IsCenterOrigin)
@@ -52,5 +52,18 @@ namespace AsteroidsInc.Components
             else
                 return Vector2.Zero;
         }
+        public override Rectangle GetBoundingBox()
+        {
+            return new Rectangle(
+                (int)ScreenPosition.X,
+                (int)ScreenPosition.Y,
+                Texture.Width,
+                Texture.Height);
+        }
+
+        //Events
+        public override event EventHandler MouseOver;
+        public override event EventHandler MouseAway;
+        public override event MouseClickHandler OnClick;
     }
 }

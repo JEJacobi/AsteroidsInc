@@ -49,11 +49,11 @@ namespace AsteroidsInc.Components
             List<Texture2D> textures,
             List<Color> colors,
             int framesToLive,
+            bool emitting = false,
             float ejectionSpeed = 1f,
             float randomMargin = 0.1f,
             float initialDirectionDegrees = 0f,
-            float sprayWidthDegrees = 30f,
-            bool emitting = false)
+            float sprayWidthDegrees = 30f)
         {
             MaxParticles = maxParticles;
             WorldPosition = worldPosition;
@@ -115,7 +115,8 @@ namespace AsteroidsInc.Components
         protected Vector2 GetVelocity() //gets a random starting velocity
         {
             float rndSpray = (float)rnd.NextDouble(-1, 1) * SprayWidth; //gets a random amount of spraywidth
-            Vector2 tempVect = GameObject.RotationToVector(rndSpray + Direction); //gets a Vector from the result
+            Vector2 tempVect = (rndSpray + Direction).RotationToVectorFloat(); //gets a Vector from the result
+            //TODO: Test
             tempVect = Vector2.Multiply(tempVect, RandomMultiplier()); //and multiplies the X&Y by the random margin
             tempVect = Vector2.Multiply(tempVect, EjectionSpeed); //adds the ejection speed multiplier
             return tempVect;

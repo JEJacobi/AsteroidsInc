@@ -12,16 +12,19 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc.Components
 {
-    public static class InputHandler
+    public static class InputHandler //static input handler class, must be updated each tick
     {
         public static KeyboardState CurrentKeyboardState = new KeyboardState();
         public static KeyboardState LastKeyboardState = new KeyboardState();
         public static MouseState MouseState = new MouseState();
+        public static MouseState LastMouseState = new MouseState();
 
         public static void Update() //get new states and move current State to last State
         {
-            LastKeyboardState = CurrentKeyboardState;
+            LastKeyboardState = CurrentKeyboardState; //move & get new keyboard states
             CurrentKeyboardState = Keyboard.GetState();
+
+            LastMouseState = MouseState; //move & get new mouse states
             MouseState = Mouse.GetState();
         }
 
@@ -108,6 +111,20 @@ namespace AsteroidsInc.Components
             }
         }
 
+        public static bool IsClickingObject(Rectangle obj) //overload of previous which defaults to LMB
+        {
+            return IsClickingObject(obj, MouseButtons.LeftMouseButton);
+        }
+
+        public static bool HasLeftObject(Rectangle obj)
+        {
+            if (GetLastMousePos().Intersects(obj) &&
+                IsMouseOverObject(obj) == false) //if mouse was over object, but now isn't, return true
+                return true;
+            else
+                return false;
+        } //checks if the mouse has left a rectangle object
+
         public static Rectangle GetMousePos() //returns a 1 by 1 rectangle of the mouse location
         {
             return new Rectangle(
@@ -116,13 +133,37 @@ namespace AsteroidsInc.Components
                 1, 1);
         }
 
-        public enum MouseButtons
+        public static Rectangle GetLastMousePos()
         {
-            LeftMouseButton,
-            MiddleMouseButton,
-            RightMouseButton
-        }
+            return new Rectangle(
+                LastMouseState.X,
+                LastMouseState.Y,
+                1, 1);
+        } //returns a 1x1 rectangle of the last mouse pos
 
         #endregion
+    }
+
+    public class MouseClickArgs : EventArgs //simple eventargs to use in input-related events
+    {
+        public MouseButtons Button { get; set; }
+
+        public MouseClickArgs()
+        {
+            Button = MouseButtons.None;
+        }
+
+        public MouseClickArgs(MouseButtons button)
+        {
+            Button = button;
+        }
+    }
+
+    public enum MouseButtons
+    {
+        None,
+        LeftMouseButton,
+        MiddleMouseButton,
+        RightMouseButton
     }
 }
