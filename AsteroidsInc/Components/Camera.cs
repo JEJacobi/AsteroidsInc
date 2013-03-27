@@ -51,7 +51,7 @@ namespace AsteroidsInc
                     (int)ViewportSize.X, (int)ViewportSize.Y); //cast floats to ints for rectangle init
             }
         }
-        public static const bool LOOPWORLD = true;
+        public const bool LOOPWORLD = true;
 
         #endregion
 

@@ -60,10 +60,5 @@ namespace AsteroidsInc.Components
                 Texture.Width,
                 Texture.Height);
         }
-
-        //Events
-        public override event EventHandler MouseOver;
-        public override event EventHandler MouseAway;
-        public override event MouseClickHandler OnClick;
     }
 }

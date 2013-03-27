@@ -19,7 +19,7 @@ namespace AsteroidsInc.Components
         public Texture2D Texture { get; set; }
         public Vector2 Origin { get; set; }
         public Color TintColor { get; set; }
-        public float Rotation { get; set; } //TODO: Add range check
+        public float Rotation { get; set; }
         public float Scale { get; set; }
         public float Depth { get; set; }
         public SpriteEffects Effects { get; set; }
@@ -50,17 +50,16 @@ namespace AsteroidsInc.Components
             get { return currentFrame; }
             set
             {
-                if (value <= totalFrames)
-                    currentFrame = value;
-                else
-                    throw new ArgumentOutOfRangeException();
+                currentFrame = (int)MathHelper.Clamp(value, 0, totalFrames);
             }
         }
         private int currentFrame;
 
-        public int Rows = 1;
-        public int Columns = 1;
+        public int Rows { get; set; }
+        public int Columns { get; set; }
         public bool Animating { get; set; }
+
+        public const float VELOCITYSCALAR = 0.166667f; //Default to around 60fps standard movement
 
         #endregion
 
@@ -148,9 +147,10 @@ namespace AsteroidsInc.Components
 
         #region Methods
 
-        public virtual void Update(GameTime gameTime) //TODO: Add movement logic - scale for framerate
+        public virtual void Update(GameTime gameTime)
         {
-            WorldLocation += Velocity; //TODO: Temporary velocity update!
+            WorldLocation += Vector2.Multiply(Velocity, (gameTime.ElapsedGameTime.Milliseconds / VELOCITYSCALAR));
+            //Move by Velocity times a roughly 60FPS scalar
 
             if (TotalFrames > 1 && Animating)
             {

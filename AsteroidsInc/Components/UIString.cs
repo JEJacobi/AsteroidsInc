@@ -69,10 +69,5 @@ namespace AsteroidsInc.Components
                 (int)StringLength.X,
                 (int)StringLength.Y);
         }
-
-        //Events
-        public override event EventHandler MouseOver;
-        public override event EventHandler MouseAway;
-        public override event MouseClickHandler OnClick;
     }
 }

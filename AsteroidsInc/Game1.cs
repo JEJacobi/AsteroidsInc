@@ -36,11 +36,12 @@ namespace AsteroidsInc
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            this.IsMouseVisible = true;
+            this.IsFixedTimeStep = false;
         }
 
         protected override void Initialize()
         {
-            this.IsMouseVisible = true;
             Textures = new Dictionary<string, Texture2D>();
             Fonts = new Dictionary<string, SpriteFont>();
             Effects = new Dictionary<string, SoundEffect>();
@@ -48,31 +49,41 @@ namespace AsteroidsInc
 
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //TEMP
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //TEMP
             Camera.ViewportSize = Camera.ScreenSize; //TEMP
+            Logger.WriteLog("Initializing components...");
             base.Initialize();
         }
 
         protected override void LoadContent()
-        { 
-            //START CONTENT LOAD
+        {
+            try
+            {
+                //START CONTENT LOAD
 
-            //FONTS
-            Fonts.Add("lcd", Content.Load<SpriteFont>("lcd"));
+                //FONTS
+                Fonts.Add("lcd", Content.Load<SpriteFont>("lcd"));
 
-            //TEXTURES
-            Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
-            Textures.Add("particle", ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
-            //END CONTENT LOAD
+                //TEXTURES
+                Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
+                Textures.Add("particle", ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
 
-            fpsDisplay = new UIString<int>(60, Vector2.Zero, Fonts["lcd"], Color.White, true, 1f, 0f, false);
+                //END CONTENT LOAD
+                Logger.WriteLog("Content loaded successfully...");
+            }
+            catch (ContentLoadException e)
+            {
+                Logger.WriteLog("Content Load Error: " + e.Message);
+            }
+
+            fpsDisplay = new UIString<int>(60, Vector2.Zero, Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
         }
 
         protected override void UnloadContent()
         {
-            //Nothing yet
+            Logger.WriteLog("Unloading Content...");
         }
 
         protected override void Update(GameTime gameTime)
@@ -80,13 +91,13 @@ namespace AsteroidsInc
             InputHandler.Update(); //update InputHandler
 
             if (InputHandler.IsKeyDown(Keys.Left))
-                Camera.Position.X--;
+                Camera.Position += new Vector2(-1f, 0f);
             if (InputHandler.IsKeyDown(Keys.Right))
-                Camera.Position.X++;
+                Camera.Position += new Vector2(1f, 0f);
             if (InputHandler.IsKeyDown(Keys.Up))
-                Camera.Position.Y--;
+                Camera.Position += new Vector2(0f, -1f);
             if (InputHandler.IsKeyDown(Keys.Down))
-                Camera.Position.Y++;
+                Camera.Position += new Vector2(0f, 1f);
 
             fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
             //calculate framerate to the nearest int

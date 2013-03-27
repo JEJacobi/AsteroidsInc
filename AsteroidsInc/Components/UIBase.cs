@@ -21,13 +21,19 @@ namespace AsteroidsInc.Components
         public Vector2 RelativePos { get; set; } //Relative scale for position
         public Vector2 ScreenPosition
         {
-            get 
+            get
             {
                 return new Vector2(
                     Camera.ScreenSize.X * RelativePos.X,
                     Camera.ScreenSize.Y * RelativePos.Y);
             }
-        } //TODO: Add Set method
+            set //TODO: More testing...
+            {
+                RelativePos = new Vector2(
+                    Camera.ScreenSize.X / ScreenPosition.X,
+                    Camera.ScreenSize.Y / ScreenPosition.Y);
+            }
+        }
         public float Rotation { get; set; } //in radians
         public SpriteEffects Effects;
 
@@ -83,8 +89,8 @@ namespace AsteroidsInc.Components
         
         //Events
         public delegate void MouseClickHandler(UIBase sender, MouseClickArgs e);
-        public abstract event EventHandler MouseOver;
-        public abstract event EventHandler MouseAway;
-        public abstract event MouseClickHandler OnClick;
+        public event EventHandler MouseOver;
+        public event EventHandler MouseAway;
+        public event MouseClickHandler OnClick;
     }
 }

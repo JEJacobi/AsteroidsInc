@@ -112,6 +112,7 @@
     <Compile Include="Components\Extensions.cs" />
     <Compile Include="Components\GameObject.cs" />
     <Compile Include="Components\InputHandler.cs" />
+    <Compile Include="Components\Logger.cs" />
     <Compile Include="Components\Particle.cs" />
     <Compile Include="Components\ParticleEmitter.cs" />
     <Compile Include="Components\UIBase.cs" />
