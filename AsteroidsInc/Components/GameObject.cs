@@ -123,13 +123,14 @@ namespace AsteroidsInc.Components
             float rotationalVelocity = 0f,
             float scale = 1f, //default to 1:1 scale
             float depth = 0f, //default to 0 layerDepth
+            int collisionRadius = 0, //collision radius used in bounding circle collision, default to 0 or no bounding circle
+            int xPadding = 0, //amount of x padding, used in bounding box collision, default to 0, or no bounding box
+            int yPadding = 0, //amount of y padding, used in bounding box collision, default to 0, or no bounding box
             SpriteEffects effects = SpriteEffects.None,
             int totalFrames = 0,
             int rows = 1,
-            int columns = 1,
-            int collisionRadius = 0, //collision radius used in bounding circle collision, default to 0 or no bounding circle
-            int xPadding = 0, //amount of x padding, used in bounding box collision, default to 0, or no bounding box
-            int yPadding = 0) //amount of y padding, used in bounding box collision, default to 0, or no bounding box
+            int columns = 1)
+
         {
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
             Texture = texture; //assign parameters

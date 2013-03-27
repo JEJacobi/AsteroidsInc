@@ -24,6 +24,8 @@ namespace AsteroidsInc.Components
         public bool Emitting { get; set; } //is emitting particles?
         public List<Color> Colors { get; set; } //list of possible colors
         public int FramesToLive { get; set; } //frames to live, passed down to particles
+        public int TimeToEmit { get; set; }
+        public int ParticlesPerTick { get; set; }
 
         public Vector2 WorldPosition { get; set; } //world position
         public float Direction { get; set; } //direction in radians
@@ -50,6 +52,8 @@ namespace AsteroidsInc.Components
             List<Color> colors,
             int framesToLive,
             bool emitting = false,
+            int timeToEmit = -1,
+            int particlesPerTick = 1,
             float ejectionSpeed = 1f,
             float randomMargin = 0.1f,
             float initialDirectionDegrees = 0f,
@@ -60,6 +64,8 @@ namespace AsteroidsInc.Components
             Textures = textures;
             Colors = colors;
             FramesToLive = framesToLive;
+            TimeToEmit = timeToEmit;
+            ParticlesPerTick = particlesPerTick;
             EjectionSpeed = ejectionSpeed;
             RandomMargin = randomMargin;
             DirectionInDegrees = initialDirectionDegrees;
@@ -81,7 +87,14 @@ namespace AsteroidsInc.Components
 
         public void Update(GameTime gameTime)
         {
-            EmitParticle();
+            if (TimeToEmit > 1 || TimeToEmit == -1)
+            {
+                for (int i = 0; i < ParticlesPerTick; i++)
+                    EmitParticle();
+
+                if (TimeToEmit > 0)
+                    TimeToEmit--; //TODO: Test
+            }
 
             for (int i = 0; i < Particles.Count; i++) //update particles
             {
@@ -95,9 +108,9 @@ namespace AsteroidsInc.Components
                 Particles.RemoveAt(rnd.Next(Particles.Count));
         }
 
-        public void EmitParticle() //emits a particle
+        protected void EmitParticle() //emits a particle
         {
-            if (Emitting && (Particles.Count + 1 < MaxParticles)) //if emitting & not overflowing
+            if (Particles.Count + 1 < MaxParticles) //if not overflowing
             {
                 int rndTex = rnd.Next(Textures.Count); //get random texture from the list
                 int rndColor = rnd.Next(Colors.Count); //get a random color from the list
