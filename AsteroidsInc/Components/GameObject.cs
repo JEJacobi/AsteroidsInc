@@ -20,8 +20,10 @@ namespace AsteroidsInc.Components
         public Vector2 Origin { get; set; }
         public Color TintColor { get; set; }
         public float Rotation { get; set; }
+        public float RotationalVelocity { get; set; }
         public float Scale { get; set; }
         public float Depth { get; set; }
+        public bool Active { get; set; }
         public SpriteEffects Effects { get; set; }
 
         public Vector2 WorldLocation { get; set; }
@@ -118,6 +120,7 @@ namespace AsteroidsInc.Components
             Color tintColor,
             bool animating = false,
             float rotation = 0f, //default to no rotation
+            float rotationalVelocity = 0f,
             float scale = 1f, //default to 1:1 scale
             float depth = 0f, //default to 0 layerDepth
             SpriteEffects effects = SpriteEffects.None,
@@ -129,15 +132,17 @@ namespace AsteroidsInc.Components
             int yPadding = 0) //amount of y padding, used in bounding box collision, default to 0, or no bounding box
         {
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
-            Texture = texture;
+            Texture = texture; //assign parameters
             WorldLocation = worldLocation; 
-            TintColor = tintColor; //assign parameters
+            TintColor = tintColor; 
             Rotation = rotation;
+            RotationalVelocity = rotationalVelocity;
             Scale = scale;
             Depth = depth;
             Effects = effects;
             Velocity = velocity;
             Animating = animating;
+            Active = true;
 
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; //assign animation data
@@ -149,49 +154,80 @@ namespace AsteroidsInc.Components
 
         public virtual void Update(GameTime gameTime)
         {
-            WorldLocation += Vector2.Multiply(Velocity, (gameTime.ElapsedGameTime.Milliseconds / VELOCITYSCALAR));
-            //Move by Velocity times a roughly 60FPS scalar
-
-            if (TotalFrames > 1 && Animating)
+            if (Active) //if object is active
             {
-                CurrentFrame++;
-                if (CurrentFrame >= TotalFrames)
-                    CurrentFrame = 0; //Loop animation
+                WorldLocation += Vector2.Multiply(Velocity, (gameTime.ElapsedGameTime.Milliseconds / VELOCITYSCALAR));
+                Rotation += RotationalVelocity; //Rotate according to the velocity
+                //Move by Velocity times a roughly 60FPS scalar
+
+                if (TotalFrames > 1 && Animating)
+                {
+                    CurrentFrame++;
+                    if (CurrentFrame >= TotalFrames)
+                        CurrentFrame = 0; //Loop animation
+                }
+
+                if (Camera.LOOPWORLD && !Camera.IsObjectInWorld(this.WorldRectangle)) //if world is looping and the object is out of bounds
+                {
+                    Vector2 temp = WorldLocation; //temporary Vector2 used for updated position
+
+                    //X-Axis Component
+                    if (WorldLocation.X > Camera.WorldRectangle.Width)
+                        temp.X = Camera.WorldRectangle.X; //If X is out of bounds to the right, move X to the left side
+                    if (WorldLocation.X < WorldLocation.X)
+                        temp.X = Camera.WorldRectangle.Width; //If X is out of bound to the left, move X to the right side
+
+                    //Y-Axis Component
+                    if (WorldLocation.Y > Camera.WorldRectangle.Height)
+                        temp.Y = Camera.WorldRectangle.Y; //If Y is out of bounds to the bottom, move Y to the top
+                    if (WorldLocation.Y < Camera.WorldRectangle.Y)
+                        temp.Y = Camera.WorldRectangle.Height; //If Y is out of bounds to the top, move Y to the bottom
+
+                    WorldLocation = temp; //Assign updated position
+                    Velocity = Vector2.Negate(Velocity); //Negate the velocity
+                }
+                else if (!Camera.LOOPWORLD && !Camera.IsObjectInWorld(this.WorldRectangle))
+                {
+                    Active = false; //if the object is outside the world but the LOOPWORLD constant is false, set inactive
+                }
             }
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            if (TotalFrames > 1 && Camera.IsObjectVisible(WorldRectangle)) //if multi-frame animation & object is visible
+            if (Active)
             {
-                Rectangle sourceRectangle = new Rectangle(GetWidth * GetColumn,
-                    GetHeight * GetRow, GetWidth, GetHeight); //get source rectangle to use
-
-                spriteBatch.Draw(
-                    Texture,
-                    ScreenCenter,
-                    sourceRectangle, //use generated source rectangle
-                    TintColor,
-                    Rotation,
-                    Origin,
-                    Scale,
-                    Effects,
-                    Depth);
-            }
-            else //if single frame sprite
-            {
-                if (Camera.IsObjectVisible(WorldRectangle)) //check if sprite is visible to camera
+                if (TotalFrames > 1 && Camera.IsObjectVisible(WorldRectangle)) //if multi-frame animation & object is visible
                 {
+                    Rectangle sourceRectangle = new Rectangle(GetWidth * GetColumn,
+                        GetHeight * GetRow, GetWidth, GetHeight); //get source rectangle to use
+
                     spriteBatch.Draw(
                         Texture,
-                        ScreenCenter, //center of the sprite in local coords
-                        null, //full sprite
+                        ScreenCenter,
+                        sourceRectangle, //use generated source rectangle
                         TintColor,
                         Rotation,
                         Origin,
                         Scale,
-                        Effects, //spriteeffects
-                        Depth); //layerdepth
+                        Effects,
+                        Depth);
+                }
+                else //if single frame sprite
+                {
+                    if (Camera.IsObjectVisible(WorldRectangle)) //check if sprite is visible to camera
+                    {
+                        spriteBatch.Draw(
+                            Texture,
+                            ScreenCenter, //center of the sprite in local coords
+                            null, //full sprite
+                            TintColor,
+                            Rotation,
+                            Origin,
+                            Scale,
+                            Effects, //spriteeffects
+                            Depth); //layerdepth
+                    }
                 }
             }
         } 
