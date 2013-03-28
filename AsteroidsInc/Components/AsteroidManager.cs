@@ -17,7 +17,7 @@ namespace AsteroidsInc.Components
     {
         #region Declarations
 
-        public List<GameObject> Asteroids { get; set; }
+        public List<GameObject> Asteroids;
         public bool RegenerateAsteroids { get; set; }
 
         public readonly int InitialAsteroids;
@@ -34,6 +34,7 @@ namespace AsteroidsInc.Components
         const int MINPARTICLES = 50;
         const int MAXPARTICLES = 200;
         const int PARTICLEFTL = 40;
+        const int MAXTRIES = 50;
 
         #endregion
 
@@ -47,6 +48,8 @@ namespace AsteroidsInc.Components
             List<Texture2D> explosionParticleTextures,
             bool regenAsteroids)
         {
+            rnd = new Random();
+
             InitialAsteroids = initialAsteroids;
             MinVelocity = minVel;
             MaxVelocity = maxVel;
@@ -70,6 +73,18 @@ namespace AsteroidsInc.Components
 
             for (int i = 0; i < emitters.Count; i++)
                 emitters[i].Update(gameTime);
+
+            if (Asteroids.Count < InitialAsteroids && RegenerateAsteroids)
+                addAsteroid();
+
+            for (int x = 0; x < Asteroids.Count; x++) //Pretty much brute-forcing the collision detection
+                for (int y = x + 1; y < Asteroids.Count; y++)
+                    if (Asteroids[x].IsCircleColliding(Asteroids[y]))
+                    {
+                        GameObjectPair temp = GameObject.Bounce(Asteroids[x], Asteroids[y]); //get pair of objects
+                        Asteroids[x] = temp.Object1; //and assign
+                        Asteroids[y] = temp.Object2;
+                    }
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -108,18 +123,19 @@ namespace AsteroidsInc.Components
         {
             GameObject tempAsteroid;
             bool isOverlap = false;
+            int counter = 0;
 
             do //Do-While to ensure that the asteroid gets generated at least once
             {
-                Texture2D text = Textures.PickRandom<Texture2D>(); //TODO: More testing
+                Texture2D text = Textures.PickRandom<Texture2D>();
 
-                float rot = (float)rnd.NextDouble(0f, 359f);
-                float rotVel = (float)rnd.NextDouble(MinRotationalVelocity, MaxRotationalVelocity);
+                float rot = MathHelper.ToRadians((float)rnd.NextDouble(0f, 359f));
+                float rotVel = MathHelper.ToRadians((float)rnd.NextDouble(MinRotationalVelocity, MaxRotationalVelocity));
 
-                int colRadius = (((text.Width / 2) * (text.Height / 2)) / 2); //Get the mean of text's height & width
+                int colRadius = (((text.Width / 2) + (text.Height / 2)) / 2); //Get the mean of text's height & width
 
                 Vector2 vel = Vector2.Multiply( //calculate a random velocity
-                    rot.RotationToVectorFloat(), //TODO: Yep, test.
+                    rot.RotationToVectorFloat(),
                     (float)rnd.NextDouble(MinVelocity, MaxVelocity));
 
                 Vector2 worldPos = new Vector2(
@@ -137,12 +153,18 @@ namespace AsteroidsInc.Components
                         break;
                     }
                 }
+                counter++;
 
-            } while (isOverlap); //if overlapping, loop
+            } while (isOverlap && counter < MAXTRIES); //if overlapping, loop, if maxtries exceeded, quit
 
-            Asteroids.Add(tempAsteroid); //add the temp asteroid
+            if (counter >= MAXTRIES)
+            {
+                Logger.WriteLog("Asteroid placement overflow, canceling.");
+            }
+            else
+            {
+                Asteroids.Add(tempAsteroid); //add the temp asteroid if not at maxtries
+            }
         }
-
-
     }
 }

@@ -19,7 +19,7 @@ namespace AsteroidsInc.Components
         public Texture2D Texture { get; set; }
         public Vector2 Origin { get; set; }
         public Color TintColor { get; set; }
-        public float Rotation { get; set; }
+        public float Rotation { get; set; } //radians
         public float RotationalVelocity { get; set; }
         public float Scale { get; set; }
         public float Depth { get; set; }
@@ -61,7 +61,18 @@ namespace AsteroidsInc.Components
         public int Columns { get; set; }
         public bool Animating { get; set; }
 
-        public const float VELOCITYSCALAR = 0.166667f; //Default to around 60fps standard movement
+        public float RotationDegrees
+        {
+            get { return MathHelper.ToDegrees(Rotation); }
+            set { Rotation = MathHelper.ToRadians(value); }
+        }
+        public float RotationVelocityDegrees
+        {
+            get { return MathHelper.ToDegrees(RotationalVelocity); }
+            set { RotationalVelocity = MathHelper.ToRadians(value); }
+        }
+
+        public const float VELOCITYSCALAR = 1.0f / 60.0f; //Default to 60fps standard movement
 
         #endregion
 
@@ -106,7 +117,10 @@ namespace AsteroidsInc.Components
         { get { return Camera.GetLocalCoords(WorldRectangle); } } //get screen rectangle
 
         public Vector2 WorldCenter
-        { get { return WorldLocation + SpriteCenter; } } //gets the center of the sprite in world coords
+        { 
+            get { return WorldLocation + SpriteCenter; }
+            set { WorldLocation = value - SpriteCenter; }
+        } //gets/sets the center of the sprite in world coords
 
         public Vector2 ScreenCenter
         { get { return Camera.GetLocalCoords(WorldLocation + SpriteCenter); } } //returns the center in screen coords
@@ -157,7 +171,7 @@ namespace AsteroidsInc.Components
         {
             if (Active) //if object is active
             {
-                WorldLocation += Vector2.Multiply(Velocity, (gameTime.ElapsedGameTime.Milliseconds / VELOCITYSCALAR));
+                WorldLocation += Velocity * (1f / 60f);
                 Rotation += RotationalVelocity; //Rotate according to the velocity
                 //Move by Velocity times a roughly 60FPS scalar
 
@@ -168,28 +182,31 @@ namespace AsteroidsInc.Components
                         CurrentFrame = 0; //Loop animation
                 }
 
-                if (Camera.LOOPWORLD && !Camera.IsObjectInWorld(this.WorldRectangle)) //if world is looping and the object is out of bounds
+                if (Camera.IsObjectInWorld(this.WorldRectangle) == false)
                 {
-                    Vector2 temp = WorldLocation; //temporary Vector2 used for updated position
+                    if (Camera.LOOPWORLD) //if world is looping and the object is out of bounds
+                    {
+                        Vector2 temp = WorldCenter; //temporary Vector2 used for updated position
 
-                    //X-Axis Component
-                    if (WorldLocation.X > Camera.WorldRectangle.Width)
-                        temp.X = Camera.WorldRectangle.X; //If X is out of bounds to the right, move X to the left side
-                    if (WorldLocation.X < WorldLocation.X)
-                        temp.X = Camera.WorldRectangle.Width; //If X is out of bound to the left, move X to the right side
+                        //X-Axis Component
+                        if (WorldCenter.X > Camera.WorldRectangle.Width)
+                            temp.X = Camera.WorldRectangle.X - (GetWidth / 2); //If X is out of bounds to the right, move X to the left side
+                        if (WorldCenter.X < Camera.WorldRectangle.X)
+                            temp.X = Camera.WorldRectangle.Width + (GetWidth / 2); //If X is out of bound to the left, move X to the right side
 
-                    //Y-Axis Component
-                    if (WorldLocation.Y > Camera.WorldRectangle.Height)
-                        temp.Y = Camera.WorldRectangle.Y; //If Y is out of bounds to the bottom, move Y to the top
-                    if (WorldLocation.Y < Camera.WorldRectangle.Y)
-                        temp.Y = Camera.WorldRectangle.Height; //If Y is out of bounds to the top, move Y to the bottom
+                        //Y-Axis Component
+                        if (WorldCenter.Y > Camera.WorldRectangle.Height)
+                            temp.Y = Camera.WorldRectangle.Y - (GetHeight / 2); //If Y is out of bounds to the bottom, move Y to the top
+                        if (WorldCenter.Y < Camera.WorldRectangle.Y)
+                            temp.Y = Camera.WorldRectangle.Height + (GetHeight / 2); //If Y is out of bounds to the top, move Y to the bottom
 
-                    WorldLocation = temp; //Assign updated position
-                    Velocity = Vector2.Negate(Velocity); //Negate the velocity
-                }
-                else if (!Camera.LOOPWORLD && !Camera.IsObjectInWorld(this.WorldRectangle))
-                {
-                    Active = false; //if the object is outside the world but the LOOPWORLD constant is false, set inactive
+                        WorldCenter = temp; //Assign updated position
+                    }
+
+                    if (Camera.LOOPWORLD == false)
+                    {
+                        Active = false; //if the object is outside the world but the LOOPWORLD constant is false, set inactive
+                    }
                 }
             }
         }
@@ -272,8 +289,48 @@ namespace AsteroidsInc.Components
         protected Vector2 rotationToVector()
         {
             return Rotation.RotationToVectorFloat();
-        } //local version of above
+        } //local version of extension method
 
         #endregion
+
+        #region Static Methods
+
+        public static GameObjectPair Bounce(GameObject obj1, GameObject obj2)
+        {
+            if (obj1.Equals(obj2))
+                throw new InvalidOperationException("Identical objects");
+            Vector2 centerOfMass = (obj1.Velocity + obj2.Velocity) / 2; //calculate the center of mass
+            Vector2 normal1 = obj2.WorldCenter - obj1.WorldCenter;
+            Vector2 normal2 = obj1.WorldCenter - obj2.WorldCenter;
+
+            normal1.Normalize(); //normalize the normals
+            normal2.Normalize();
+
+            //Bounce Obj1
+            obj1.Velocity -= centerOfMass;
+            obj1.Velocity = Vector2.Reflect(obj1.Velocity, normal1);
+            obj1.Velocity += centerOfMass;
+
+            //Bounce Obj2
+            obj2.Velocity -= centerOfMass;
+            obj2.Velocity = Vector2.Reflect(obj2.Velocity, normal2);
+            obj2.Velocity += centerOfMass;
+
+            return new GameObjectPair(obj1, obj2);
+        }
+
+        #endregion
+    }
+
+    public struct GameObjectPair //workaround for passing
+    {
+        public GameObject Object1;
+        public GameObject Object2;
+
+        public GameObjectPair(GameObject obj1, GameObject obj2)
+        {
+            Object1 = obj1;
+            Object2 = obj2;
+        }
     }
 }

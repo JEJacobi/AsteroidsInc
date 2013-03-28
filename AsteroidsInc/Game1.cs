@@ -26,6 +26,7 @@ namespace AsteroidsInc
         Dictionary<string, Song> Songs { get; set; } //Dictionary for songs, played via the MediaPlayer
 
         UIString<int> fpsDisplay;
+        AsteroidManager temp;
 
         #endregion
 
@@ -76,7 +77,14 @@ namespace AsteroidsInc
                 Logger.WriteLog("Content Load Error: " + e.Message);
             }
 
+            List<Texture2D> particle = new List<Texture2D>();
+            particle.Add(Textures["particle"]);
+
+            List<Texture2D> asteroid = new List<Texture2D>();
+            asteroid.Add(Textures["ball"]);
+
             fpsDisplay = new UIString<int>(60, Vector2.Zero, Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
+            temp = new AsteroidManager(500, 50, 500, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
         }
@@ -91,16 +99,18 @@ namespace AsteroidsInc
             InputHandler.Update(); //update InputHandler
 
             if (InputHandler.IsKeyDown(Keys.Left))
-                Camera.Position += new Vector2(-1f, 0f);
+                Camera.Position += new Vector2(-3f, 0f);
             if (InputHandler.IsKeyDown(Keys.Right))
-                Camera.Position += new Vector2(1f, 0f);
+                Camera.Position += new Vector2(3f, 0f);
             if (InputHandler.IsKeyDown(Keys.Up))
-                Camera.Position += new Vector2(0f, -1f);
+                Camera.Position += new Vector2(0f, -3f);
             if (InputHandler.IsKeyDown(Keys.Down))
-                Camera.Position += new Vector2(0f, 1f);
+                Camera.Position += new Vector2(0f, 3f);
 
             fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
             //calculate framerate to the nearest int
+
+            temp.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -111,6 +121,7 @@ namespace AsteroidsInc
             spriteBatch.Begin(); //BEGIN SPRITE DRAW
 
             fpsDisplay.Draw(spriteBatch);
+            temp.Draw(spriteBatch);
 
             spriteBatch.End(); //END SPRITE DRAW
             base.Draw(gameTime);

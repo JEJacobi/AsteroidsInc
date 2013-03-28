@@ -24,14 +24,14 @@ namespace AsteroidsInc.Components
             Color color,
             int framesToLive,
             float rotation = 0f,
+            float rotationalVelocity = 0f,
             float scale = 1f,
             float depth = 1f,
             SpriteEffects effects = SpriteEffects.None,
             int collisionRadius = 0,
             int xPadding = 0,
             int yPadding = 0)
-            : base(texture, worldLocation, velocity, color, false, rotation, scale, depth, effects,
-            0, 1, 1, collisionRadius, xPadding, yPadding)
+            : base(texture, worldLocation, velocity, color, false, rotation, rotationalVelocity)
         {
             TTL = framesToLive; //most of the actual work is handled by GameObject
         }

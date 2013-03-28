@@ -31,6 +31,7 @@ namespace AsteroidsInc.Components
             return RotationToVectorDouble(rotationRadians);
         }
 
+
         //
         //Ripped from a StackOverflow question//
         public static T PickRandom<T>(this IEnumerable<T> source)
