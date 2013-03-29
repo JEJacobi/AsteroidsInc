@@ -31,13 +31,21 @@ namespace AsteroidsInc.Components
         List<ParticleEmitter> emitters;
         Random rnd;
 
-        const int MINPARTICLES = 50;
-        const int MAXPARTICLES = 200;
-        const int PARTICLEFTL = 20;
+        const int SCRAPEPARTICLES = 50;
+        const int SCRAPEFRAMESTOLIVE = 6;
+        const float SCRAPEEJECTIONSPEED = 30f;
+
+        const int EXPLOSIONPARTICLES = 5000;
+        const int EXPLOSIONFRAMESTOLIVE = 30;
+        const float EXPLOSIONEJECTIONSPEED = 50f;
+
         const int MAXTRIES = 50;
-        const int PARTICLETIMETOEMIT = 2;
-        const float PARTICLEEJECTIONSPEED = 20f;
-        const float PARTICLERANDOMIZATION = 1f;
+        const int PARTICLETIMETOEMIT = 1;
+
+        const float PARTICLERANDOMIZATION = 2f;
+
+        readonly Color[] SCRAPECOLORS = { Color.Brown, Color.SaddleBrown, Color.RosyBrown };
+        readonly Color[] EXPLOSIONCOLORS = { Color.White, Color.LightYellow, Color.Orange, Color.OrangeRed, Color.Aquamarine };
 
         #endregion
 
@@ -88,7 +96,7 @@ namespace AsteroidsInc.Components
                         Asteroids[x] = temp.Object1; //and assign
                         Asteroids[y] = temp.Object2;
 
-                        addExplosion(temp);
+                        addScrapeEffect(temp);
                     }
         }
 
@@ -157,28 +165,52 @@ namespace AsteroidsInc.Components
 
         protected void addExplosion(Vector2 point)
         {
-            int x = rnd.Next(MINPARTICLES, MAXPARTICLES);
-            List<Color> colors = new List<Color>();
-            colors.Add(Color.White);
-
             emitters.Add(new ParticleEmitter( //TODO: Test
-                x,
-                point,
+                EXPLOSIONPARTICLES, //random amount of particles
+                point, //at the point
                 ExplosionParticleTextures,
-                colors,
-                PARTICLEFTL,
+                EXPLOSIONCOLORS.ToList<Color>(), //colors to list
+                EXPLOSIONFRAMESTOLIVE,
                 true,
                 PARTICLETIMETOEMIT,
-                x,
-                PARTICLEEJECTIONSPEED,
+                EXPLOSIONPARTICLES, //emit max particles in one tick
+                EXPLOSIONEJECTIONSPEED,
                 PARTICLERANDOMIZATION,
-                0f,
-                180f));
+                0f, //no direction needed
+                ParticleEmitter.EXPLOSIONSPRAY)); //360 degree explosion
         }
 
-        protected void addExplosion(GameObjectPair pair)
+        protected void addScrapeEffect(GameObjectPair objects)
         {
-            addExplosion(pair.CenterPoint());
+            Vector2 normal = GameObject.GetNormal(objects);
+
+            emitters.Add(new ParticleEmitter(
+                SCRAPEPARTICLES,
+                objects.CenterPoint(),
+                ExplosionParticleTextures,
+                SCRAPECOLORS.ToList<Color>(),
+                SCRAPEFRAMESTOLIVE,
+                true,
+                PARTICLETIMETOEMIT,
+                SCRAPEPARTICLES,
+                SCRAPEEJECTIONSPEED,
+                PARTICLERANDOMIZATION,
+                MathHelper.ToDegrees(normal.RotateTo()) + 90, //get the velocity angle + 90 degrees
+                10f));
+
+            emitters.Add(new ParticleEmitter(
+                SCRAPEPARTICLES,
+                objects.CenterPoint(),
+                ExplosionParticleTextures,
+                SCRAPECOLORS.ToList<Color>(),
+                SCRAPEFRAMESTOLIVE,
+                true,
+                PARTICLETIMETOEMIT,
+                SCRAPEPARTICLES,
+                SCRAPEEJECTIONSPEED,
+                PARTICLERANDOMIZATION,
+                MathHelper.ToDegrees(normal.RotateTo()) - 90,
+                10f));
         }
     }
 }

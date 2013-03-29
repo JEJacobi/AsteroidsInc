@@ -283,7 +283,7 @@ namespace AsteroidsInc.Components
 
         public void RotateTo(Vector2 point) //rotates the GameObject to a point
         {
-            Rotation = (float)Math.Atan2(point.Y, point.X);
+            Rotation = point.RotateTo();
         }
 
         protected Vector2 rotationToVector()
@@ -300,11 +300,8 @@ namespace AsteroidsInc.Components
             if (obj1.Equals(obj2))
                 throw new InvalidOperationException("Identical objects");
             Vector2 centerOfMass = (obj1.Velocity + obj2.Velocity) / 2; //calculate the center of mass
-            Vector2 normal1 = obj2.WorldCenter - obj1.WorldCenter;
-            Vector2 normal2 = obj1.WorldCenter - obj2.WorldCenter;
-
-            normal1.Normalize(); //normalize the normals
-            normal2.Normalize();
+            Vector2 normal1 = GetNormal(new GameObjectPair(obj1, obj2));
+            Vector2 normal2 = GetNormal(new GameObjectPair(obj2, obj1));
 
             //Bounce Obj1
             obj1.Velocity -= centerOfMass;
@@ -317,6 +314,18 @@ namespace AsteroidsInc.Components
             obj2.Velocity += centerOfMass;
 
             return new GameObjectPair(obj1, obj2);
+        }
+
+        /// <summary>
+        /// Returns the first Vector in Objects' normal.
+        /// </summary>
+        /// <param name="Pair of GameObjects"></param>
+        /// <returns></returns>
+        public static Vector2 GetNormal(GameObjectPair objects)
+        {
+            Vector2 normal = objects.Object2.WorldCenter - objects.Object1.WorldCenter;
+            normal.Normalize();
+            return normal;
         }
 
         #endregion

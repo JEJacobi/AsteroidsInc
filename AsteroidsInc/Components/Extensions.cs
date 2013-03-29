@@ -31,6 +31,11 @@ namespace AsteroidsInc.Components
             return RotationToVectorDouble(rotationRadians);
         }
 
+        public static float RotateTo(this Vector2 vector)
+        {
+            return (float)Math.Atan2(vector.Y, vector.X);
+        }
+
 
         //
         //Ripped from a StackOverflow question//

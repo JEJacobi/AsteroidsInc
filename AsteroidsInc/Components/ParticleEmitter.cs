@@ -43,6 +43,8 @@ namespace AsteroidsInc.Components
 
         Random rnd; //random, used for particle spray, random colors, and random textures
 
+        public const float EXPLOSIONSPRAY = 180f;
+
         #endregion
 
         public ParticleEmitter(
@@ -139,5 +141,12 @@ namespace AsteroidsInc.Components
         {
             return (float)rnd.NextDouble(1 - RandomMargin, 1 + RandomMargin);
         }
+    }
+
+    public enum EmissionType
+    {
+        Scrape,
+        Explosion,
+        Trail
     }
 }

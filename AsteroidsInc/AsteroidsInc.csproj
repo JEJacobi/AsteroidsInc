@@ -116,6 +116,7 @@
     <Compile Include="Components\Logger.cs" />
     <Compile Include="Components\Particle.cs" />
     <Compile Include="Components\ParticleEmitter.cs" />
+    <Compile Include="Components\ContentHandler.cs" />
     <Compile Include="Components\UIBase.cs" />
     <Compile Include="Components\UISprite.cs" />
     <Compile Include="Components\UIString.cs" />

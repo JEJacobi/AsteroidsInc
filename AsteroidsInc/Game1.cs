@@ -20,11 +20,6 @@ namespace AsteroidsInc
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Dictionary<string, Texture2D> Textures { get; set; } //Dictionary for textures
-        Dictionary<string, SpriteFont> Fonts { get; set; } //Dictonary for SpriteFonts
-        Dictionary<string, SoundEffect> Effects { get; set; } //Dictionary for SFX
-        Dictionary<string, Song> Songs { get; set; } //Dictionary for songs, played via the MediaPlayer
-
         UIString<int> fpsDisplay;
         AsteroidManager temp;
 
@@ -43,14 +38,9 @@ namespace AsteroidsInc
 
         protected override void Initialize()
         {
-            Textures = new Dictionary<string, Texture2D>();
-            Fonts = new Dictionary<string, SpriteFont>();
-            Effects = new Dictionary<string, SoundEffect>();
-            Songs = new Dictionary<string, Song>();
-
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //TEMP
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //TEMP
             Camera.ViewportSize = Camera.ScreenSize; //TEMP
 
             Logger.WriteLog("\nInitializing components...");
@@ -59,16 +49,22 @@ namespace AsteroidsInc
 
         protected override void LoadContent()
         {
+            ContentHandler.Initialize();
+
             try
             {
                 //START CONTENT LOAD
 
                 //FONTS
-                Fonts.Add("lcd", Content.Load<SpriteFont>("lcd"));
+                ContentHandler.Fonts.Add("lcd", Content.Load<SpriteFont>("lcd"));
 
                 //TEXTURES
-                Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
-                Textures.Add("particle", ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
+                ContentHandler.Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
+                ContentHandler.Textures.Add("particle", ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
+
+                //SOUNDEFFECTS
+
+                //MUSIC
 
                 //END CONTENT LOAD
                 Logger.WriteLog("Content loaded successfully...");
@@ -79,13 +75,13 @@ namespace AsteroidsInc
             }
 
             List<Texture2D> particle = new List<Texture2D>();
-            particle.Add(Textures["particle"]);
+            particle.Add(ContentHandler.Textures["particle"]);
 
             List<Texture2D> asteroid = new List<Texture2D>();
-            asteroid.Add(Textures["ball"]);
+            asteroid.Add(ContentHandler.Textures["ball"]);
 
-            fpsDisplay = new UIString<int>(60, Vector2.Zero, Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
-            temp = new AsteroidManager(100, 50, 100, 1, 2, asteroid, particle, true);
+            fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
+            temp = new AsteroidManager(20, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
         }
@@ -107,6 +103,13 @@ namespace AsteroidsInc
                 Camera.Position += new Vector2(0f, -3f);
             if (InputHandler.IsKeyDown(Keys.Down))
                 Camera.Position += new Vector2(0f, 3f);
+            if(InputHandler.IsNewKeyPress(Keys.Space)) //delete a random asteroid
+            {
+                Random rnd = new Random();
+                temp.DestroyAsteroid(temp.Asteroids[rnd.Next(temp.Asteroids.Count)]);
+            }
+            if (InputHandler.IsKeyDown(Keys.Escape))
+                this.Exit(); //exit on escape
 
             fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
             //calculate framerate to the nearest int
@@ -118,7 +121,7 @@ namespace AsteroidsInc
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin(); //BEGIN SPRITE DRAW
 
             fpsDisplay.Draw(spriteBatch);
