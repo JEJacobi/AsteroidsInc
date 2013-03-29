@@ -33,8 +33,11 @@ namespace AsteroidsInc.Components
 
         const int MINPARTICLES = 50;
         const int MAXPARTICLES = 200;
-        const int PARTICLEFTL = 40;
+        const int PARTICLEFTL = 20;
         const int MAXTRIES = 50;
+        const int PARTICLETIMETOEMIT = 2;
+        const float PARTICLEEJECTIONSPEED = 20f;
+        const float PARTICLERANDOMIZATION = 1f;
 
         #endregion
 
@@ -84,6 +87,8 @@ namespace AsteroidsInc.Components
                         GameObjectPair temp = GameObject.Bounce(Asteroids[x], Asteroids[y]); //get pair of objects
                         Asteroids[x] = temp.Object1; //and assign
                         Asteroids[y] = temp.Object2;
+
+                        addExplosion(temp);
                     }
         }
 
@@ -98,24 +103,7 @@ namespace AsteroidsInc.Components
 
         public void DestroyAsteroid(GameObject asteroid)
         {
-            int x = rnd.Next(MINPARTICLES, MAXPARTICLES);
-            List<Color> colors = new List<Color>();
-            colors.Add(Color.White);
-
-            emitters.Add(new ParticleEmitter( //TODO: Test
-                x,
-                asteroid.WorldCenter,
-                ExplosionParticleTextures,
-                colors,
-                PARTICLEFTL,
-                true,
-                1,
-                x,
-                1f,
-                0.3f,
-                0f,
-                180f));
-
+            addExplosion(asteroid.WorldCenter);
             Asteroids.Remove(asteroid);
         }
 
@@ -165,6 +153,32 @@ namespace AsteroidsInc.Components
             {
                 Asteroids.Add(tempAsteroid); //add the temp asteroid if not at maxtries
             }
+        }
+
+        protected void addExplosion(Vector2 point)
+        {
+            int x = rnd.Next(MINPARTICLES, MAXPARTICLES);
+            List<Color> colors = new List<Color>();
+            colors.Add(Color.White);
+
+            emitters.Add(new ParticleEmitter( //TODO: Test
+                x,
+                point,
+                ExplosionParticleTextures,
+                colors,
+                PARTICLEFTL,
+                true,
+                PARTICLETIMETOEMIT,
+                x,
+                PARTICLEEJECTIONSPEED,
+                PARTICLERANDOMIZATION,
+                0f,
+                180f));
+        }
+
+        protected void addExplosion(GameObjectPair pair)
+        {
+            addExplosion(pair.CenterPoint());
         }
     }
 }

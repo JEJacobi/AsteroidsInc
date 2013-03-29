@@ -332,5 +332,13 @@ namespace AsteroidsInc.Components
             Object1 = obj1;
             Object2 = obj2;
         }
+
+        public Vector2 CenterPoint()
+        {
+            Vector2 temp = Object1.WorldCenter + Object2.WorldCenter;
+            temp /= 2;
+
+            return temp;
+        }
     }
 }

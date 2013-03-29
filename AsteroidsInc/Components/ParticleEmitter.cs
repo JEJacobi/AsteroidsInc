@@ -87,7 +87,7 @@ namespace AsteroidsInc.Components
 
         public void Update(GameTime gameTime)
         {
-            if (TimeToEmit > 1 || TimeToEmit == -1)
+            if (TimeToEmit >= 1 || TimeToEmit == -1)
             {
                 for (int i = 0; i < ParticlesPerTick; i++)
                     EmitParticle();

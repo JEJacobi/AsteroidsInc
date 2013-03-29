@@ -52,7 +52,8 @@ namespace AsteroidsInc
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
             Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //TEMP
             Camera.ViewportSize = Camera.ScreenSize; //TEMP
-            Logger.WriteLog("Initializing components...");
+
+            Logger.WriteLog("\nInitializing components...");
             base.Initialize();
         }
 
@@ -84,7 +85,7 @@ namespace AsteroidsInc
             asteroid.Add(Textures["ball"]);
 
             fpsDisplay = new UIString<int>(60, Vector2.Zero, Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
-            temp = new AsteroidManager(500, 50, 500, 1, 2, asteroid, particle, true);
+            temp = new AsteroidManager(100, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
         }
