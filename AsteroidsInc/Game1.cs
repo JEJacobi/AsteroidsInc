@@ -22,6 +22,7 @@ namespace AsteroidsInc
 
         UIString<int> fpsDisplay;
         AsteroidManager temp;
+        UIString<string> title;
 
         #endregion
 
@@ -51,36 +52,37 @@ namespace AsteroidsInc
         {
             ContentHandler.Initialize();
 
-            try
-            {
-                //START CONTENT LOAD
+            //START CONTENT LOAD
 
-                //FONTS
-                ContentHandler.Fonts.Add("lcd", Content.Load<SpriteFont>("lcd"));
+            //FONTS
+            ContentHandler.Fonts.Add("lcd", Content.Load<SpriteFont>("Fonts/lcd"));
+            ContentHandler.Fonts.Add("title", Content.Load<SpriteFont>("Fonts/title"));
 
-                //TEXTURES
-                ContentHandler.Textures.Add("ball", Content.Load<Texture2D>("ballsprite"));
-                ContentHandler.Textures.Add("particle", ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
+            //TEXTURES
+            ContentHandler.Textures.Add("asteroid1", Content.Load<Texture2D>("Textures/Asteroid1"));
+            ContentHandler.Textures.Add("asteroid2", Content.Load<Texture2D>("Textures/Asteroid2"));
+            ContentHandler.Textures.Add("asteroid3", Content.Load<Texture2D>("Textures/Asteroid3"));
 
-                //SOUNDEFFECTS
+            ContentHandler.Textures.Add("particle", //Generated texture
+                ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
 
-                //MUSIC
+            //SOUNDEFFECTS
 
-                //END CONTENT LOAD
-                Logger.WriteLog("Content loaded successfully...");
-            }
-            catch (ContentLoadException e)
-            {
-                Logger.WriteLog("Content Load Error: " + e.Message);
-            }
+            //MUSIC
+
+            //END CONTENT LOAD
+            Logger.WriteLog("Content loaded successfully...");
 
             List<Texture2D> particle = new List<Texture2D>();
             particle.Add(ContentHandler.Textures["particle"]);
 
             List<Texture2D> asteroid = new List<Texture2D>();
-            asteroid.Add(ContentHandler.Textures["ball"]);
+            asteroid.Add(ContentHandler.Textures["asteroid1"]);
+            asteroid.Add(ContentHandler.Textures["asteroid2"]);
+            asteroid.Add(ContentHandler.Textures["asteroid3"]);
 
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
+            title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
             temp = new AsteroidManager(20, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
@@ -115,6 +117,7 @@ namespace AsteroidsInc
             //calculate framerate to the nearest int
 
             temp.Update(gameTime);
+            title.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -126,6 +129,7 @@ namespace AsteroidsInc
 
             fpsDisplay.Draw(spriteBatch);
             temp.Draw(spriteBatch);
+            title.Draw(spriteBatch);
 
             spriteBatch.End(); //END SPRITE DRAW
             base.Draw(gameTime);

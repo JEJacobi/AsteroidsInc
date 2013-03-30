@@ -31,20 +31,21 @@ namespace AsteroidsInc.Components
         List<ParticleEmitter> emitters;
         Random rnd;
 
-        const int SCRAPEPARTICLES = 50;
-        const int SCRAPEFRAMESTOLIVE = 6;
+        const int SCRAPEPARTICLES = 60;
+        const int SCRAPEFRAMESTOLIVE = 5;
         const float SCRAPEEJECTIONSPEED = 30f;
+        const float SCRAPESPRAY = 20f;
 
-        const int EXPLOSIONPARTICLES = 5000;
-        const int EXPLOSIONFRAMESTOLIVE = 30;
-        const float EXPLOSIONEJECTIONSPEED = 50f;
+        const int EXPLOSIONPARTICLES = 500;
+        const int EXPLOSIONFRAMESTOLIVE = 20;
+        const float EXPLOSIONEJECTIONSPEED = 40f;
 
         const int MAXTRIES = 50;
         const int PARTICLETIMETOEMIT = 1;
 
-        const float PARTICLERANDOMIZATION = 2f;
+        const float PARTICLERANDOMIZATION = 0.5f;
 
-        readonly Color[] SCRAPECOLORS = { Color.Brown, Color.SaddleBrown, Color.RosyBrown };
+        readonly Color[] SCRAPECOLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
         readonly Color[] EXPLOSIONCOLORS = { Color.White, Color.LightYellow, Color.Orange, Color.OrangeRed, Color.Aquamarine };
 
         #endregion
@@ -196,7 +197,7 @@ namespace AsteroidsInc.Components
                 SCRAPEEJECTIONSPEED,
                 PARTICLERANDOMIZATION,
                 MathHelper.ToDegrees(normal.RotateTo()) + 90, //get the velocity angle + 90 degrees
-                10f));
+                SCRAPESPRAY));
 
             emitters.Add(new ParticleEmitter(
                 SCRAPEPARTICLES,
@@ -210,7 +211,7 @@ namespace AsteroidsInc.Components
                 SCRAPEEJECTIONSPEED,
                 PARTICLERANDOMIZATION,
                 MathHelper.ToDegrees(normal.RotateTo()) - 90,
-                10f));
+                SCRAPESPRAY));
         }
     }
 }
