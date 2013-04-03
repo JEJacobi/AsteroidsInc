@@ -281,6 +281,40 @@ namespace AsteroidsInc.Components
                 return false;
         }
 
+        public bool IsPixelColliding(GameObject obj) //pixel perfect collision detection, more expensive than circle or bb
+        {
+            if (IsBoxColliding(obj) || IsCircleColliding(obj)) //if it's colliding at all
+            {
+                Color[] objA = new Color[Texture.Width * Texture.Height]; //arrays of texels
+                Color[] objB = new Color[obj.Texture.Width * obj.Texture.Height];
+
+                this.Texture.GetData(objA); //get data for each
+                obj.Texture.GetData(objB);
+
+                int x1 = Math.Max(this.BoundingBox.X, obj.BoundingBox.X); //calculate the intersection
+                int x2 = Math.Min(this.BoundingBox.X + this.BoundingBox.Width, obj.BoundingBox.X + obj.BoundingBox.Width);
+
+                int y1 = Math.Max(this.BoundingBox.Y, obj.BoundingBox.Y);
+                int y2 = Math.Min(this.BoundingBox.Y + this.BoundingBox.Height, obj.BoundingBox.Y + obj.BoundingBox.Height);
+
+                for (int y = y1; y < y2; ++y)
+                {
+                    for (int x = x1; x < x2; ++x)
+                    {
+                        //taken from a StackExchange question; gets the index of each pixel
+                        Color a = objA[(x - this.BoundingBox.X) + (y - this.BoundingBox.Y) * this.Texture.Width];
+                        Color b = objB[(x - obj.BoundingBox.X) + (y - obj.BoundingBox.Y) * obj.Texture.Width];
+
+                        if (a.A != 0 && b.A != 0) //if the alpha value of both pixels is not zero, return true
+                            return true;
+                    }
+                }
+                return false; //if no collision, return false
+            }
+            else
+                return false; //no bb or circle collision
+        }
+
         public void RotateTo(Vector2 point) //rotates the GameObject to a point
         {
             Rotation = point.RotateTo();
