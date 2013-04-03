@@ -18,6 +18,7 @@ namespace AsteroidsInc.Components
         #region Declarations
 
         public List<GameObject> Asteroids;
+        Vector2 lastCollisionIndex = new Vector2(-1, -1);
         public bool RegenerateAsteroids { get; set; }
 
         public readonly int InitialAsteroids;
@@ -38,15 +39,15 @@ namespace AsteroidsInc.Components
 
         const int EXPLOSIONPARTICLES = 500;
         const int EXPLOSIONFRAMESTOLIVE = 20;
-        const float EXPLOSIONEJECTIONSPEED = 40f;
+        const float EXPLOSIONEJECTIONSPEED = 50f;
 
         const int MAXTRIES = 50;
         const int PARTICLETIMETOEMIT = 1;
 
-        const float PARTICLERANDOMIZATION = 0.5f;
+        const float PARTICLERANDOMIZATION = 2f;
 
         readonly Color[] SCRAPECOLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
-        readonly Color[] EXPLOSIONCOLORS = { Color.White, Color.LightYellow, Color.Orange, Color.OrangeRed, Color.Aquamarine };
+        readonly Color[] EXPLOSIONCOLORS = { Color.White, Color.LightYellow, Color.Orange, Color.OrangeRed, Color.Aquamarine, Color.LimeGreen };
 
         #endregion
 
@@ -97,26 +98,44 @@ namespace AsteroidsInc.Components
                         Asteroids[x] = temp.Object1; //and assign
                         Asteroids[y] = temp.Object2;
 
+                        //if the same asteroids are colliding twice in a row, and a collision has been recorded
+                        if (lastCollisionIndex.X != -1 &&
+                            lastCollisionIndex.Y != -1 &&
+                            lastCollisionIndex.X == x &&
+                            lastCollisionIndex.Y == y)
+                        {
+                            DestroyAsteroid(temp.Object2, false);
+                            addAsteroid(true);
+                        }
+
                         addScrapeEffect(temp);
+                        lastCollisionIndex = new Vector2(x, y);
                     }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             for (int i = 0; i < Asteroids.Count; i++)
+            {
                 Asteroids[i].Draw(spriteBatch);
+                spriteBatch.DrawString(ContentHandler.Fonts["lcd"],
+                    i.ToString(),
+                    Asteroids[i].WorldLocation,
+                    Color.White);
+            }
 
             for (int i = 0; i < emitters.Count; i++)
                 emitters[i].Draw(spriteBatch);
         }
 
-        public void DestroyAsteroid(GameObject asteroid)
+        public void DestroyAsteroid(GameObject asteroid, bool effect = true)
         {
-            addExplosion(asteroid.WorldCenter);
+            if(effect)
+                addExplosion(asteroid.WorldCenter);
             Asteroids.Remove(asteroid);
         }
 
-        protected void addAsteroid()
+        protected void addAsteroid(bool offScreen = false)
         {
             GameObject tempAsteroid;
             bool isOverlap = false;
@@ -131,13 +150,55 @@ namespace AsteroidsInc.Components
 
                 int colRadius = (((text.Width / 2) + (text.Height / 2)) / 2); //Get the mean of text's height & width
 
-                Vector2 vel = Vector2.Multiply( //calculate a random velocity
-                    rot.RotationToVectorFloat(),
-                    (float)rnd.NextDouble(MinVelocity, MaxVelocity));
+                Vector2 vel;
+                Vector2 worldPos;
 
-                Vector2 worldPos = new Vector2(
-                    rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
-                    rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                if (offScreen) //TODO: TEEEESST
+                {
+                    SpawnSide side = Util.RandomEnumValue<SpawnSide>();
+                    switch (side)
+                    {
+                        case SpawnSide.Up:
+                            vel = getVelocity(MathHelper.ToRadians((float)rnd.Next(140, 230))); //get a velocity pointing between 140/230 degrees
+
+                            worldPos = new Vector2(
+                                rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
+                                Camera.WorldRectangle.Y - text.Height);
+                            break;
+                        case SpawnSide.Left:
+                            vel = getVelocity(MathHelper.ToRadians((float)rnd.Next(50, 130))); //between 50/130 degrees
+
+                            worldPos = new Vector2(
+                                Camera.WorldRectangle.X - text.Width,
+                                rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                            break;
+                        case SpawnSide.Right:
+                            vel = getVelocity(MathHelper.ToRadians((float)rnd.Next(230, 310))); //between 230/310 degrees
+
+                            worldPos = new Vector2(
+                                Camera.WorldRectangle.Width + text.Width,
+                                rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                            break;
+                        case SpawnSide.Down:
+                            vel = getVelocity(
+                                MathHelper.ToRadians(rnd.Next(320, 410) % 360)); //between 320/(360 + 50) degrees
+
+                            worldPos = new Vector2(
+                                rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
+                                Camera.WorldRectangle.Height + text.Height);
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                }
+                else
+                {
+                    vel = getVelocity(rot);
+
+                    worldPos = new Vector2(
+                        rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
+                        rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                }
 
                 tempAsteroid = new GameObject( //init a temporary asteroid to check for overlaps
                     text, worldPos, vel, Color.White, false, rot, rotVel, 1f, 0f, colRadius);
@@ -212,6 +273,21 @@ namespace AsteroidsInc.Components
                 PARTICLERANDOMIZATION,
                 MathHelper.ToDegrees(normal.RotateTo()) - 90,
                 SCRAPESPRAY));
+        }
+
+        private Vector2 getVelocity(float rot)
+        {
+            return Vector2.Multiply(
+                rot.RotationToVectorFloat(),
+                (float)rnd.NextDouble(MinVelocity, MaxVelocity));
+        }
+
+        enum SpawnSide
+        {
+            Up,
+            Left,
+            Right,
+            Down
         }
     }
 }

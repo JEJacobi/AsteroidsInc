@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc.Components
 {
-    public static class Extensions
+    public static class Util
     {
         public static double NextDouble(this Random rnd, double min, double max) //extension for Random
         {
@@ -36,6 +36,15 @@ namespace AsteroidsInc.Components
             return (float)Math.Atan2(vector.Y, vector.X);
         }
 
+        public static T RandomEnumValue<T>()
+        {
+            return Enum
+                .GetValues(typeof(T))
+                .Cast<T>()
+                .OrderBy(x => _Random.Next())
+                .FirstOrDefault();
+        }//Also ripped from a StackOverflow question
+        static readonly Random _Random = new Random();
 
         //
         //Ripped from a StackOverflow question//
