@@ -120,7 +120,7 @@ namespace AsteroidsInc.Components
                 Asteroids[i].Draw(spriteBatch);
                 spriteBatch.DrawString(ContentHandler.Fonts["lcd"],
                     i.ToString(),
-                    Asteroids[i].WorldLocation,
+                    Camera.GetLocalCoords(Asteroids[i].WorldLocation),
                     Color.White);
             }
 
@@ -153,7 +153,7 @@ namespace AsteroidsInc.Components
                 Vector2 vel;
                 Vector2 worldPos;
 
-                if (offScreen) //TODO: TEEEESST
+                if (offScreen)
                 {
                     SpawnSide side = Util.RandomEnumValue<SpawnSide>();
                     switch (side)
@@ -227,7 +227,7 @@ namespace AsteroidsInc.Components
 
         protected void addExplosion(Vector2 point)
         {
-            emitters.Add(new ParticleEmitter( //TODO: Test
+            emitters.Add(new ParticleEmitter(
                 EXPLOSIONPARTICLES, //random amount of particles
                 point, //at the point
                 ExplosionParticleTextures,

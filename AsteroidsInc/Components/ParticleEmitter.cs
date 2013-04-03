@@ -95,7 +95,7 @@ namespace AsteroidsInc.Components
                     EmitParticle();
 
                 if (TimeToEmit > 0)
-                    TimeToEmit--; //TODO: Test
+                    TimeToEmit--;
             }
 
             for (int i = 0; i < Particles.Count; i++) //update particles
@@ -131,7 +131,6 @@ namespace AsteroidsInc.Components
         {
             float rndSpray = (float)rnd.NextDouble(-1, 1) * SprayWidth; //gets a random amount of spraywidth
             Vector2 tempVect = (rndSpray + Direction).RotationToVectorFloat(); //gets a Vector from the result
-            //TODO: Test
             tempVect = Vector2.Multiply(tempVect, RandomMultiplier()); //and multiplies the X&Y by the random margin
             tempVect = Vector2.Multiply(tempVect, EjectionSpeed); //adds the ejection speed multiplier
             return tempVect;

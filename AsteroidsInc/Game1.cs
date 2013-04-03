@@ -21,6 +21,7 @@ namespace AsteroidsInc
         SpriteBatch spriteBatch;
 
         UIString<int> fpsDisplay;
+        UIString<string> cameraData;
         AsteroidManager temp;
         UIString<string> title;
 
@@ -41,8 +42,8 @@ namespace AsteroidsInc
         {
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //TEMP
-            Camera.ViewportSize = Camera.ScreenSize; //TEMP
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //TEMP
+            Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
 
             Logger.WriteLog("\nInitializing components...");
             base.Initialize();
@@ -83,6 +84,7 @@ namespace AsteroidsInc
 
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
             title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
+            cameraData = new UIString<string>("", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
             temp = new AsteroidManager(20, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
@@ -115,6 +117,8 @@ namespace AsteroidsInc
 
             fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
             //calculate framerate to the nearest int
+            cameraData.Value = " " + Camera.CenterPosition.ToString() + " - " + Camera.ScreenSize.ToString();
+            //get camera pos & size
 
             temp.Update(gameTime);
             title.Update(gameTime);
@@ -130,6 +134,7 @@ namespace AsteroidsInc
             fpsDisplay.Draw(spriteBatch);
             temp.Draw(spriteBatch);
             title.Draw(spriteBatch);
+            cameraData.Draw(spriteBatch);
 
             spriteBatch.End(); //END SPRITE DRAW
             base.Draw(gameTime);

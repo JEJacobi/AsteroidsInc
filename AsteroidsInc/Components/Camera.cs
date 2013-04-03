@@ -34,13 +34,12 @@ namespace AsteroidsInc
             }
             set
             {
-                position.X = (value.X * 2) - Viewport.Width; //TODO: Test... again.
-                position.Y = (value.Y * 2) - Viewport.Height;
+                position.X = value.X - (Viewport.Width / 2);
+                position.Y = value.Y - (Viewport.Height / 2);
             }
         }
         static Vector2 position = Vector2.Zero;
 
-        public static Vector2 ViewportSize = Vector2.Zero; //Default of 0 viewport size
         public static Rectangle WorldRectangle = Rectangle.Empty; //Default empty rectangle
         public static Vector2 ScreenSize = Vector2.Zero; //Size of the game screen, must be set at Init
         public static Rectangle Viewport //returns a rectangle showing the viewport
@@ -48,7 +47,7 @@ namespace AsteroidsInc
             get 
             {
                 return new Rectangle((int)Position.X, (int)Position.Y, 
-                    (int)ViewportSize.X, (int)ViewportSize.Y); //cast floats to ints for rectangle init
+                    (int)ScreenSize.X, (int)ScreenSize.Y); //cast floats to ints for rectangle init
             }
         }
         public const bool LOOPWORLD = true;

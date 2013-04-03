@@ -27,11 +27,25 @@ namespace AsteroidsInc.Components
                     Camera.ScreenSize.X * RelativePos.X,
                     Camera.ScreenSize.Y * RelativePos.Y);
             }
-            set //TODO: More testing...
+            set
             {
-                RelativePos = new Vector2(
-                    Camera.ScreenSize.X / ScreenPosition.X,
-                    Camera.ScreenSize.Y / ScreenPosition.Y);
+                if (value.X == 0 || value.Y == 0)
+                {
+                    if (value.X != 0 && value.Y == 0)
+                        RelativePos = new Vector2(Camera.ScreenSize.X / value.X, 0);
+
+                    if (value.X == 0 && value.Y != 0)
+                        RelativePos = new Vector2(0, Camera.ScreenSize.Y / value.Y);
+
+                    if (value.X == 0 && value.Y == 0)
+                        RelativePos = new Vector2(0, 0);
+                }
+                else
+                {
+                    RelativePos = new Vector2(
+                        Camera.ScreenSize.X / value.X,
+                        Camera.ScreenSize.Y / value.Y);
+                }
             }
         }
         public float Rotation { get; set; } //in radians
