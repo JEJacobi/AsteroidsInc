@@ -44,6 +44,9 @@ namespace AsteroidsInc.Components
         Random rnd; //random, used for particle spray, random colors, and random textures
 
         public const float EXPLOSIONSPRAY = 180f;
+        public const float MINROTVEL = -0.1f;
+        public const float MAXROTVEL = 0.1f;
+        public const float TTLRANDOMIZATION = 0.1f;
 
         #endregion
 
@@ -102,7 +105,7 @@ namespace AsteroidsInc.Components
             {
                 Particles[i].Update(gameTime);
 
-                if (Particles[i].TTL <= 0) //if particle is expired
+                if (Particles[i].TTL + GetRandomTTL() <= 0) //if particle is expired
                     Particles.RemoveAt(i); //remove
             }
 
@@ -122,7 +125,9 @@ namespace AsteroidsInc.Components
                     WorldPosition,
                     GetVelocity(),
                     Colors[rndColor],
-                    FramesToLive));
+                    FramesToLive,
+                    MathHelper.ToRadians(rnd.Next(0, 359)),
+                    (float)rnd.NextDouble(MINROTVEL, MAXROTVEL)));
 
             }
         }
@@ -139,6 +144,11 @@ namespace AsteroidsInc.Components
         protected float RandomMultiplier()
         {
             return (float)rnd.NextDouble(1 - RandomMargin, 1 + RandomMargin);
+        }
+
+        protected float GetRandomTTL()
+        {
+            return (float)rnd.NextDouble(1f - TTLRANDOMIZATION, 1f + TTLRANDOMIZATION);
         }
     }
 

@@ -32,14 +32,14 @@ namespace AsteroidsInc.Components
         List<ParticleEmitter> emitters;
         Random rnd;
 
-        const int SCRAPEPARTICLES = 60;
-        const int SCRAPEFRAMESTOLIVE = 5;
-        const float SCRAPEEJECTIONSPEED = 30f;
+        const int SCRAPEPARTICLES = 4;
+        const int SCRAPEFRAMESTOLIVE = 50;
+        const float SCRAPEEJECTIONSPEED = 20f;
         const float SCRAPESPRAY = 20f;
 
-        const int EXPLOSIONPARTICLES = 500;
-        const int EXPLOSIONFRAMESTOLIVE = 20;
-        const float EXPLOSIONEJECTIONSPEED = 50f;
+        const int EXPLOSIONPARTICLES = 30;
+        const int EXPLOSIONFRAMESTOLIVE = 60;
+        const float EXPLOSIONEJECTIONSPEED = 20f;
 
         const int MAXTRIES = 50;
         const int PARTICLETIMETOEMIT = 1;
@@ -47,7 +47,7 @@ namespace AsteroidsInc.Components
         const float PARTICLERANDOMIZATION = 2f;
 
         readonly Color[] SCRAPECOLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
-        readonly Color[] EXPLOSIONCOLORS = { Color.White, Color.LightYellow, Color.Orange, Color.OrangeRed, Color.Aquamarine, Color.LimeGreen };
+        readonly Color[] EXPLOSIONCOLORS = { Color.LawnGreen, Color.White, Color.LightSlateGray, Color.LightGray };
 
         #endregion
 
@@ -88,7 +88,7 @@ namespace AsteroidsInc.Components
                 emitters[i].Update(gameTime);
 
             if (Asteroids.Count < InitialAsteroids && RegenerateAsteroids)
-                addAsteroid();
+                addAsteroid(true);
 
             for (int x = 0; x < Asteroids.Count; x++) //Pretty much brute-forcing the collision detection
                 for (int y = x + 1; y < Asteroids.Count; y++)
@@ -104,7 +104,18 @@ namespace AsteroidsInc.Components
                             lastCollisionIndex.X == x &&
                             lastCollisionIndex.Y == y)
                         {
-                            DestroyAsteroid(temp.Object2, false);
+                            if (Camera.IsObjectVisible(temp.Object1.BoundingBox) == false)
+                            {
+                                DestroyAsteroid(temp.Object1, false);
+                            }
+                            else if (Camera.IsObjectVisible(temp.Object2.BoundingBox) == false)
+                            {
+                                DestroyAsteroid(temp.Object2, false);
+                            }
+                            else
+                            {
+                                DestroyAsteroid(temp.Object2, true);
+                            }
                             addAsteroid(true);
                         }
 

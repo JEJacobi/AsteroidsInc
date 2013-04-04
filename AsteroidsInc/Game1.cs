@@ -42,7 +42,7 @@ namespace AsteroidsInc
         {
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //TEMP
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //TEMP
             Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
 
             Logger.WriteLog("\nInitializing components...");
@@ -63,6 +63,10 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add("asteroid1", Content.Load<Texture2D>("Textures/Asteroid1"));
             ContentHandler.Textures.Add("asteroid2", Content.Load<Texture2D>("Textures/Asteroid2"));
             ContentHandler.Textures.Add("asteroid3", Content.Load<Texture2D>("Textures/Asteroid3"));
+            ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>("Textures/SmallJunk01"));
+            ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>("Textures/SmallJunk02"));
+            ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>("Textures/SmallJunk03"));
+            ContentHandler.Textures.Add("player", Content.Load<Texture2D>("Textures/Ship"));
 
             ContentHandler.Textures.Add("particle", //Generated texture
                 ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -75,7 +79,9 @@ namespace AsteroidsInc
             Logger.WriteLog("Content loaded successfully...");
 
             List<Texture2D> particle = new List<Texture2D>();
-            particle.Add(ContentHandler.Textures["particle"]);
+            particle.Add(ContentHandler.Textures["junk1"]);
+            particle.Add(ContentHandler.Textures["junk2"]);
+            particle.Add(ContentHandler.Textures["junk3"]);
 
             List<Texture2D> asteroid = new List<Texture2D>();
             asteroid.Add(ContentHandler.Textures["asteroid1"]);
@@ -83,7 +89,7 @@ namespace AsteroidsInc
             asteroid.Add(ContentHandler.Textures["asteroid3"]);
 
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
-            title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
+            title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White);
             cameraData = new UIString<string>("", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
             temp = new AsteroidManager(20, 50, 100, 1, 2, asteroid, particle, true);
 
