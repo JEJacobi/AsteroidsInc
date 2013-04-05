@@ -20,10 +20,12 @@ namespace AsteroidsInc
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        //TEMP
         UIString<int> fpsDisplay;
         UIString<string> cameraData;
         AsteroidManager temp;
         UIString<string> title;
+        //TEMP
 
         #endregion
 
@@ -34,25 +36,23 @@ namespace AsteroidsInc
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            this.IsMouseVisible = true;
-            this.IsFixedTimeStep = false;
+            this.IsMouseVisible = true; //mouse should be visible
+            this.IsFixedTimeStep = false; //variable timestep
         }
 
         protected override void Initialize()
         {
-            Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width;
+            Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width; //init the camera
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //TEMP
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //create the world
             Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
 
-            Logger.WriteLog("\nInitializing components...");
+            Logger.WriteLog("\nInitializing components..."); //log it
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            ContentHandler.Initialize();
-
             //START CONTENT LOAD
 
             //FONTS
@@ -60,33 +60,37 @@ namespace AsteroidsInc
             ContentHandler.Fonts.Add("title", Content.Load<SpriteFont>("Fonts/title"));
 
             //TEXTURES
-            ContentHandler.Textures.Add("asteroid1", Content.Load<Texture2D>("Textures/Asteroid1"));
-            ContentHandler.Textures.Add("asteroid2", Content.Load<Texture2D>("Textures/Asteroid2"));
-            ContentHandler.Textures.Add("asteroid3", Content.Load<Texture2D>("Textures/Asteroid3"));
+            ContentHandler.Textures.Add(AsteroidManager.SMALL_ASTEROID, Content.Load<Texture2D>("Textures/Asteroid1"));
+            ContentHandler.Textures.Add(AsteroidManager.ORE_ASTEROID, Content.Load<Texture2D>("Textures/Asteroid2"));
+            ContentHandler.Textures.Add(AsteroidManager.LARGE_ASTEROID, Content.Load<Texture2D>("Textures/Asteroid3"));
             ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>("Textures/SmallJunk01"));
             ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>("Textures/SmallJunk02"));
             ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>("Textures/SmallJunk03"));
             ContentHandler.Textures.Add("player", Content.Load<Texture2D>("Textures/Ship"));
 
             ContentHandler.Textures.Add("particle", //Generated texture
-                ColorTextureGenerator.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
+                Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
 
             //SOUNDEFFECTS
 
             //MUSIC
 
             //END CONTENT LOAD
-            Logger.WriteLog("Content loaded successfully...");
+            Logger.WriteLog("Content loaded successfully..."); //log content load
 
-            List<Texture2D> particle = new List<Texture2D>();
+
+            List<Texture2D> particle = new List<Texture2D>(); //particle list
             particle.Add(ContentHandler.Textures["junk1"]);
             particle.Add(ContentHandler.Textures["junk2"]);
             particle.Add(ContentHandler.Textures["junk3"]);
 
-            List<Texture2D> asteroid = new List<Texture2D>();
-            asteroid.Add(ContentHandler.Textures["asteroid1"]);
-            asteroid.Add(ContentHandler.Textures["asteroid2"]);
-            asteroid.Add(ContentHandler.Textures["asteroid3"]);
+            List<Texture2D> asteroid = new List<Texture2D>(); //asteroid list
+            asteroid.Add(ContentHandler.Textures[AsteroidManager.SMALL_ASTEROID]);
+            asteroid.Add(ContentHandler.Textures[AsteroidManager.LARGE_ASTEROID]);
+            asteroid.Add(ContentHandler.Textures[AsteroidManager.ORE_ASTEROID]);
+
+
+            //COMPONENT INITIALIZATION
 
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
             title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White);
@@ -94,6 +98,8 @@ namespace AsteroidsInc
             temp = new AsteroidManager(20, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
+
+            //END COMPONENT INIT
         }
 
         protected override void UnloadContent()

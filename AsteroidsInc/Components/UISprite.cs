@@ -14,7 +14,7 @@ namespace AsteroidsInc.Components
 {
     class UISprite : UIBase
     {
-        public Texture2D Texture;
+        public Texture2D Texture; //Sprite part of UISprite
 
         public UISprite(
             Texture2D texture,
@@ -30,10 +30,10 @@ namespace AsteroidsInc.Components
             Texture = texture;
         }
 
-        //Methods
+        //Override Methods
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (Active)
+            if (Active) //if its active, draw
                 spriteBatch.Draw(
                     Texture,
                     ScreenPosition,

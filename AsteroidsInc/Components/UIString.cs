@@ -69,5 +69,9 @@ namespace AsteroidsInc.Components
                 (int)StringLength.X,
                 (int)StringLength.Y);
         }
+        public override string ToString() //override tostring, gets converted value
+        {
+            return Value.ToString();
+        }
     }
 }

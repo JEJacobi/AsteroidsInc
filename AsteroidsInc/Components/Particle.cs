@@ -15,7 +15,11 @@ namespace AsteroidsInc.Components
     public class Particle : GameObject //derives from GameObject, since a particle is essentially a sprite
     {
         public int TTL { get; set; } //time to live, set by particle emitter
+        public readonly int InitialTTL;
         public event EventHandler ParticleExpired; //particle expired event
+        public bool Fade;
+
+        Random rnd;
 
         public Particle(
             Texture2D texture,
@@ -23,6 +27,7 @@ namespace AsteroidsInc.Components
             Vector2 velocity,
             Color color,
             int framesToLive,
+            bool fade = true,
             float rotation = 0f,
             float rotationalVelocity = 0f,
             float scale = 1f,
@@ -34,6 +39,9 @@ namespace AsteroidsInc.Components
             : base(texture, worldLocation, velocity, color, false, rotation, rotationalVelocity)
         {
             TTL = framesToLive; //most of the actual work is handled by GameObject
+            Fade = fade;
+            InitialTTL = framesToLive;
+            rnd = new Random();
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -44,12 +52,25 @@ namespace AsteroidsInc.Components
 
         public override void Update(GameTime gameTime)
         {
-            TTL--;
+            if (Fade) //if fading enabled
+            {
+                Color temp = TintColor;
+                temp = Color.Lerp(Color.Transparent, TintColor, GetAlphaMultiplier());
+                //fades the color by how far it is into its life
+                TintColor = temp; //and assigns it
+            }
+
+            TTL--; //reduce the time to live by one
 
             base.Update(gameTime); //Update GameObject base
 
             if (TTL <= 0 && ParticleExpired != null) //If expired, notify
                 this.ParticleExpired(this, new EventArgs());
+        }
+
+        protected float GetAlphaMultiplier() //gets the multiplier for fading
+        {
+            return (float)TTL / (float)InitialTTL;
         }
     }
 }

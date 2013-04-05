@@ -17,11 +17,11 @@ namespace AsteroidsInc.Components
     {
         #region Declarations
 
-        public List<GameObject> Asteroids;
-        Vector2 lastCollisionIndex = new Vector2(-1, -1);
-        public bool RegenerateAsteroids { get; set; }
+        public List<GameObject> Asteroids; //main list of GameObjects
+        Vector2 lastCollisionIndex = new Vector2(-1, -1); //for keeping track of stuck objects
+        public bool RegenerateAsteroids { get; set; } //regen asteroids?
 
-        public readonly int InitialAsteroids;
+        public readonly int InitialAsteroids; //initally spawning asteroids
         public readonly float MinVelocity;
         public readonly float MaxVelocity;
         public readonly float MinRotationalVelocity; //in degrees
@@ -29,25 +29,37 @@ namespace AsteroidsInc.Components
         public readonly List<Texture2D> Textures;
         public readonly List<Texture2D> ExplosionParticleTextures;
 
-        List<ParticleEmitter> emitters;
-        Random rnd;
+        List<ParticleEmitter> emitters; //list of particle emitters, used for effects
+        Random rnd; //general random number generator
 
-        const int SCRAPEPARTICLES = 4;
-        const int SCRAPEFRAMESTOLIVE = 50;
-        const float SCRAPEEJECTIONSPEED = 20f;
-        const float SCRAPESPRAY = 20f;
+        #endregion
 
-        const int EXPLOSIONPARTICLES = 30;
-        const int EXPLOSIONFRAMESTOLIVE = 60;
-        const float EXPLOSIONEJECTIONSPEED = 20f;
+        #region Constants
 
-        const int MAXTRIES = 50;
-        const int PARTICLETIMETOEMIT = 1;
+        //Scrape particle configuration
+        const int SCRAPE_PARTICLES = 4;
+        const int SCRAPE_FRAMES_TO_LIVE = 2000;
+        const float SCRAPE_EJECTION_SPEED = 20f;
+        const float SCRAPE_SPRAY = 20f;
 
+        //Explosion particle configuration
+        const int EXPLOSION_PARTICLES = 30;
+        const int EXPLOSION_FRAMES_TO_LIVE = 60;
+        const float EXPLOSION_EJECTION_SPEED = 20f;
+
+        //Misc particle emission stuff
+        const int MAX_TRIES = 50;
+        const int PARTICLE_TIME_TO_EMIT = 1;
         const float PARTICLERANDOMIZATION = 2f;
 
-        readonly Color[] SCRAPECOLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
-        readonly Color[] EXPLOSIONCOLORS = { Color.LawnGreen, Color.White, Color.LightSlateGray, Color.LightGray };
+        //Texture key constants
+        public const string SMALL_ASTEROID = "smallAsteroid";
+        public const string LARGE_ASTEROID = "largeAsteroid";
+        public const string ORE_ASTEROID = "oreAsteroid";
+
+        //Effect colors
+        readonly Color[] SCRAPE_COLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
+        readonly Color[] EXPLOSION_COLORS = { Color.LawnGreen, Color.White, Color.LightSlateGray, Color.LightGray };
 
         #endregion
 
@@ -76,7 +88,7 @@ namespace AsteroidsInc.Components
             emitters = new List<ParticleEmitter>();
 
             for (int i = 0; i < InitialAsteroids; i++)
-                addAsteroid();
+                AddRandomAsteroid();
         }
 
         public void Update(GameTime gameTime)
@@ -88,7 +100,7 @@ namespace AsteroidsInc.Components
                 emitters[i].Update(gameTime);
 
             if (Asteroids.Count < InitialAsteroids && RegenerateAsteroids)
-                addAsteroid(true);
+                AddRandomAsteroid(true);
 
             for (int x = 0; x < Asteroids.Count; x++) //Pretty much brute-forcing the collision detection
                 for (int y = x + 1; y < Asteroids.Count; y++)
@@ -116,7 +128,7 @@ namespace AsteroidsInc.Components
                             {
                                 DestroyAsteroid(temp.Object2, true);
                             }
-                            addAsteroid(true);
+                            AddRandomAsteroid(true);
                         }
 
                         addScrapeEffect(temp);
@@ -141,38 +153,72 @@ namespace AsteroidsInc.Components
 
         public void DestroyAsteroid(GameObject asteroid, bool effect = true)
         {
-            if(effect)
+            int x = rnd.Next(50); //temp var
+
+            //around 50% chance of splitting if asteroid is a large non-ore asteroid
+            if (x > 25 && asteroid.Texture == ContentHandler.Textures["largeAsteroid"])
+                splitAsteroid(asteroid);
+
+            if(effect) //add a particle effect if flag is true
                 addExplosion(asteroid.WorldCenter);
-            Asteroids.Remove(asteroid);
+
+            Asteroids.Remove(asteroid); //remove the asteroid from the list
         }
 
-        protected void addAsteroid(bool offScreen = false)
+        public void AddRandomAsteroid(bool offScreen = false) //add a random asteroid, param for offscreen generation
         {
-            GameObject tempAsteroid;
-            bool isOverlap = false;
-            int counter = 0;
+            AsteroidType temp = AsteroidType.Small; //temporary variables
+            int x = rnd.Next(100); //get a random number between 0 and 100
+
+            if (x >= 0 && x < 33) //if 0-32, asteroid is small
+                temp = AsteroidType.Small;
+            if (x >= 33 && x < 66) //if 33-65, asteroid is big
+                temp = AsteroidType.Large;
+            if (x >= 66 && x <= 100) //if 66-100, asteroid is ore
+                temp = AsteroidType.Ore;
+
+            AddAsteroid(temp, offScreen); //call overload of self
+        }
+
+        public void AddAsteroid(AsteroidType type, bool offScreen = false) //add a specified type asteroid
+        {
+            GameObject tempAsteroid; //temporary asteroid
+            bool isOverlap = false; //overlap flag
+            int counter = 0; //generation counter
+            Texture2D text; //temporary texture
+            switch (type) //assign appropriate texture to asteroid type
+            {
+                case AsteroidType.Small: text = ContentHandler.Textures[SMALL_ASTEROID];
+                    break;
+                case AsteroidType.Large: text = ContentHandler.Textures[LARGE_ASTEROID];
+                    break;
+                case AsteroidType.Ore: text = ContentHandler.Textures[ORE_ASTEROID];
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
 
             do //Do-While to ensure that the asteroid gets generated at least once
             {
-                Texture2D text = Textures.PickRandom<Texture2D>();
+                float rot = MathHelper.ToRadians((float)rnd.NextDouble(0f, 359f)); //random rotation
 
-                float rot = MathHelper.ToRadians((float)rnd.NextDouble(0f, 359f));
+                //random rotational velocity; within constants
                 float rotVel = MathHelper.ToRadians((float)rnd.NextDouble(MinRotationalVelocity, MaxRotationalVelocity));
 
-                int colRadius = (((text.Width / 2) + (text.Height / 2)) / 2); //Get the mean of text's height & width
+                int colRadius = (int)Math.Round(text.GetMeanRadius(), 0);
 
-                Vector2 vel;
-                Vector2 worldPos;
+                Vector2 vel; //temporary velocity
+                Vector2 worldPos; //temporary worldposition
 
-                if (offScreen)
+                if (offScreen) //if asteroid needs to be generated offscreen
                 {
-                    SpawnSide side = Util.RandomEnumValue<SpawnSide>();
+                    SpawnSide side = Util.RandomEnumValue<SpawnSide>(); //pick a random world border to spawn it from
                     switch (side)
                     {
                         case SpawnSide.Up:
                             vel = getVelocity(MathHelper.ToRadians((float)rnd.Next(140, 230))); //get a velocity pointing between 140/230 degrees
 
-                            worldPos = new Vector2(
+                            worldPos = new Vector2( //and add a velocity which will knock it into the world borders next tick
                                 rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
                                 Camera.WorldRectangle.Y - text.Height);
                             break;
@@ -202,31 +248,31 @@ namespace AsteroidsInc.Components
                             throw new InvalidOperationException();
                     }
                 }
-                else
+                else //if the asteroid does not need to be generated offscreen...
                 {
-                    vel = getVelocity(rot);
+                    vel = getVelocity(rot); //get a random velocity according to the rotation
 
-                    worldPos = new Vector2(
+                    worldPos = new Vector2( //and simply get a random position in the world to place it...
                         rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
                         rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
                 }
 
                 tempAsteroid = new GameObject( //init a temporary asteroid to check for overlaps
-                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, 0f, colRadius);
+                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, 0f, (int)Math.Round(text.GetMeanRadius(),0));
 
                 foreach (GameObject asteroid in Asteroids)
                 {
                     if (tempAsteroid.BoundingBox.Intersects(asteroid.BoundingBox))
                     {
-                        isOverlap = true;
-                        break;
+                        isOverlap = true; //flag if overlapping
+                        break; //and break; no need to check all other asteroids
                     }
                 }
-                counter++;
+                counter++; //increase counter
 
-            } while (isOverlap && counter < MAXTRIES); //if overlapping, loop, if maxtries exceeded, quit
+            } while (isOverlap && counter < MAX_TRIES); //if overlapping, loop, if maxtries exceeded, quit
 
-            if (counter >= MAXTRIES)
+            if (counter >= MAX_TRIES)
             {
                 Logger.WriteLog("Asteroid placement overflow, canceling.");
             }
@@ -236,61 +282,97 @@ namespace AsteroidsInc.Components
             }
         }
 
-        protected void addExplosion(Vector2 point)
+        #region Local Methods
+
+        protected void splitAsteroid(GameObject asteroidToSplit) //splits a destroyed large asteroid into a small one
+        {
+            //split asteroid into small, inherting most of the characteristics
+            GameObject split = new GameObject(
+                ContentHandler.Textures[SMALL_ASTEROID],
+                asteroidToSplit.WorldCenter,
+                getVelocity(asteroidToSplit.RotationDegrees + rnd.Next(90, 270)), //get a random new velocity
+                asteroidToSplit.TintColor,
+                false, //nothing to animate
+                asteroidToSplit.Rotation,
+                asteroidToSplit.RotationalVelocity,
+                asteroidToSplit.Scale,
+                asteroidToSplit.Depth,
+                (int)Math.Round(ContentHandler.Textures[SMALL_ASTEROID].GetMeanRadius(), 0)); //get rounded radius
+
+            Asteroids.Add(split);
+        }
+
+        protected void addExplosion(Vector2 point) //add an omni-directional particle burst at specified point
         {
             emitters.Add(new ParticleEmitter(
-                EXPLOSIONPARTICLES, //random amount of particles
+                EXPLOSION_PARTICLES, //random amount of particles
                 point, //at the point
                 ExplosionParticleTextures,
-                EXPLOSIONCOLORS.ToList<Color>(), //colors to list
-                EXPLOSIONFRAMESTOLIVE,
+                EXPLOSION_COLORS.ToList<Color>(), //colors to list
+                EXPLOSION_FRAMES_TO_LIVE,
                 true,
-                PARTICLETIMETOEMIT,
-                EXPLOSIONPARTICLES, //emit max particles in one tick
-                EXPLOSIONEJECTIONSPEED,
+                true,
+                PARTICLE_TIME_TO_EMIT,
+                EXPLOSION_PARTICLES, //emit max particles in one tick
+                EXPLOSION_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
                 0f, //no direction needed
                 ParticleEmitter.EXPLOSIONSPRAY)); //360 degree explosion
         }
 
-        protected void addScrapeEffect(GameObjectPair objects)
+        protected void addScrapeEffect(GameObjectPair objects) //add a bi-direction particle spread at the center of a pair of objects
         {
             Vector2 normal = GameObject.GetNormal(objects);
 
+            //add first direction emitter
             emitters.Add(new ParticleEmitter(
-                SCRAPEPARTICLES,
-                objects.CenterPoint(),
+                SCRAPE_PARTICLES,
+                objects.CenterPoint(), //use center of both as reference
                 ExplosionParticleTextures,
-                SCRAPECOLORS.ToList<Color>(),
-                SCRAPEFRAMESTOLIVE,
+                SCRAPE_COLORS.ToList<Color>(),
+                SCRAPE_FRAMES_TO_LIVE,
                 true,
-                PARTICLETIMETOEMIT,
-                SCRAPEPARTICLES,
-                SCRAPEEJECTIONSPEED,
+                true, //fading enabled
+                PARTICLE_TIME_TO_EMIT,
+                SCRAPE_PARTICLES,
+                SCRAPE_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
                 MathHelper.ToDegrees(normal.RotateTo()) + 90, //get the velocity angle + 90 degrees
-                SCRAPESPRAY));
+                SCRAPE_SPRAY));
 
+            //and the other direction
             emitters.Add(new ParticleEmitter(
-                SCRAPEPARTICLES,
+                SCRAPE_PARTICLES,
                 objects.CenterPoint(),
                 ExplosionParticleTextures,
-                SCRAPECOLORS.ToList<Color>(),
-                SCRAPEFRAMESTOLIVE,
+                SCRAPE_COLORS.ToList<Color>(),
+                SCRAPE_FRAMES_TO_LIVE,
                 true,
-                PARTICLETIMETOEMIT,
-                SCRAPEPARTICLES,
-                SCRAPEEJECTIONSPEED,
+                true,
+                PARTICLE_TIME_TO_EMIT,
+                SCRAPE_PARTICLES,
+                SCRAPE_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
                 MathHelper.ToDegrees(normal.RotateTo()) - 90,
-                SCRAPESPRAY));
+                SCRAPE_SPRAY));
         }
 
-        private Vector2 getVelocity(float rot)
+        private Vector2 getVelocity(float rot) //get a random velocity
         {
             return Vector2.Multiply(
                 rot.RotationToVectorFloat(),
                 (float)rnd.NextDouble(MinVelocity, MaxVelocity));
+        }
+
+        #endregion
+
+        #region Enums
+
+        public enum AsteroidType
+        {
+            Small,
+            Large, //chance of splitting into a small one on destruction
+            Ore
         }
 
         enum SpawnSide
@@ -300,5 +382,7 @@ namespace AsteroidsInc.Components
             Right,
             Down
         }
+
+        #endregion
     }
 }

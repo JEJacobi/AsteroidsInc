@@ -30,7 +30,7 @@ namespace AsteroidsInc.Components
 
         #region Keyboard Methods
 
-        public static bool IsNewKeyPress(Keys key)
+        public static bool IsNewKeyPress(Keys key) //used for menu movement, etc
         {
             if (CurrentKeyboardState.IsKeyDown(key) && LastKeyboardState.IsKeyUp(key))
                 return true; //If new state is pressed and last state is unpressed, return true

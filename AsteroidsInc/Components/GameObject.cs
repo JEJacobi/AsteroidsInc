@@ -148,7 +148,6 @@ namespace AsteroidsInc.Components
         {
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
             Texture = texture; //assign parameters
-            WorldLocation = worldLocation; 
             TintColor = tintColor; 
             Rotation = rotation;
             RotationalVelocity = rotationalVelocity;
@@ -161,6 +160,8 @@ namespace AsteroidsInc.Components
 
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; //assign animation data
+
+            WorldCenter = worldLocation; //NEEDS TO BE BELOW ROW & COLUMN ASSIGNMENTS
 
             Origin = SpriteCenter; //assign origin to the center of a frame
         }
@@ -365,7 +366,7 @@ namespace AsteroidsInc.Components
         #endregion
     }
 
-    public struct GameObjectPair //workaround for passing
+    public struct GameObjectPair //workaround as a return type
     {
         public GameObject Object1;
         public GameObject Object2;

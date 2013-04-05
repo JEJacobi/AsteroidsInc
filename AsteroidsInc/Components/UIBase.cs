@@ -15,7 +15,7 @@ namespace AsteroidsInc.Components
     public abstract class UIBase
     {
         public bool Active { get; set; } //is being displayed
-        public float Scale { get; set; }
+        public float Scale { get; set; } //scale of component
         public Color Color { get; set; } //Sprite/String color tint
         public bool IsCenterOrigin; //True = Center Origin, False = Upper Left
         public Vector2 RelativePos { get; set; } //Relative scale for position
@@ -47,11 +47,11 @@ namespace AsteroidsInc.Components
                         Camera.ScreenSize.Y / value.Y);
                 }
             }
-        }
+        } //position on the screen itself
         public float Rotation { get; set; } //in radians
         public SpriteEffects Effects;
 
-        public const float UILAYERDEPTH = 1f;
+        public const float UILAYERDEPTH = 0.5f;
 
         public UIBase(
             Vector2 relativePos,
@@ -71,7 +71,8 @@ namespace AsteroidsInc.Components
             Effects = effects;
         }
 
-        //Methods
+        #region Methods
+
         public abstract void Draw(SpriteBatch spriteBatch); //Main draw method
         public virtual void Update(GameTime gameTime) //TODO: Test!
         {
@@ -100,11 +101,16 @@ namespace AsteroidsInc.Components
         }
         public abstract Vector2 GetOrigin();
         public abstract Rectangle GetBoundingBox();
-        
-        //Events
+
+        #endregion
+
+        #region Events
+
         public delegate void MouseClickHandler(UIBase sender, MouseClickArgs e);
         public event EventHandler MouseOver;
         public event EventHandler MouseAway;
         public event MouseClickHandler OnClick;
+
+        #endregion
     }
 }

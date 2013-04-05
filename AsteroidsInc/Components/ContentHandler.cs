@@ -19,6 +19,14 @@ namespace AsteroidsInc.Components
         public static Dictionary<string, SoundEffect> Effects { get; set; } //Dictionary for SFX
         public static Dictionary<string, Song> Songs { get; set; } //Dictionary for songs, played via the MediaPlayer
 
+        static ContentHandler() //static constructor; initializes dictionaries
+        {
+            Textures = new Dictionary<string, Texture2D>();
+            Fonts = new Dictionary<string, SpriteFont>();
+            Effects = new Dictionary<string, SoundEffect>();
+            Songs = new Dictionary<string, Song>();
+        }
+
         public static void PlaySong(string key)
         {
             MediaPlayer.Play(Songs[key]);
@@ -27,14 +35,6 @@ namespace AsteroidsInc.Components
         public static void StopMusic()
         {
             MediaPlayer.Stop();
-        }
-
-        public static void Initialize()
-        {
-            Textures = new Dictionary<string, Texture2D>();
-            Fonts = new Dictionary<string, SpriteFont>();
-            Effects = new Dictionary<string, SoundEffect>();
-            Songs = new Dictionary<string, Song>();
         }
     }
 }

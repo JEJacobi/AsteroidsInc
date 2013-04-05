@@ -26,6 +26,7 @@ namespace AsteroidsInc.Components
         public int FramesToLive { get; set; } //frames to live, passed down to particles
         public int TimeToEmit { get; set; }
         public int ParticlesPerTick { get; set; }
+        public bool ParticleFading { get; set; }
 
         public Vector2 WorldPosition { get; set; } //world position
         public float Direction { get; set; } //direction in radians
@@ -46,7 +47,6 @@ namespace AsteroidsInc.Components
         public const float EXPLOSIONSPRAY = 180f;
         public const float MINROTVEL = -0.1f;
         public const float MAXROTVEL = 0.1f;
-        public const float TTLRANDOMIZATION = 0.1f;
 
         #endregion
 
@@ -57,6 +57,7 @@ namespace AsteroidsInc.Components
             List<Color> colors,
             int framesToLive,
             bool emitting = false,
+            bool particleFading = true,
             int timeToEmit = -1,
             int particlesPerTick = 1,
             float ejectionSpeed = 1f,
@@ -76,6 +77,7 @@ namespace AsteroidsInc.Components
             DirectionInDegrees = initialDirectionDegrees;
             SprayWidthInDegrees = sprayWidthDegrees;
             Emitting = emitting;
+            ParticleFading = particleFading;
 
             Particles = new List<Particle>();
             rnd = new Random();
@@ -105,7 +107,7 @@ namespace AsteroidsInc.Components
             {
                 Particles[i].Update(gameTime);
 
-                if (Particles[i].TTL + GetRandomTTL() <= 0) //if particle is expired
+                if (Particles[i].TTL == 0) //if particle is expired
                     Particles.RemoveAt(i); //remove
             }
 
@@ -126,6 +128,7 @@ namespace AsteroidsInc.Components
                     GetVelocity(),
                     Colors[rndColor],
                     FramesToLive,
+                    ParticleFading,
                     MathHelper.ToRadians(rnd.Next(0, 359)),
                     (float)rnd.NextDouble(MINROTVEL, MAXROTVEL)));
 
@@ -144,11 +147,6 @@ namespace AsteroidsInc.Components
         protected float RandomMultiplier()
         {
             return (float)rnd.NextDouble(1 - RandomMargin, 1 + RandomMargin);
-        }
-
-        protected float GetRandomTTL()
-        {
-            return (float)rnd.NextDouble(1f - TTLRANDOMIZATION, 1f + TTLRANDOMIZATION);
         }
     }
 

@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc.Components
 {
-    public static class Util
+    public static class Util //Utility class, used for extensions, general functions, etc...
     {
         public static double NextDouble(this Random rnd, double min, double max) //extension for Random
         {
@@ -31,9 +31,14 @@ namespace AsteroidsInc.Components
             return RotationToVectorDouble(rotationRadians);
         }
 
-        public static float RotateTo(this Vector2 vector)
+        public static float GetMeanRadius(this Texture2D texture) //get the mean radius using the texture's height and width
         {
-            return (float)Math.Atan2(vector.Y, vector.X);
+            return (((texture.Width / 2) + (texture.Height / 2)) / 2); //Get the mean and return
+        }
+
+        public static float RotateTo(this Vector2 vector) //get the rotation to a point
+        {
+            return (float)Math.Atan2(vector.Y, vector.X); //gotta love simple trig
         }
 
         public static T RandomEnumValue<T>()
@@ -46,23 +51,46 @@ namespace AsteroidsInc.Components
         }//Also ripped from a StackOverflow question
         static readonly Random _Random = new Random();
 
-        //
         //Ripped from a StackOverflow question//
         public static T PickRandom<T>(this IEnumerable<T> source)
         {
             return source.PickRandom(1).Single();
         }
-
+        //
         public static IEnumerable<T> PickRandom<T>(this IEnumerable<T> source, int count)
         {
             return source.Shuffle().Take(count);
         }
-
+        //
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
         {
             return source.OrderBy(x => Guid.NewGuid());
         }
         //-----------------------------------//
-        //
+
+        public static Texture2D Get1by1ColorTexture(GraphicsDevice device, Color color) //gets a 1x1 color texture
+        {
+            return GetColorTexture(device, color, 1, 1);
+        }
+
+        public static Texture2D GetColorTexture(GraphicsDevice device, Color color, int width, int height) //gets a specified size color texture
+        {
+            Texture2D tempTexture = new Texture2D( //init a new empty texture
+                device,
+                width,
+                height,
+                true,
+                SurfaceFormat.Color);
+
+            Color[] colors = new Color[width * height]; //array of colors
+
+            for (int i = 0; i < colors.Length; i++)
+            {
+                colors[i] = new Color(color.ToVector3()); //assign each color
+            }
+
+            tempTexture.SetData(colors); //set colors
+            return tempTexture;
+        }
     }
 }

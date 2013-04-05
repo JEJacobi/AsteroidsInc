@@ -16,7 +16,7 @@ namespace AsteroidsInc
     {
         #region Declarations / Properties
 
-        public static Vector2 Position
+        public static Vector2 Position //actual camera position
         {
             get { return position; }
             set
@@ -37,8 +37,8 @@ namespace AsteroidsInc
                 position.X = value.X - (Viewport.Width / 2);
                 position.Y = value.Y - (Viewport.Height / 2);
             }
-        }
-        static Vector2 position = Vector2.Zero;
+        }//camera position, but with a center origin
+        static Vector2 position = Vector2.Zero; //position variable
 
         public static Rectangle WorldRectangle = Rectangle.Empty; //Default empty rectangle
         public static Vector2 ScreenSize = Vector2.Zero; //Size of the game screen, must be set at Init
@@ -50,7 +50,7 @@ namespace AsteroidsInc
                     (int)ScreenSize.X, (int)ScreenSize.Y); //cast floats to ints for rectangle init
             }
         }
-        public const bool LOOPWORLD = true;
+        public const bool LOOPWORLD = true; //should objects going out of the world loop back in?
 
         #endregion
 
