@@ -52,10 +52,10 @@ namespace AsteroidsInc.Components
 
         public override void Update(GameTime gameTime)
         {
-            if (Fade) //if fading enabled
+            if (Fade && GetAlphaMultiplier() <= 0.5f) //if fading enabled and ttl is less than 50%
             {
-                Color temp = TintColor;
-                temp = Color.Lerp(Color.Transparent, TintColor, GetAlphaMultiplier());
+                Color temp = TintColor; //temp var
+                temp = Color.Lerp(Color.Transparent, TintColor, GetAlphaMultiplier() * 2);
                 //fades the color by how far it is into its life
                 TintColor = temp; //and assigns it
             }

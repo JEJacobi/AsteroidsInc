@@ -38,13 +38,13 @@ namespace AsteroidsInc.Components
 
         //Scrape particle configuration
         const int SCRAPE_PARTICLES = 4;
-        const int SCRAPE_FRAMES_TO_LIVE = 2000;
+        const int SCRAPE_FRAMES_TO_LIVE = 120;
         const float SCRAPE_EJECTION_SPEED = 20f;
         const float SCRAPE_SPRAY = 20f;
 
         //Explosion particle configuration
         const int EXPLOSION_PARTICLES = 30;
-        const int EXPLOSION_FRAMES_TO_LIVE = 60;
+        const int EXPLOSION_FRAMES_TO_LIVE = 250;
         const float EXPLOSION_EJECTION_SPEED = 20f;
 
         //Misc particle emission stuff
