@@ -205,7 +205,7 @@ namespace AsteroidsInc.Components
                 //random rotational velocity; within constants
                 float rotVel = MathHelper.ToRadians((float)rnd.NextDouble(MinRotationalVelocity, MaxRotationalVelocity));
 
-                int colRadius = (int)Math.Round(text.GetMeanRadius(), 0);
+                int colRadius = text.GetMeanRadius();
 
                 Vector2 vel; //temporary velocity
                 Vector2 worldPos; //temporary worldposition
@@ -258,7 +258,7 @@ namespace AsteroidsInc.Components
                 }
 
                 tempAsteroid = new GameObject( //init a temporary asteroid to check for overlaps
-                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, 0f, (int)Math.Round(text.GetMeanRadius(),0));
+                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, 0f, text.GetMeanRadius());
 
                 foreach (GameObject asteroid in Asteroids)
                 {
@@ -297,7 +297,7 @@ namespace AsteroidsInc.Components
                 asteroidToSplit.RotationalVelocity,
                 asteroidToSplit.Scale,
                 asteroidToSplit.Depth,
-                (int)Math.Round(ContentHandler.Textures[SMALL_ASTEROID].GetMeanRadius(), 0)); //get rounded radius
+                ContentHandler.Textures[SMALL_ASTEROID].GetMeanRadius()); //get rounded radius
 
             Asteroids.Add(split);
         }

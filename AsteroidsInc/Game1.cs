@@ -66,7 +66,7 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>("Textures/SmallJunk01"));
             ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>("Textures/SmallJunk02"));
             ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>("Textures/SmallJunk03"));
-            ContentHandler.Textures.Add("player", Content.Load<Texture2D>("Textures/Ship"));
+            ContentHandler.Textures.Add(Player.SHIP_TEXTURE, Content.Load<Texture2D>("Textures/Ship"));
 
             ContentHandler.Textures.Add("particle", //Generated texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -92,6 +92,7 @@ namespace AsteroidsInc
 
             //COMPONENT INITIALIZATION
 
+            Player.Initialize();
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
             title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White);
             cameraData = new UIString<string>("", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
@@ -133,6 +134,7 @@ namespace AsteroidsInc
             //get camera pos & size
 
             temp.Update(gameTime);
+            Player.Update(gameTime);
             title.Update(gameTime);
 
             base.Update(gameTime);
@@ -145,6 +147,7 @@ namespace AsteroidsInc
 
             fpsDisplay.Draw(spriteBatch);
             temp.Draw(spriteBatch);
+            Player.Draw(spriteBatch);
             title.Draw(spriteBatch);
             cameraData.Draw(spriteBatch);
 

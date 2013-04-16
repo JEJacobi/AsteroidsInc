@@ -31,9 +31,10 @@ namespace AsteroidsInc.Components
             return RotationToVectorDouble(rotationRadians);
         }
 
-        public static float GetMeanRadius(this Texture2D texture) //get the mean radius using the texture's height and width
+        public static int GetMeanRadius(this Texture2D texture) //get the mean radius using the texture's height and width
         {
-            return (((texture.Width / 2) + (texture.Height / 2)) / 2); //Get the mean and return
+            float temp = (((texture.Width / 2) + (texture.Height / 2)) / 2); //Get the mean and return
+            return (int)Math.Round(temp, 0);
         }
 
         public static float RotateTo(this Vector2 vector) //get the rotation to a point

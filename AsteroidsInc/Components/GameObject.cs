@@ -19,8 +19,21 @@ namespace AsteroidsInc.Components
         public Texture2D Texture { get; set; }
         public Vector2 Origin { get; set; }
         public Color TintColor { get; set; }
-        public float Rotation { get; set; } //radians
-        public float RotationalVelocity { get; set; }
+
+        public float Rotation
+        {
+            get { return rotation % MathHelper.TwoPi; }
+            set { rotation = value % MathHelper.TwoPi; }
+        }
+        float rotation;
+
+        public float RotationalVelocity
+        {
+            get { return rotationalVelocity % MathHelper.TwoPi; }
+            set { rotationalVelocity = value % MathHelper.TwoPi; }
+        }
+        float rotationalVelocity;
+
         public float Scale { get; set; }
         public float Depth { get; set; }
         public bool Active { get; set; }
