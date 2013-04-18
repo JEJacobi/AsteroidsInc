@@ -52,6 +52,28 @@ namespace AsteroidsInc
         }
         public const bool LOOPWORLD = true; //should objects going out of the world loop back in?
 
+        public static Vector2 CENTER_OF_WORLD
+        {
+            get
+            {
+                return new Vector2(WorldRectangle.Width / 2, WorldRectangle.Height / 2);
+            }
+        }
+        public static Vector2 UL_CORNER
+        {
+            get
+            {
+                return new Vector2(WorldRectangle.X, WorldRectangle.Y);
+            }
+        }
+        public static Vector2 BR_CORNER
+        {
+            get
+            {
+                return new Vector2(WorldRectangle.Width, WorldRectangle.Height);
+            }
+        }
+
         #endregion
 
         #region Methods

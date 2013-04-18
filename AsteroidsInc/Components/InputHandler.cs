@@ -38,6 +38,14 @@ namespace AsteroidsInc.Components
                 return false; //else return false
         }
 
+        public static bool WasKeyDown(Keys key)
+        {
+            if (CurrentKeyboardState.IsKeyUp(key) && LastKeyboardState.IsKeyDown(key))
+                return true;
+            else
+                return false;
+        }
+
         public static bool IsKeyUp(Keys key) //convenience method
         {
             if (CurrentKeyboardState.IsKeyUp(key))

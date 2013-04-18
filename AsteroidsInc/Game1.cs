@@ -44,7 +44,7 @@ namespace AsteroidsInc
         {
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width; //init the camera
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X, (int)Camera.ScreenSize.Y); //create the world
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //create the world
             Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
 
             Logger.WriteLog("\nInitializing components..."); //log it

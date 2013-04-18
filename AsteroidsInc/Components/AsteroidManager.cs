@@ -35,6 +35,9 @@ namespace AsteroidsInc.Components
         #endregion
 
         #region Constants
+        //Draw depths
+        const float EFFECT_DRAW_DEPTH = 0.8f;
+        const float ASTEROID_DRAW_DEPTH = 0.5f;
 
         //Scrape particle configuration
         const int SCRAPE_PARTICLES = 4;
@@ -73,7 +76,7 @@ namespace AsteroidsInc.Components
             List<Texture2D> explosionParticleTextures,
             bool regenAsteroids)
         {
-            rnd = new Random();
+            rnd = new Random(); //randomize the randomizer
 
             InitialAsteroids = initialAsteroids;
             MinVelocity = minVel;
@@ -84,26 +87,28 @@ namespace AsteroidsInc.Components
             ExplosionParticleTextures = explosionParticleTextures;
             RegenerateAsteroids = regenAsteroids;
 
+            //init the collections
             Asteroids = new List<GameObject>();
             emitters = new List<ParticleEmitter>();
 
             for (int i = 0; i < InitialAsteroids; i++)
-                AddRandomAsteroid();
+                AddRandomAsteroid(); //initial placement of asteroids
         }
 
         public void Update(GameTime gameTime)
         {
             for (int i = 0; i < Asteroids.Count; i++)
-                Asteroids[i].Update(gameTime);
+                Asteroids[i].Update(gameTime); //update the asteroids themselves
 
             for (int i = 0; i < emitters.Count; i++)
-                emitters[i].Update(gameTime);
+                emitters[i].Update(gameTime); //update all the explosion/scrape particle emitters
 
             if (Asteroids.Count < InitialAsteroids && RegenerateAsteroids)
-                AddRandomAsteroid(true);
+                AddRandomAsteroid(true); //regenerate asteroid offscreen
 
             for (int x = 0; x < Asteroids.Count; x++) //Pretty much brute-forcing the collision detection
-                for (int y = x + 1; y < Asteroids.Count; y++)
+            {
+                for (int y = x + 1; y < Asteroids.Count; y++) //eck n^2
                     if (Asteroids[x].IsCircleColliding(Asteroids[y]))
                     {
                         GameObjectPair temp = GameObject.Bounce(Asteroids[x], Asteroids[y]); //get pair of objects
@@ -118,15 +123,15 @@ namespace AsteroidsInc.Components
                         {
                             if (Camera.IsObjectVisible(temp.Object1.BoundingBox) == false)
                             {
-                                DestroyAsteroid(temp.Object1, false);
+                                DestroyAsteroid(temp.Object1, false); //silently blow up the first one
                             }
                             else if (Camera.IsObjectVisible(temp.Object2.BoundingBox) == false)
                             {
-                                DestroyAsteroid(temp.Object2, false);
+                                DestroyAsteroid(temp.Object2, false); //silently blow up the second one
                             }
                             else
                             {
-                                DestroyAsteroid(temp.Object2, true);
+                                DestroyAsteroid(temp.Object2, true); //if player is seeing both, no choice but to blow it up
                             }
                             AddRandomAsteroid(true);
                         }
@@ -134,6 +139,16 @@ namespace AsteroidsInc.Components
                         addScrapeEffect(temp);
                         lastCollisionIndex = new Vector2(x, y);
                     }
+
+                if(Asteroids[x].IsPixelColliding(Player.Ship))
+                {
+                    Player.Health -= Player.ASTEROID_COLLISION_DAMAGE; //add damage
+                    Player.Ship = GameObject.Bounce(Player.Ship, Asteroids[x]).Object1; //bounce the ship
+                    DestroyAsteroid(Asteroids[x], true); //and blow up the asteroid
+                }
+            }
+
+
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -141,6 +156,8 @@ namespace AsteroidsInc.Components
             for (int i = 0; i < Asteroids.Count; i++)
             {
                 Asteroids[i].Draw(spriteBatch);
+
+                //TEMPORARY - FOR DEBUG
                 spriteBatch.DrawString(ContentHandler.Fonts["lcd"],
                     i.ToString(),
                     Camera.GetLocalCoords(Asteroids[i].WorldLocation),
@@ -258,7 +275,7 @@ namespace AsteroidsInc.Components
                 }
 
                 tempAsteroid = new GameObject( //init a temporary asteroid to check for overlaps
-                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, 0f, text.GetMeanRadius());
+                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, ASTEROID_DRAW_DEPTH, text.GetMeanRadius());
 
                 foreach (GameObject asteroid in Asteroids)
                 {
@@ -304,7 +321,7 @@ namespace AsteroidsInc.Components
 
         protected void addExplosion(Vector2 point) //add an omni-directional particle burst at specified point
         {
-            emitters.Add(new ParticleEmitter(
+            ParticleEmitter temp = new ParticleEmitter(
                 EXPLOSION_PARTICLES, //random amount of particles
                 point, //at the point
                 ExplosionParticleTextures,
@@ -317,15 +334,19 @@ namespace AsteroidsInc.Components
                 EXPLOSION_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
                 0f, //no direction needed
-                ParticleEmitter.EXPLOSIONSPRAY)); //360 degree explosion
+                ParticleEmitter.EXPLOSIONSPRAY); //360 degree explosion
+
+            temp.ParticleDrawDepth = EFFECT_DRAW_DEPTH;
+
+            emitters.Add(temp);
         }
 
         protected void addScrapeEffect(GameObjectPair objects) //add a bi-direction particle spread at the center of a pair of objects
         {
             Vector2 normal = GameObject.GetNormal(objects);
 
-            //add first direction emitter
-            emitters.Add(new ParticleEmitter(
+            //first emitter
+            ParticleEmitter temp1 = new ParticleEmitter(
                 SCRAPE_PARTICLES,
                 objects.CenterPoint(), //use center of both as reference
                 ExplosionParticleTextures,
@@ -337,11 +358,11 @@ namespace AsteroidsInc.Components
                 SCRAPE_PARTICLES,
                 SCRAPE_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
-                MathHelper.ToDegrees(normal.RotateTo()) + 90, //get the velocity angle + 90 degrees
-                SCRAPE_SPRAY));
+                MathHelper.ToDegrees(normal.RotateTo()), //get the velocity angle + 90 degrees
+                SCRAPE_SPRAY);
 
-            //and the other direction
-            emitters.Add(new ParticleEmitter(
+            //second emitter
+            ParticleEmitter temp2 = new ParticleEmitter(
                 SCRAPE_PARTICLES,
                 objects.CenterPoint(),
                 ExplosionParticleTextures,
@@ -353,14 +374,25 @@ namespace AsteroidsInc.Components
                 SCRAPE_PARTICLES,
                 SCRAPE_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
-                MathHelper.ToDegrees(normal.RotateTo()) - 90,
-                SCRAPE_SPRAY));
+                MathHelper.ToDegrees(normal.RotateTo() + 180),
+                SCRAPE_SPRAY);
+
+            //inherit velocities
+            temp1.VelocityToInherit = objects.Object1.Velocity;
+            temp2.VelocityToInherit = objects.Object2.Velocity;
+
+            //set depths
+            temp1.ParticleDrawDepth = EFFECT_DRAW_DEPTH;
+            temp2.ParticleDrawDepth = EFFECT_DRAW_DEPTH;
+
+            emitters.Add(temp1);
+            emitters.Add(temp2);
         }
 
         private Vector2 getVelocity(float rot) //get a random velocity
         {
             return Vector2.Multiply(
-                rot.RotationToVectorFloat(),
+                rot.RotationToVector(),
                 (float)rnd.NextDouble(MinVelocity, MaxVelocity));
         }
 

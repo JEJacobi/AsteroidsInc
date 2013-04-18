@@ -19,7 +19,8 @@ namespace AsteroidsInc.Components
         public static GameObject Ship { get; set; }
         public static int Health { get; set; }
 
-        public static ParticleEmitter EngineTrail { get; set; }
+        public static ParticleEmitter LeftEngineTrail { get; set; }
+        public static ParticleEmitter RightEngineTrail { get; set; }
         public static ParticleEmitter ExplosionEmitter { get; set; }
 
         public static Slots ActiveSlot { get; set; }
@@ -50,10 +51,22 @@ namespace AsteroidsInc.Components
         public static readonly Color[] TRAIL_COLORS = { Color.Orange, Color.OrangeRed, Color.MediumVioletRed };
         public static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.Orange, Color.LightGray }; //effect colors
 
+        public const float THRUST_OFFSET = -25f;
+        public const float ROTATION_OFFSET = 20f;
+
+        public const int TRAIL_FTL = 20;
+        public const int TRAIL_PPT = 2;
+        public const float TRAIL_EJECTION_SPEED = 20f;
+        public const float TRAIL_RANDOM_MARGIN = 0.1f;
+        public const float TRAIL_SPRAYWIDTH = 15f;
+
         public const int STARTING_HEALTH = 100; //health and effect thresholds
         public const int MAX_HEALTH = 100;
         public const int MIN_HEALTH = 0;
         public const int DAMAGE_THRESHOLD = 35; //threshold of damage effect
+        public const int ASTEROID_COLLISION_DAMAGE = 10;
+
+        public const float SHIP_DEPTH = 0.5f;
 
         public const Equipment STARTING_EQUIP_SLOT1 = Equipment.Laser;
         public const Equipment STARTING_EQUIP_SLOT2 = Equipment.Empty;
@@ -78,8 +91,38 @@ namespace AsteroidsInc.Components
                 0f,
                 0f,
                 1f,
-                0f,
+                SHIP_DEPTH,
                 ContentHandler.Textures[SHIP_TEXTURE].GetMeanRadius());
+
+            LeftEngineTrail = new ParticleEmitter(
+                Int32.MaxValue,
+                GameObject.GetOffset(Ship, THRUST_OFFSET, ROTATION_OFFSET),
+                ContentHandler.Textures["particle"].ToTextureList(),
+                TRAIL_COLORS.ToList<Color>(),
+                TRAIL_FTL,
+                false,
+                true,
+                -1,
+                TRAIL_PPT,
+                TRAIL_EJECTION_SPEED,
+                TRAIL_RANDOM_MARGIN,
+                0f,
+                TRAIL_SPRAYWIDTH);
+
+            RightEngineTrail = new ParticleEmitter(
+                Int32.MaxValue,
+                GameObject.GetOffset(Ship, THRUST_OFFSET, -ROTATION_OFFSET),
+                ContentHandler.Textures["particle"].ToTextureList(),
+                TRAIL_COLORS.ToList<Color>(),
+                TRAIL_FTL,
+                false,
+                true,
+                -1,
+                TRAIL_PPT,
+                TRAIL_EJECTION_SPEED,
+                TRAIL_RANDOM_MARGIN,
+                0f,
+                TRAIL_SPRAYWIDTH);
         }
 
         public static void Update(GameTime gameTime)
@@ -105,19 +148,44 @@ namespace AsteroidsInc.Components
                 rotVel -= ROT_VEL_CHANGE; //and to the left
 
             //Handle acceleration
-            if (InputHandler.IsKeyDown(Keys.Up))
-                vel += Ship.Rotation.RotationToVectorFloat() * VEL_CHANGE_FACTOR;
+            if (InputHandler.IsKeyDown(Keys.Up)) //is accelerating?
+            {
+                vel += Ship.Rotation.RotationToVector() * VEL_CHANGE_FACTOR;
+                LeftEngineTrail.Emitting = true; //enable trails
+                RightEngineTrail.Emitting = true;
+            }
+            else if (InputHandler.WasKeyDown(Keys.Up)) //just stopped accelerating?
+            {
+                LeftEngineTrail.Emitting = false; //turn off trails
+                RightEngineTrail.Emitting = false;
+            }
 
             //return clamped rotational velocity
             Ship.RotationVelocityDegrees = MathHelper.Clamp(rotVel, -MAX_ROT_VEL, MAX_ROT_VEL);
             //return clamped velocity
             Ship.Velocity = Vector2.Clamp(vel, -VECTOR_VELOCITY_MAX, VECTOR_VELOCITY_MAX);
 
+            //LET Update
+            LeftEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
+            LeftEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, ROTATION_OFFSET);
+            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+
+            //RET Update
+            RightEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
+            RightEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, -ROTATION_OFFSET);
+            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+
+            LeftEngineTrail.Update(gameTime);
+            RightEngineTrail.Update(gameTime);
             Ship.Update(gameTime); //update the sprite itself, make sure to do this last
+
+            Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER);
         }
 
         public static void Draw(SpriteBatch spriteBatch)
         {
+            LeftEngineTrail.Draw(spriteBatch);
+            RightEngineTrail.Draw(spriteBatch);
             Ship.Draw(spriteBatch);
         }
     }

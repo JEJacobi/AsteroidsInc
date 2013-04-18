@@ -216,7 +216,6 @@ namespace AsteroidsInc.Components
 
                         WorldCenter = temp; //Assign updated position
                     }
-
                     if (Camera.LOOPWORLD == false)
                     {
                         Active = false; //if the object is outside the world but the LOOPWORLD constant is false, set inactive
@@ -336,7 +335,7 @@ namespace AsteroidsInc.Components
 
         protected Vector2 rotationToVector()
         {
-            return Rotation.RotationToVectorFloat();
+            return Rotation.RotationToVector();
         } //local version of extension method
 
         #endregion
@@ -374,6 +373,21 @@ namespace AsteroidsInc.Components
             Vector2 normal = objects.Object2.WorldCenter - objects.Object1.WorldCenter;
             normal.Normalize();
             return normal;
+        }
+
+        public static Vector2 GetOffset(GameObject root, float radius) //find the specified offset of a rotated root object
+        {
+            Vector2 temp = root.rotationToVector();
+            temp.X *= radius;
+            temp.Y *= radius;
+            return root.WorldCenter + temp;
+        }
+
+        public static Vector2 GetOffset(GameObject root, float radius, float rotation)
+        {
+            Vector2 temp = (root.Rotation + MathHelper.ToRadians(rotation)).RotationToVector();
+            temp *= radius;
+            return root.WorldCenter + temp;
         }
 
         #endregion

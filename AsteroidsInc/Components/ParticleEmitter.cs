@@ -18,6 +18,7 @@ namespace AsteroidsInc.Components
 
         public List<Particle> Particles { get; set; } //List of the particles themselves
         public List<Texture2D> Textures { get; set; } //List of textures, random one is pulled for
+        public Vector2 VelocityToInherit { get; set; }
         public readonly int MaxParticles; //maximum amount of particles for this emitter
         public readonly float EjectionSpeed; // inital speed of particles
         public readonly float RandomMargin;
@@ -27,6 +28,8 @@ namespace AsteroidsInc.Components
         public int TimeToEmit { get; set; }
         public int ParticlesPerTick { get; set; }
         public bool ParticleFading { get; set; }
+
+        public float ParticleDrawDepth = 0f;
 
         public Vector2 WorldPosition { get; set; } //world position
         public float Direction { get; set; } //direction in radians
@@ -78,6 +81,7 @@ namespace AsteroidsInc.Components
             SprayWidthInDegrees = sprayWidthDegrees;
             Emitting = emitting;
             ParticleFading = particleFading;
+            VelocityToInherit = Vector2.Zero;
 
             Particles = new List<Particle>();
             rnd = new Random();
@@ -94,7 +98,7 @@ namespace AsteroidsInc.Components
 
         public void Update(GameTime gameTime)
         {
-            if (TimeToEmit >= 1 || TimeToEmit == -1)
+            if ((TimeToEmit >= 1 || TimeToEmit == -1) && Emitting) //if timetoemit is positive/infinite and emitting
             {
                 for (int i = 0; i < ParticlesPerTick; i++)
                     EmitParticle();
@@ -130,7 +134,9 @@ namespace AsteroidsInc.Components
                     FramesToLive,
                     ParticleFading,
                     MathHelper.ToRadians(rnd.Next(0, 359)),
-                    (float)rnd.NextDouble(MINROTVEL, MAXROTVEL)));
+                    (float)rnd.NextDouble(MINROTVEL, MAXROTVEL),
+                    1f,
+                    ParticleDrawDepth));
 
             }
         }
@@ -138,10 +144,10 @@ namespace AsteroidsInc.Components
         protected Vector2 GetVelocity() //gets a random starting velocity
         {
             float rndSpray = (float)rnd.NextDouble(-1, 1) * SprayWidth; //gets a random amount of spraywidth
-            Vector2 tempVect = (rndSpray + Direction).RotationToVectorFloat(); //gets a Vector from the result
+            Vector2 tempVect = (rndSpray + Direction).RotationToVector(); //gets a Vector from the result
             tempVect = Vector2.Multiply(tempVect, RandomMultiplier()); //and multiplies the X&Y by the random margin
             tempVect = Vector2.Multiply(tempVect, EjectionSpeed); //adds the ejection speed multiplier
-            return tempVect;
+            return tempVect + VelocityToInherit;
         }
 
         protected float RandomMultiplier()

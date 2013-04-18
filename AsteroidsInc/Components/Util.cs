@@ -19,16 +19,11 @@ namespace AsteroidsInc.Components
             return rnd.NextDouble() * (max - min) + min;
         }
 
-        public static Vector2 RotationToVectorDouble(this double rotationRadians) //get [1,1] vector from a rotation in radians
+        public static Vector2 RotationToVector(this float rotationRadians) //get a normalized vector from a rotation in radians
         {
             return new Vector2(
-                (float)Math.Cos(rotationRadians),
-                (float)Math.Sin(rotationRadians));
-        }
-
-        public static Vector2 RotationToVectorFloat(this float rotationRadians) //get [1,1] vector from a rotation in radians
-        {
-            return RotationToVectorDouble(rotationRadians);
+                (float)Math.Sin(rotationRadians), //sin/cos weirdness is due to me preferring a more
+                (float)-Math.Cos(rotationRadians)); //normal direction system
         }
 
         public static int GetMeanRadius(this Texture2D texture) //get the mean radius using the texture's height and width
@@ -37,20 +32,17 @@ namespace AsteroidsInc.Components
             return (int)Math.Round(temp, 0);
         }
 
+        public static List<Texture2D> ToTextureList(this Texture2D texture) //turn a texture object into a List<Texture2D>
+        {
+            List<Texture2D> temp = new List<Texture2D>();
+            temp.Add(texture);
+            return temp;
+        }
+
         public static float RotateTo(this Vector2 vector) //get the rotation to a point
         {
             return (float)Math.Atan2(vector.Y, vector.X); //gotta love simple trig
         }
-
-        public static T RandomEnumValue<T>()
-        {
-            return Enum
-                .GetValues(typeof(T))
-                .Cast<T>()
-                .OrderBy(x => _Random.Next())
-                .FirstOrDefault();
-        }//Also ripped from a StackOverflow question
-        static readonly Random _Random = new Random();
 
         //Ripped from a StackOverflow question//
         public static T PickRandom<T>(this IEnumerable<T> source)
@@ -67,6 +59,16 @@ namespace AsteroidsInc.Components
         {
             return source.OrderBy(x => Guid.NewGuid());
         }
+        //
+        public static T RandomEnumValue<T>()
+        {
+            return Enum
+                .GetValues(typeof(T))
+                .Cast<T>()
+                .OrderBy(x => _Random.Next())
+                .FirstOrDefault();
+        }//Also ripped from a different StackOverflow question
+        static readonly Random _Random = new Random();
         //-----------------------------------//
 
         public static Texture2D Get1by1ColorTexture(GraphicsDevice device, Color color) //gets a 1x1 color texture
