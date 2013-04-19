@@ -77,13 +77,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Textures\Ship.png">
-      <Name>Ship</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Textures\SmallJunk01.png">
       <Name>SmallJunk01</Name>
       <Importer>TextureImporter</Importer>
@@ -96,6 +89,13 @@
     </Compile>
     <Compile Include="Textures\SmallJunk03.png">
       <Name>SmallJunk03</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Textures\Ship.png">
+      <Name>Ship</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

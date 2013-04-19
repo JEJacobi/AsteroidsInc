@@ -54,11 +54,11 @@ namespace AsteroidsInc.Components
         public const float THRUST_OFFSET = -25f;
         public const float ROTATION_OFFSET = 20f;
 
-        public const int TRAIL_FTL = 20;
-        public const int TRAIL_PPT = 2;
-        public const float TRAIL_EJECTION_SPEED = 20f;
-        public const float TRAIL_RANDOM_MARGIN = 0.1f;
-        public const float TRAIL_SPRAYWIDTH = 15f;
+        public const int TRAIL_FTL = 30;
+        public const int TRAIL_PPT = 1;
+        public const float TRAIL_EJECTION_SPEED = 500f;
+        public const float TRAIL_RANDOM_MARGIN = 0.01f;
+        public const float TRAIL_SPRAYWIDTH = 1f;
 
         public const int STARTING_HEALTH = 100; //health and effect thresholds
         public const int MAX_HEALTH = 100;
@@ -87,12 +87,13 @@ namespace AsteroidsInc.Components
                 new Vector2(300, 300), //TEMP
                 Vector2.Zero,
                 Color.White,
-                true,
+                false,
                 0f,
                 0f,
                 1f,
                 SHIP_DEPTH,
-                ContentHandler.Textures[SHIP_TEXTURE].GetMeanRadius());
+                ContentHandler.Textures[SHIP_TEXTURE].GetMeanRadius(4, 1),
+                0, 0, SpriteEffects.None, 4, 1, 4);
 
             LeftEngineTrail = new ParticleEmitter(
                 Int32.MaxValue,
@@ -153,11 +154,16 @@ namespace AsteroidsInc.Components
                 vel += Ship.Rotation.RotationToVector() * VEL_CHANGE_FACTOR;
                 LeftEngineTrail.Emitting = true; //enable trails
                 RightEngineTrail.Emitting = true;
+
+                Ship.Animating = true;
             }
             else if (InputHandler.WasKeyDown(Keys.Up)) //just stopped accelerating?
             {
                 LeftEngineTrail.Emitting = false; //turn off trails
                 RightEngineTrail.Emitting = false;
+
+                Ship.Animating = false;
+                Ship.CurrentFrame = 0;
             }
 
             //return clamped rotational velocity
