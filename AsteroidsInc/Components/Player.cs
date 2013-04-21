@@ -16,32 +16,34 @@ namespace AsteroidsInc.Components
     {
         #region Declarations
 
-        public static GameObject Ship { get; set; }
+        public static GameObject Ship { get; set; } //main player sprite
         public static int Health { get; set; }
 
         public static ParticleEmitter LeftEngineTrail { get; set; }
         public static ParticleEmitter RightEngineTrail { get; set; }
         public static ParticleEmitter ExplosionEmitter { get; set; }
 
-        public static Slots ActiveSlot { get; set; }
-        public static Equipment Slot1 { get; set; }
-        public static Equipment Slot2 { get; set; }
+        public static Dictionary<string, EquipmentData> EquipmentDictionary { get; set; }
+        //dictionary to hold all equipment data
+
+        public static string Slot1 { get; set; } //keys for equipment dictionary
+        public static string Slot2 { get; set; }
+        public static Slots ActiveSlot { get; set; } //which key is being used
 
         public static bool StabilizeRotation { get; set; }
 
-        static int shotDelay = 0;
+        static int shotDelay = 0; //counter variable
 
         #endregion
 
         #region Constants
 
         public const string SHIP_TEXTURE = "ship"; //texture indexes
-        public const string MISSILE_TEXTURE = "missile";
-        public const string LASER_TEXTURE = "laser";
-        public const string CANNON_TEXTURE = "cannon";
+        public const string MISSILE_KEY = "missile";
+        public const string LASER_KEY = "laser";
+        public const string CANNON_KEY = "cannon";
 
         public const string ENGINE_SFX = "engine"; //sfx indexes
-        public const string MISSILE_SFX = "missile";
         public const string COLLISION_SFX = "collision";
 
         public const float VELOCITY_MAX = 500f; //max velocity
@@ -59,6 +61,7 @@ namespace AsteroidsInc.Components
 
         public const float THRUST_OFFSET = -25f; //for trail offset calculation
         public const float ROTATION_OFFSET = 20f;
+        public const float FIRE_OFFSET = 20f;
 
         public const int TRAIL_FTL = 30;
         public const int TRAIL_PPT = 1;
@@ -76,30 +79,62 @@ namespace AsteroidsInc.Components
         public const int LASER_FIRE_DELAY = 10;
 
         public const float MISSILE_VELOCITY = 300;
+        public const float LASER_VELOCITY = 750;
 
         public const int MISSILE_MAX_RANGE = 2000;
+        public const int LASER_MAX_RANGE = 400;
 
         public const int MISSILE_DAMAGE = 50;
+        public const int LASER_DAMAGE = 5;
 
         public const int MISSILE_COL_RADIUS = 20;
+        public const int LASER_COL_RADIUS = 8;
 
         public const float SHIP_DEPTH = 0.5f; //draw depth
 
         public const float ROT_VEL_BOUNCE_CHANGE = 20f; //randomization for collision
 
-        public const Equipment STARTING_EQUIP_SLOT1 = Equipment.Laser; //what to start with
-        public const Equipment STARTING_EQUIP_SLOT2 = Equipment.Missile;
         public const Slots INITIAL_ACTIVE_SLOT = Slots.Slot1;
 
         #endregion
 
         public static void Initialize()
         {
+            #region Equipment Definitions
+
+            Slot1 = MISSILE_KEY; //set initial equipment
+            Slot2 = LASER_KEY;
+            EquipmentDictionary = new Dictionary<string, EquipmentData>(); //initialize the dictionary
+
+            //add missiles
+            EquipmentDictionary.Add(MISSILE_KEY, new EquipmentData(
+                ContentHandler.Textures[MISSILE_KEY],
+                MISSILE_VELOCITY,
+                MISSILE_KEY,
+                COLLISION_SFX,
+                MISSILE_MAX_RANGE,
+                MISSILE_DAMAGE,
+                MISSILE_COL_RADIUS,
+                MISSILE_FIRE_DELAY));
+
+            //add lasers
+            EquipmentDictionary.Add(LASER_KEY, new EquipmentData(
+                ContentHandler.Textures[LASER_KEY],
+                LASER_VELOCITY,
+                LASER_KEY,
+                COLLISION_SFX,
+                LASER_MAX_RANGE,
+                LASER_DAMAGE,
+                LASER_COL_RADIUS,
+                LASER_FIRE_DELAY));
+
+            #endregion
+            
             Health = STARTING_HEALTH;
-            Slot1 = STARTING_EQUIP_SLOT1;
-            Slot2 = STARTING_EQUIP_SLOT2;
             ActiveSlot = INITIAL_ACTIVE_SLOT;
             StabilizeRotation = true;
+
+            #region Component Initialization
 
             //init the ship
             Ship = new GameObject(
@@ -146,6 +181,8 @@ namespace AsteroidsInc.Components
                 TRAIL_RANDOM_MARGIN,
                 0f,
                 TRAIL_SPRAYWIDTH);
+
+            #endregion
         }
 
         public static void Update(GameTime gameTime)
@@ -172,20 +209,14 @@ namespace AsteroidsInc.Components
             if (shotDelay == 0 && InputHandler.IsKeyDown(Keys.Space))
             {
                 ProjectileManager.AddShot(
-                    ContentHandler.Textures[MISSILE_TEXTURE],
-                    GameObject.GetOffset(Ship, 20),
+                    EquipmentDictionary[getActiveSlot()],
+                    GameObject.GetOffset(Ship, FIRE_OFFSET),
                     Ship.Rotation,
-                    MISSILE_VELOCITY,
                     Ship.Velocity,
-                    COLLISION_SFX,
-                    FoF_Ident.Friendly,
-                    MISSILE_MAX_RANGE,
-                    MISSILE_DAMAGE,
-                    MISSILE_COL_RADIUS);
+                    FoF_Ident.Friendly);
 
-                ContentHandler.PlaySFX(MISSILE_SFX);
-
-                shotDelay = MISSILE_FIRE_DELAY;
+                shotDelay = EquipmentDictionary[getActiveSlot()].RefireDelay;
+                //set the refire delay to whatever equipment is equipped
             }
 
             //Handle rotational input
@@ -277,20 +308,56 @@ namespace AsteroidsInc.Components
             RightEngineTrail.Draw(spriteBatch);
             Ship.Draw(spriteBatch);
         }
+
+        static string getActiveSlot()
+        {
+            switch (ActiveSlot)
+            {
+                case Slots.Slot1:
+                    return Slot1;
+                case Slots.Slot2:
+                    return Slot2;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+    }
+
+    public class EquipmentData
+    {
+        public Texture2D Texture { get; set; }
+        public float Speed { get; set; }
+        public string LaunchSoundIndex { get; set; }
+        public string HitSoundIndex { get; set; }
+        public int MaxRange { get; set; }
+        public int Damage { get; set; }
+        public int CollisionRadius { get; set; }
+        public int RefireDelay { get; set; }
+
+        public EquipmentData(
+            Texture2D texture,
+            float speed,
+            string launchSound,
+            string hitSound,
+            int maxRange,
+            int damage,
+            int cRadius,
+            int refireDelay)
+        {
+            Texture = texture;
+            Speed = speed;
+            LaunchSoundIndex = launchSound;
+            HitSoundIndex = hitSound;
+            MaxRange = maxRange;
+            Damage = damage;
+            CollisionRadius = cRadius;
+            RefireDelay = refireDelay;
+        }
     }
 
     public enum Slots
     {
         Slot1,
         Slot2
-    }
-
-    public enum Equipment
-    {
-        Empty,
-        RailGun,
-        Missile,
-        Laser,
-        Cannon
     }
 }

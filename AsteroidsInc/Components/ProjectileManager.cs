@@ -96,30 +96,28 @@ namespace AsteroidsInc.Components
             return false;
         }
 
-        public static void AddShot(Texture2D texture,
+        public static void AddShot(
+            EquipmentData shotData, //projectile data
             Vector2 initialLocation,
             float rotation,
-            float velocity, 
             Vector2 inheritVelocity,
-            string sfxIndex,
-            FoF_Ident senderIdent,
-            int maxRange,
-            int damage,
-            int colRadius)
+            FoF_Ident senderIdent)
         {
-            Vector2 shotVel = Vector2.Multiply(rotation.RotationToVector(), velocity) + inheritVelocity;
+            Vector2 shotVel = Vector2.Multiply(rotation.RotationToVector(), shotData.Speed) + inheritVelocity;
             //get the scaled and inherited shot velocity
 
-            Projectiles.Add(new Projectile( //and generate a new projectile
-                texture,
+            Projectiles.Add(new Projectile( //and generate a new projectile according to shotData
+                shotData.Texture,
                 initialLocation,
                 shotVel,
                 rotation,
-                sfxIndex,
+                shotData.HitSoundIndex,
                 senderIdent,
-                maxRange,
-                damage,
-                colRadius));
+                shotData.MaxRange,
+                shotData.Damage,
+                shotData.CollisionRadius));
+
+            ContentHandler.PlaySFX(shotData.LaunchSoundIndex); //play the launch sound
         }
     }
 }

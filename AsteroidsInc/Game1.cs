@@ -78,7 +78,8 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk02"));
             ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk03"));
             ContentHandler.Textures.Add(Player.SHIP_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + Player.SHIP_TEXTURE));
-            ContentHandler.Textures.Add(Player.MISSILE_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + Player.MISSILE_TEXTURE));
+            ContentHandler.Textures.Add(Player.MISSILE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.MISSILE_KEY));
+            ContentHandler.Textures.Add(Player.LASER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.LASER_KEY));
 
             ContentHandler.Textures.Add("particle", //General generated particle texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -87,7 +88,8 @@ namespace AsteroidsInc
 
             //Static SFX:
             ContentHandler.SFX.Add(Player.COLLISION_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.COLLISION_SFX));
-            ContentHandler.SFX.Add(Player.MISSILE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.MISSILE_SFX));
+            ContentHandler.SFX.Add(Player.MISSILE_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.MISSILE_KEY));
+            ContentHandler.SFX.Add(Player.LASER_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.LASER_KEY));
             ContentHandler.SFX.Add("switch", Content.Load<SoundEffect>(SOUND_DIR + "switch"));
 
             //Instances:
