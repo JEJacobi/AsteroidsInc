@@ -26,6 +26,12 @@ namespace AsteroidsInc.Components
 
             LastMouseState = MouseState; //move & get new mouse states
             MouseState = Mouse.GetState();
+
+            if (InputHandler.IsNewKeyPress(Keys.S))
+                ContentHandler.TogglePlaySFX(); //toggle play SFX
+
+            if (InputHandler.IsNewKeyPress(Keys.M))
+                ContentHandler.TogglePlayMusic(); //toggle play music
         }
 
         #region Keyboard Methods

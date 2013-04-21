@@ -29,6 +29,8 @@ namespace AsteroidsInc.Components
 
         public static bool StabilizeRotation { get; set; }
 
+        static int shotDelay = 0;
+
         #endregion
 
         #region Constants
@@ -39,6 +41,7 @@ namespace AsteroidsInc.Components
         public const string CANNON_TEXTURE = "cannon";
 
         public const string ENGINE_SFX = "engine"; //sfx indexes
+        public const string MISSILE_SFX = "missile";
         public const string COLLISION_SFX = "collision";
 
         public const float VELOCITY_MAX = 500f; //max velocity
@@ -69,12 +72,23 @@ namespace AsteroidsInc.Components
         public const int DAMAGE_THRESHOLD = 35; //threshold of damage effect
         public const int ASTEROID_COLLISION_DAMAGE = 10;
 
+        public const int MISSILE_FIRE_DELAY = 50;
+        public const int LASER_FIRE_DELAY = 10;
+
+        public const float MISSILE_VELOCITY = 300;
+
+        public const int MISSILE_MAX_RANGE = 2000;
+
+        public const int MISSILE_DAMAGE = 50;
+
+        public const int MISSILE_COL_RADIUS = 20;
+
         public const float SHIP_DEPTH = 0.5f; //draw depth
 
         public const float ROT_VEL_BOUNCE_CHANGE = 20f; //randomization for collision
 
         public const Equipment STARTING_EQUIP_SLOT1 = Equipment.Laser; //what to start with
-        public const Equipment STARTING_EQUIP_SLOT2 = Equipment.Empty;
+        public const Equipment STARTING_EQUIP_SLOT2 = Equipment.Missile;
         public const Slots INITIAL_ACTIVE_SLOT = Slots.Slot1;
 
         #endregion
@@ -136,20 +150,44 @@ namespace AsteroidsInc.Components
 
         public static void Update(GameTime gameTime)
         {
-            //Stabilize rotation if wanted
-            if (StabilizeRotation && Ship.RotationVelocityDegrees != 0)
-            {
-                float newRotVel = Ship.RotationVelocityDegrees;
-                if (newRotVel > 0) //if rotating right
-                    newRotVel -= STABILIZATION_FACTOR * newRotVel;
-                if (newRotVel < 0) //if rotating left
-                    newRotVel += STABILIZATION_FACTOR * -newRotVel;
-                Ship.RotationVelocityDegrees = newRotVel; //and assign
-            }
+            if (shotDelay != 0)
+                shotDelay--;
 
             float rotVel = Ship.RotationVelocityDegrees;
             Vector2 vel = Ship.Velocity; //temp vars, variable assignment workaround
-            
+
+            //LET Update
+            LeftEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
+            LeftEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, ROTATION_OFFSET);
+            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+
+            //RET Update
+            RightEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
+            RightEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, -ROTATION_OFFSET);
+            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+
+            #region Input
+
+            //Handle firing
+            if (shotDelay == 0 && InputHandler.IsKeyDown(Keys.Space))
+            {
+                ProjectileManager.AddShot(
+                    ContentHandler.Textures[MISSILE_TEXTURE],
+                    GameObject.GetOffset(Ship, 20),
+                    Ship.Rotation,
+                    MISSILE_VELOCITY,
+                    Ship.Velocity,
+                    COLLISION_SFX,
+                    FoF_Ident.Friendly,
+                    MISSILE_MAX_RANGE,
+                    MISSILE_DAMAGE,
+                    MISSILE_COL_RADIUS);
+
+                ContentHandler.PlaySFX(MISSILE_SFX);
+
+                shotDelay = MISSILE_FIRE_DELAY;
+            }
+
             //Handle rotational input
             if (InputHandler.IsKeyDown(Keys.Right))
                 rotVel += ROT_VEL_CHANGE; //rotate to the right
@@ -159,12 +197,26 @@ namespace AsteroidsInc.Components
             //Handle acceleration
             if (InputHandler.IsKeyDown(Keys.Up)) //is accelerating?
             {
-                vel += Ship.Rotation.RotationToVector() * VEL_CHANGE_FACTOR;
+                float accelAmount;
+
+                if (InputHandler.IsKeyDown(Keys.LeftShift)) //BOOOOST!
+                {
+                    accelAmount = VEL_CHANGE_FACTOR * 2;
+                    ContentHandler.InstanceSFX[ENGINE_SFX].Pitch = 1f; //up the pitch by one octave to show boosting
+                }
+                else
+                {
+                    ContentHandler.InstanceSFX[ENGINE_SFX].Pitch = 0f; //reset the pitch
+                    accelAmount = VEL_CHANGE_FACTOR; //normal thrust
+                }
+
+                vel += Ship.Rotation.RotationToVector() * accelAmount;
                 LeftEngineTrail.Emitting = true; //enable trails
                 RightEngineTrail.Emitting = true;
 
                 Ship.Animating = true; //animate the ship
-                if(ContentHandler.ShouldPlaySFX)
+
+                if (ContentHandler.ShouldPlaySFX)
                     ContentHandler.PlaySFX(ENGINE_SFX); //start engine sound effect
             }
             else if (InputHandler.WasKeyDown(Keys.Up)) //just stopped accelerating?
@@ -178,26 +230,45 @@ namespace AsteroidsInc.Components
                 ContentHandler.PauseInstancedSFX(ENGINE_SFX); //pause engine sound effect
             }
 
+            //handle equipment switching
+            if (InputHandler.IsNewKeyPress(Keys.F))
+            {
+                switch (ActiveSlot)
+                {
+                    case Slots.Slot1:
+                        ActiveSlot = Slots.Slot2;
+                        break;
+                    case Slots.Slot2:
+                        ActiveSlot = Slots.Slot1;
+                        break;
+                    default:
+                        throw new ArgumentException();
+                }
+                ContentHandler.PlaySFX("switch");
+            }
+
             //return clamped rotational velocity
             Ship.RotationVelocityDegrees = MathHelper.Clamp(rotVel, -MAX_ROT_VEL, MAX_ROT_VEL);
             //return clamped velocity
             Ship.Velocity = Vector2.Clamp(vel, -VECTOR_VELOCITY_MAX, VECTOR_VELOCITY_MAX);
 
-            //LET Update
-            LeftEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
-            LeftEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, ROTATION_OFFSET);
-            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+            #endregion
 
-            //RET Update
-            RightEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
-            RightEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, -ROTATION_OFFSET);
-            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+            //Stabilize rotation if wanted
+            if (StabilizeRotation && Ship.RotationVelocityDegrees != 0)
+            {
+                float newRotVel = Ship.RotationVelocityDegrees;
+                if (newRotVel > 0) //if rotating right
+                    newRotVel -= STABILIZATION_FACTOR * newRotVel;
+                if (newRotVel < 0) //if rotating left
+                    newRotVel += STABILIZATION_FACTOR * -newRotVel;
+                Ship.RotationVelocityDegrees = newRotVel; //and assign
+            }
 
-            LeftEngineTrail.Update(gameTime);
+            Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER); //center the camera
+            LeftEngineTrail.Update(gameTime); //update the trails
             RightEngineTrail.Update(gameTime);
             Ship.Update(gameTime); //update the sprite itself, make sure to do this last
-
-            Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER);
         }
 
         public static void Draw(SpriteBatch spriteBatch)

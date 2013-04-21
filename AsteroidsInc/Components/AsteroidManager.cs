@@ -101,7 +101,11 @@ namespace AsteroidsInc.Components
                 Asteroids[i].Update(gameTime); //update the asteroids themselves
 
             for (int i = 0; i < emitters.Count; i++)
+            {
                 emitters[i].Update(gameTime); //update all the explosion/scrape particle emitters
+                if (emitters[i].TimeToEmit == 0 && emitters[i].Particles.Count == 0)
+                    emitters.RemoveAt(i);
+            }
 
             if (Asteroids.Count < InitialAsteroids && RegenerateAsteroids)
                 AddRandomAsteroid(true); //regenerate asteroid offscreen
@@ -140,6 +144,13 @@ namespace AsteroidsInc.Components
                         lastCollisionIndex = new Vector2(x, y);
                     }
 
+                Projectile p;
+                if (ProjectileManager.IsHit(Asteroids[x], out p))
+                {
+                    DestroyAsteroid(Asteroids[x], true);
+                    break;
+                }
+
                 if(Asteroids[x].IsPixelColliding(Player.Ship))
                 {
                     Player.Health -= Player.ASTEROID_COLLISION_DAMAGE; //add damage
@@ -151,6 +162,7 @@ namespace AsteroidsInc.Components
                     DestroyAsteroid(Asteroids[x], true); //and blow up the asteroid
 
                     ContentHandler.PlaySFX(Player.COLLISION_SFX);
+                    break;
                 }
             }
 
@@ -307,7 +319,7 @@ namespace AsteroidsInc.Components
 
         #region Local Methods
 
-        protected void splitAsteroid(GameObject asteroidToSplit) //splits a destroyed large asteroid into a small one
+        void splitAsteroid(GameObject asteroidToSplit) //splits a destroyed large asteroid into a small one
         {
             //split asteroid into small, inherting most of the characteristics
             GameObject split = new GameObject(
@@ -325,7 +337,7 @@ namespace AsteroidsInc.Components
             Asteroids.Add(split);
         }
 
-        protected void addExplosion(Vector2 point) //add an omni-directional particle burst at specified point
+        void addExplosion(Vector2 point) //add an omni-directional particle burst at specified point
         {
             ParticleEmitter temp = new ParticleEmitter(
                 EXPLOSION_PARTICLES, //random amount of particles
@@ -347,7 +359,7 @@ namespace AsteroidsInc.Components
             emitters.Add(temp);
         }
 
-        protected void addScrapeEffect(GameObjectPair objects) //add a bi-direction particle spread at the center of a pair of objects
+        void addScrapeEffect(GameObjectPair objects) //add a bi-direction particle spread at the center of a pair of objects
         {
             Vector2 normal = GameObject.GetNormal(objects);
 

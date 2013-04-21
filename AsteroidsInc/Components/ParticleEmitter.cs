@@ -32,7 +32,7 @@ namespace AsteroidsInc.Components
         public int ParticlesPerTick { get; set; } //how many particles to emit per tick
         public bool ParticleFading { get; set; } //should they fade or vanish?
 
-        public float ParticleDrawDepth = 0f;
+        public float ParticleDrawDepth = 1f;
 
         public Vector2 WorldPosition { get; set; } //world position
         public float Direction { get; set; } //direction in radians

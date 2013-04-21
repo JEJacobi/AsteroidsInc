@@ -49,18 +49,18 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Textures\Asteroid1.png">
-      <Name>Asteroid1</Name>
+    <Compile Include="Textures\asteroid1.png">
+      <Name>asteroid1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Textures\Asteroid2.png">
-      <Name>Asteroid2</Name>
+    <Compile Include="Textures\asteroid2.png">
+      <Name>asteroid2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Textures\Asteroid3.png">
-      <Name>Asteroid3</Name>
+    <Compile Include="Textures\asteroid3.png">
+      <Name>asteroid3</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -81,25 +81,25 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Textures\SmallJunk01.png">
-      <Name>SmallJunk01</Name>
+    <Compile Include="Textures\smalljunk01.png">
+      <Name>smalljunk01</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Textures\SmallJunk02.png">
-      <Name>SmallJunk02</Name>
+    <Compile Include="Textures\smalljunk02.png">
+      <Name>smalljunk02</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Textures\SmallJunk03.png">
-      <Name>SmallJunk03</Name>
+    <Compile Include="Textures\smalljunk03.png">
+      <Name>smalljunk03</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Textures\Ship.png">
-      <Name>Ship</Name>
+    <Compile Include="Textures\ship.png">
+      <Name>ship</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -107,6 +107,27 @@
   <ItemGroup>
     <Compile Include="Sound\engine.wav">
       <Name>engine</Name>
+      <Importer>WavImporter</Importer>
+      <Processor>SoundEffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Textures\missile.png">
+      <Name>missile</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Sound\missile.wav">
+      <Name>missile</Name>
+      <Importer>WavImporter</Importer>
+      <Processor>SoundEffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Sound\switch.wav">
+      <Name>switch</Name>
       <Importer>WavImporter</Importer>
       <Processor>SoundEffectProcessor</Processor>
     </Compile>

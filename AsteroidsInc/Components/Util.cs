@@ -19,6 +19,12 @@ namespace AsteroidsInc.Components
             return rnd.NextDouble() * (max - min) + min;
         }
 
+        public static Vector2 Center(this Vector2 vector, Vector2 otherVector)
+        {
+            Vector2 temp = vector + otherVector;
+            return temp / 2;
+        }
+
         public static Vector2 RotationToVector(this float rotationRadians) //get a normalized vector from a rotation in radians
         {
             return new Vector2(

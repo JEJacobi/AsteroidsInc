@@ -17,7 +17,7 @@ namespace AsteroidsInc.Components
         #region Declarations
 		
         public FoF_Ident Identification { get; set; }
-        public SoundEffect HitSound { get; set; }
+        public string HitSound { get; set; }
         public float DistanceTravelled { get; private set; }
 
         public readonly int Damage;
@@ -29,7 +29,7 @@ namespace AsteroidsInc.Components
 
         #region Constants
 		
-        const float PROJECTILE_DEPTH = 0.1f;
+        const float PROJECTILE_DEPTH = 0.5f;
 
 	    #endregion
 
@@ -38,7 +38,7 @@ namespace AsteroidsInc.Components
             Vector2 initialLocation,
             Vector2 velocity,
             float rotation,
-            SoundEffect hitSound,
+            string hitSound,
             FoF_Ident ident,
             int range,
             int dmg,

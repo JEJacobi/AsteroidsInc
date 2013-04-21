@@ -19,6 +19,7 @@ namespace AsteroidsInc
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        GameState gameState;
 
         //TEMP
         UIString<int> fpsDisplay;
@@ -50,6 +51,8 @@ namespace AsteroidsInc
 
         protected override void Initialize()
         {
+            gameState = GameState.Game;
+
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width; //init the camera
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
             Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //create the world
@@ -74,7 +77,8 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk01"));
             ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk02"));
             ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk03"));
-            ContentHandler.Textures.Add(Player.SHIP_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + "Ship"));
+            ContentHandler.Textures.Add(Player.SHIP_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + Player.SHIP_TEXTURE));
+            ContentHandler.Textures.Add(Player.MISSILE_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + Player.MISSILE_TEXTURE));
 
             ContentHandler.Textures.Add("particle", //General generated particle texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -83,6 +87,8 @@ namespace AsteroidsInc
 
             //Static SFX:
             ContentHandler.SFX.Add(Player.COLLISION_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.COLLISION_SFX));
+            ContentHandler.SFX.Add(Player.MISSILE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.MISSILE_SFX));
+            ContentHandler.SFX.Add("switch", Content.Load<SoundEffect>(SOUND_DIR + "switch"));
 
             //Instances:
             ContentHandler.InstanceSFX.Add(Player.ENGINE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.ENGINE_SFX).CreateInstance());
@@ -125,48 +131,85 @@ namespace AsteroidsInc
 
         protected override void Update(GameTime gameTime)
         {
-            InputHandler.Update(); //update InputHandler
-
-            if(InputHandler.IsNewKeyPress(Keys.Space)) //delete a random asteroid
-            {
-                Random rnd = new Random();
-                temp.DestroyAsteroid(temp.Asteroids[rnd.Next(temp.Asteroids.Count)]);
-            }
-
-            if (InputHandler.IsNewKeyPress(Keys.S))
-                ContentHandler.TogglePlaySFX(); //toggle play SFX
-
-            if (InputHandler.IsNewKeyPress(Keys.M))
-                ContentHandler.TogglePlayMusic(); //toggle play music
+            InputHandler.Update(); //update InputHandler regardless of gamestate
 
             if (InputHandler.IsKeyDown(Keys.Escape))
-                this.Exit(); //exit on escape
+                this.Exit(); //exit on escape, regardless of gamestate
 
-            fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
-            //calculate framerate to the nearest int
-            health.Value = "Health: " + Player.Health.ToString();
-            //get health
+            switch (gameState) //MAIN GAMESTATE SWITCH
+            {
+                case GameState.Game:
+                    //GAME UPDATE BEGIN
 
-            temp.Update(gameTime);
-            Player.Update(gameTime);
-            title.Update(gameTime);
+                    ProjectileManager.Update(gameTime);
+                    temp.Update(gameTime);
+                    Player.Update(gameTime);
+                    title.Update(gameTime);
 
-            base.Update(gameTime);
+                    fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
+                    //calculate framerate to the nearest int
+                    health.Value = "Health: " + Player.Health.ToString();
+                    //get health
+
+                    if (Player.Health <= 0)
+                        SwitchGameState(GameState.Dead); //temp
+
+                    base.Update(gameTime);
+
+                    //GAME UPDATE END
+                    break;
+
+                case GameState.Dead:
+                    //TEMP
+                    break;
+
+                default:
+                    throw new ArgumentException();
+            }
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
-            spriteBatch.Begin(); //BEGIN SPRITE DRAW
+            switch (gameState) //MAIN GAMESTATE DRAW SWITCH
+            {
+                case GameState.Game:
+                    //BEGIN GAME DRAW
 
-            fpsDisplay.Draw(spriteBatch);
-            temp.Draw(spriteBatch);
-            Player.Draw(spriteBatch);
-            title.Draw(spriteBatch);
-            health.Draw(spriteBatch);
+                    GraphicsDevice.Clear(Color.Black);
+                    spriteBatch.Begin(); //BEGIN SPRITE DRAW
 
-            spriteBatch.End(); //END SPRITE DRAW
-            base.Draw(gameTime);
+                    fpsDisplay.Draw(spriteBatch);
+                    ProjectileManager.Draw(spriteBatch);
+                    Player.Draw(spriteBatch);
+                    temp.Draw(spriteBatch);
+                    title.Draw(spriteBatch);
+                    health.Draw(spriteBatch);
+
+                    spriteBatch.End(); //END SPRITE DRAW
+                    base.Draw(gameTime);
+
+                    //END GAME DRAW
+                    break;
+                case GameState.Dead:
+
+                    GraphicsDevice.Clear(Color.CornflowerBlue); //TEMP
+
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
         }
+
+        private void SwitchGameState(GameState state)
+        {
+            gameState = state; //switch the state
+            ContentHandler.StopAll(); //and stop the sound
+        }
+    }
+
+    public enum GameState
+    {
+        Game,
+        Dead
     }
 }
