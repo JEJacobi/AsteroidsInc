@@ -14,10 +14,10 @@ namespace AsteroidsInc.Components
 {
     public static class InputHandler //static input handler class, must be updated each tick
     {
-        public static KeyboardState CurrentKeyboardState = new KeyboardState();
-        public static KeyboardState LastKeyboardState = new KeyboardState();
-        public static MouseState MouseState = new MouseState();
-        public static MouseState LastMouseState = new MouseState();
+        public static KeyboardState CurrentKeyboardState = new KeyboardState(); //what is happening on the keyboard
+        public static KeyboardState LastKeyboardState = new KeyboardState(); //what happened last tick
+        public static MouseState MouseState = new MouseState(); //what is happening for the mouse
+        public static MouseState LastMouseState = new MouseState(); //and same, but last tick
 
         public static void Update() //get new states and move current State to last State
         {
@@ -38,7 +38,7 @@ namespace AsteroidsInc.Components
                 return false; //else return false
         }
 
-        public static bool WasKeyDown(Keys key)
+        public static bool WasKeyDown(Keys key) //was the key down last tick, but up now?
         {
             if (CurrentKeyboardState.IsKeyUp(key) && LastKeyboardState.IsKeyDown(key))
                 return true;

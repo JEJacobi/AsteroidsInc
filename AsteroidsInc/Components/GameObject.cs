@@ -16,31 +16,31 @@ namespace AsteroidsInc.Components
     {
         #region Declarations
 
-        public Texture2D Texture { get; set; }
-        public Vector2 Origin { get; set; }
-        public Color TintColor { get; set; }
+        public Texture2D Texture { get; set; } //what to draw
+        public Vector2 Origin { get; set; } //where to rotate from
+        public Color TintColor { get; set; } //what to tint the texture with
 
         public float Rotation
         {
-            get { return rotation % MathHelper.TwoPi; }
+            get { return rotation % MathHelper.TwoPi; } //mod by 2pi in case of direction overflow
             set { rotation = value % MathHelper.TwoPi; }
         }
         float rotation;
 
         public float RotationalVelocity
         {
-            get { return rotationalVelocity % MathHelper.TwoPi; }
+            get { return rotationalVelocity % MathHelper.TwoPi; } //mod by 2pi in case of direction overflow
             set { rotationalVelocity = value % MathHelper.TwoPi; }
         }
         float rotationalVelocity;
 
-        public float Scale { get; set; }
-        public float Depth { get; set; }
-        public bool Active { get; set; }
-        public SpriteEffects Effects { get; set; }
+        public float Scale { get; set; } //draw scale
+        public float Depth { get; set; } //draw depth
+        public bool Active { get; set; } //if active; draw and update. if not, don't do anything
+        public SpriteEffects Effects { get; set; } //any sprite effects
 
-        public Vector2 WorldLocation { get; set; }
-        public Vector2 Velocity { get; set; }
+        public Vector2 WorldLocation { get; set; } //the world position
+        public Vector2 Velocity { get; set; } //velocity of the object, measured with a vector
 
         public int CollisionRadius { get; set; } //Radius for bounding circle collision
         public int BoundingXPadding { get; set; }
@@ -60,7 +60,21 @@ namespace AsteroidsInc.Components
         } //Used in spritesheet animation
         private int totalFrames;
 
-        public int CurrentFrame
+        public int StartFrame //frame to reset the loop to
+        {
+            get
+            { return startFrame; }
+            set
+            {
+                if (value <= (Rows * Columns))
+                    startFrame = value;
+                else
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        int startFrame;
+
+        public int CurrentFrame //current frame in the animation loop
         {
             get { return currentFrame; }
             set
@@ -70,8 +84,8 @@ namespace AsteroidsInc.Components
         }
         private int currentFrame;
 
-        public int Rows { get; set; }
-        public int Columns { get; set; }
+        public int Rows { get; set; } //rows in the sprite sheet, 1 is default
+        public int Columns { get; set; } //columns in the sprite sheet, 1 is also default
         public bool Animating { get; set; }
 
         public float RotationDegrees
@@ -156,7 +170,8 @@ namespace AsteroidsInc.Components
             SpriteEffects effects = SpriteEffects.None,
             int totalFrames = 0,
             int rows = 1,
-            int columns = 1)
+            int columns = 1,
+            int startingFrame = 0)
 
         {
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
@@ -172,7 +187,7 @@ namespace AsteroidsInc.Components
             Active = true;
 
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
-            Rows = rows; Columns = columns; this.TotalFrames = totalFrames; //assign animation data
+            Rows = rows; Columns = columns; this.TotalFrames = totalFrames; StartFrame = startFrame; //assign animation data
 
             WorldCenter = worldLocation; //NEEDS TO BE BELOW ROW & COLUMN ASSIGNMENTS
 
@@ -181,7 +196,7 @@ namespace AsteroidsInc.Components
 
         #region Methods
 
-        public virtual void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime) //main update method, virtual for future inheritance
         {
             if (Active) //if object is active
             {
@@ -193,7 +208,7 @@ namespace AsteroidsInc.Components
                 {
                     CurrentFrame++;
                     if (CurrentFrame >= TotalFrames)
-                        CurrentFrame = 0; //Loop animation
+                        CurrentFrame = StartFrame; //Loop animation
                 }
 
                 if (Camera.IsObjectInWorld(this.WorldRectangle) == false)
@@ -224,16 +239,16 @@ namespace AsteroidsInc.Components
             }
         }
 
-        public virtual void Draw(SpriteBatch spriteBatch)
+        public virtual void Draw(SpriteBatch spriteBatch) //main draw method, virtual also
         {
-            if (Active)
+            if (Active) //if the sprite is active...
             {
                 if (TotalFrames > 1 && Camera.IsObjectVisible(WorldRectangle)) //if multi-frame animation & object is visible
                 {
                     Rectangle sourceRectangle = new Rectangle(GetWidth * GetColumn,
                         GetHeight * GetRow, GetWidth, GetHeight); //get source rectangle to use
 
-                    spriteBatch.Draw(
+                    spriteBatch.Draw( //draw it
                         Texture,
                         ScreenCenter,
                         sourceRectangle, //use generated source rectangle
@@ -276,7 +291,7 @@ namespace AsteroidsInc.Components
                 return false;
         }
 
-        public bool IsCircleColliding(Vector2 objCenter, float objRadius)
+        public bool IsCircleColliding(Vector2 objCenter, float objRadius) //simple bounding circle collision algorithm
         {
             if (Vector2.Distance(WorldCenter, objCenter) <
                 (CollisionRadius + objRadius))  //if the distance between centers is greater than the sum
@@ -342,7 +357,7 @@ namespace AsteroidsInc.Components
 
         #region Static Methods
 
-        public static GameObjectPair Bounce(GameObject obj1, GameObject obj2)
+        public static GameObjectPair Bounce(GameObject obj1, GameObject obj2) //bounce two objects and return a pair
         {
             if (obj1.Equals(obj2))
                 throw new InvalidOperationException("Identical objects");
@@ -363,12 +378,7 @@ namespace AsteroidsInc.Components
             return new GameObjectPair(obj1, obj2);
         }
 
-        /// <summary>
-        /// Returns the first Vector in Objects' normal.
-        /// </summary>
-        /// <param name="Pair of GameObjects"></param>
-        /// <returns></returns>
-        public static Vector2 GetNormal(GameObjectPair objects)
+        public static Vector2 GetNormal(GameObjectPair objects) //get the normal of a pair
         {
             Vector2 normal = objects.Object2.WorldCenter - objects.Object1.WorldCenter;
             normal.Normalize();
@@ -383,7 +393,7 @@ namespace AsteroidsInc.Components
             return root.WorldCenter + temp;
         }
 
-        public static Vector2 GetOffset(GameObject root, float radius, float rotation)
+        public static Vector2 GetOffset(GameObject root, float radius, float rotation) //overload with x/rotation offset
         {
             Vector2 temp = (root.Rotation + MathHelper.ToRadians(rotation)).RotationToVector();
             temp *= radius;
@@ -404,7 +414,7 @@ namespace AsteroidsInc.Components
             Object2 = obj2;
         }
 
-        public Vector2 CenterPoint()
+        public Vector2 CenterPoint() //get the vector between the two object's centers
         {
             Vector2 temp = Object1.WorldCenter + Object2.WorldCenter;
             temp /= 2;

@@ -34,8 +34,10 @@ namespace AsteroidsInc
             }
             set
             {
-                position.X = value.X - (Viewport.Width / 2);
-                position.Y = value.Y - (Viewport.Height / 2);
+                float x = Position.X; float y = Position.Y;
+                x = value.X - (Viewport.Width / 2);
+                y = value.Y - (Viewport.Height / 2);
+                Position = new Vector2(x, y);
             }
         }//camera position, but with a center origin
         static Vector2 position = Vector2.Zero; //position variable

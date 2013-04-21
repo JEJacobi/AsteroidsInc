@@ -110,6 +110,7 @@
     <Compile Include="Components\AsteroidManager.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Player.cs" />
+    <Compile Include="Components\Projectile.cs" />
     <Compile Include="Components\Util.cs" />
     <Compile Include="Components\GameObject.cs" />
     <Compile Include="Components\InputHandler.cs" />

@@ -51,7 +51,7 @@ namespace AsteroidsInc.Components
         public float Rotation { get; set; } //in radians
         public SpriteEffects Effects;
 
-        public const float UILAYERDEPTH = 0.5f;
+        public const float UILAYERDEPTH = 0.3f;
 
         public UIBase(
             Vector2 relativePos,

@@ -17,7 +17,7 @@ namespace AsteroidsInc.Components
         public int TTL { get; set; } //time to live, set by particle emitter
         public readonly int InitialTTL;
         public event EventHandler ParticleExpired; //particle expired event
-        public bool Fade;
+        public bool Fade; //fade for the last 10th of the particle's life?
 
         Random rnd;
 

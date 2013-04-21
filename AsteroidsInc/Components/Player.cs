@@ -38,12 +38,15 @@ namespace AsteroidsInc.Components
         public const string LASER_TEXTURE = "laser";
         public const string CANNON_TEXTURE = "cannon";
 
-        public const float VELOCITY_MAX = 500f;
-        public static Vector2 VECTOR_VELOCITY_MAX
+        public const string ENGINE_SFX = "engine"; //sfx indexes
+        public const string COLLISION_SFX = "collision";
+
+        public const float VELOCITY_MAX = 500f; //max velocity
+        public static Vector2 VECTOR_VELOCITY_MAX //max velocity to a Vector
         {
             get { return new Vector2(VELOCITY_MAX, VELOCITY_MAX); }
         }
-        public const float MAX_ROT_VEL = 50f;
+        public const float MAX_ROT_VEL = 50f; //flight model
         public const float STABILIZATION_FACTOR = 0.08f;
         public const float ROT_VEL_CHANGE = 0.6f;
         public const float VEL_CHANGE_FACTOR = 4f;
@@ -51,14 +54,14 @@ namespace AsteroidsInc.Components
         public static readonly Color[] TRAIL_COLORS = { Color.Orange, Color.OrangeRed, Color.MediumVioletRed };
         public static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.Orange, Color.LightGray }; //effect colors
 
-        public const float THRUST_OFFSET = -25f;
+        public const float THRUST_OFFSET = -25f; //for trail offset calculation
         public const float ROTATION_OFFSET = 20f;
 
         public const int TRAIL_FTL = 30;
         public const int TRAIL_PPT = 1;
-        public const float TRAIL_EJECTION_SPEED = 500f;
+        public const float TRAIL_EJECTION_SPEED = 500f; //high ejection speed since braking looks weird otherwise
         public const float TRAIL_RANDOM_MARGIN = 0.01f;
-        public const float TRAIL_SPRAYWIDTH = 1f;
+        public const float TRAIL_SPRAYWIDTH = 1f; //only 1 degree spraywidth
 
         public const int STARTING_HEALTH = 100; //health and effect thresholds
         public const int MAX_HEALTH = 100;
@@ -66,9 +69,11 @@ namespace AsteroidsInc.Components
         public const int DAMAGE_THRESHOLD = 35; //threshold of damage effect
         public const int ASTEROID_COLLISION_DAMAGE = 10;
 
-        public const float SHIP_DEPTH = 0.5f;
+        public const float SHIP_DEPTH = 0.5f; //draw depth
 
-        public const Equipment STARTING_EQUIP_SLOT1 = Equipment.Laser;
+        public const float ROT_VEL_BOUNCE_CHANGE = 20f; //randomization for collision
+
+        public const Equipment STARTING_EQUIP_SLOT1 = Equipment.Laser; //what to start with
         public const Equipment STARTING_EQUIP_SLOT2 = Equipment.Empty;
         public const Slots INITIAL_ACTIVE_SLOT = Slots.Slot1;
 
@@ -82,6 +87,7 @@ namespace AsteroidsInc.Components
             ActiveSlot = INITIAL_ACTIVE_SLOT;
             StabilizeRotation = true;
 
+            //init the ship
             Ship = new GameObject(
                 ContentHandler.Textures[SHIP_TEXTURE],
                 new Vector2(300, 300), //TEMP
@@ -93,8 +99,9 @@ namespace AsteroidsInc.Components
                 1f,
                 SHIP_DEPTH,
                 ContentHandler.Textures[SHIP_TEXTURE].GetMeanRadius(4, 1),
-                0, 0, SpriteEffects.None, 4, 1, 4);
+                0, 0, SpriteEffects.None, 8, 1, 8, 2);
 
+            //init the left-side particle engine trail
             LeftEngineTrail = new ParticleEmitter(
                 Int32.MaxValue,
                 GameObject.GetOffset(Ship, THRUST_OFFSET, ROTATION_OFFSET),
@@ -110,6 +117,7 @@ namespace AsteroidsInc.Components
                 0f,
                 TRAIL_SPRAYWIDTH);
 
+            //same for right side
             RightEngineTrail = new ParticleEmitter(
                 Int32.MaxValue,
                 GameObject.GetOffset(Ship, THRUST_OFFSET, -ROTATION_OFFSET),
@@ -155,15 +163,19 @@ namespace AsteroidsInc.Components
                 LeftEngineTrail.Emitting = true; //enable trails
                 RightEngineTrail.Emitting = true;
 
-                Ship.Animating = true;
+                Ship.Animating = true; //animate the ship
+                if(ContentHandler.ShouldPlaySFX)
+                    ContentHandler.PlaySFX(ENGINE_SFX); //start engine sound effect
             }
             else if (InputHandler.WasKeyDown(Keys.Up)) //just stopped accelerating?
             {
                 LeftEngineTrail.Emitting = false; //turn off trails
                 RightEngineTrail.Emitting = false;
 
-                Ship.Animating = false;
-                Ship.CurrentFrame = 0;
+                Ship.Animating = false; //stop animating
+                Ship.CurrentFrame = 0; //set first frame
+
+                ContentHandler.PauseInstancedSFX(ENGINE_SFX); //pause engine sound effect
             }
 
             //return clamped rotational velocity

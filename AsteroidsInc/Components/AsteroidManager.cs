@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc.Components
 {
-    public class AsteroidManager
+    public sealed class AsteroidManager
     {
         #region Declarations
 
@@ -144,7 +144,13 @@ namespace AsteroidsInc.Components
                 {
                     Player.Health -= Player.ASTEROID_COLLISION_DAMAGE; //add damage
                     Player.Ship = GameObject.Bounce(Player.Ship, Asteroids[x]).Object1; //bounce the ship
+
+                    Player.Ship.RotationVelocityDegrees = (float)rnd.NextDouble(
+                        -Player.ROT_VEL_BOUNCE_CHANGE, Player.ROT_VEL_BOUNCE_CHANGE);
+
                     DestroyAsteroid(Asteroids[x], true); //and blow up the asteroid
+
+                    ContentHandler.PlaySFX(Player.COLLISION_SFX);
                 }
             }
 

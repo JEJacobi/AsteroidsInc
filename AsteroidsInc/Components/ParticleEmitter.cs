@@ -18,16 +18,19 @@ namespace AsteroidsInc.Components
 
         public List<Particle> Particles { get; set; } //List of the particles themselves
         public List<Texture2D> Textures { get; set; } //List of textures, random one is pulled for
-        public Vector2 VelocityToInherit { get; set; }
+
+        public Vector2 VelocityToInherit { get; set; } 
+        //what velocity should the particles inherit, in addition to the ejection speed
+
         public readonly int MaxParticles; //maximum amount of particles for this emitter
-        public readonly float EjectionSpeed; // inital speed of particles
-        public readonly float RandomMargin;
+        public readonly float EjectionSpeed; //inital speed of particles
+        public readonly float RandomMargin; //how much to randomize the particles' paths
         public bool Emitting { get; set; } //is emitting particles?
         public List<Color> Colors { get; set; } //list of possible colors
         public int FramesToLive { get; set; } //frames to live, passed down to particles
-        public int TimeToEmit { get; set; }
-        public int ParticlesPerTick { get; set; }
-        public bool ParticleFading { get; set; }
+        public int TimeToEmit { get; set; } //time to emit particles
+        public int ParticlesPerTick { get; set; } //how many particles to emit per tick
+        public bool ParticleFading { get; set; } //should they fade or vanish?
 
         public float ParticleDrawDepth = 0f;
 

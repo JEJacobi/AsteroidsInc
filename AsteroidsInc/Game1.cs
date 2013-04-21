@@ -22,7 +22,7 @@ namespace AsteroidsInc
 
         //TEMP
         UIString<int> fpsDisplay;
-        UIString<string> cameraData;
+        UIString<string> health;
         AsteroidManager temp;
         UIString<string> title;
         //TEMP
@@ -30,11 +30,19 @@ namespace AsteroidsInc
         #endregion
 
         #region Properties & Constants
+
+        const string TEXTURE_DIR = "Textures/";
+        const string FONT_DIR = "Fonts/";
+        const string SOUND_DIR = "Sound/";
+
 	    #endregion
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+            //graphics.IsFullScreen = true;
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true; //mouse should be visible
             this.IsFixedTimeStep = false; //variable timestep
@@ -56,22 +64,29 @@ namespace AsteroidsInc
             //START CONTENT LOAD
 
             //FONTS
-            ContentHandler.Fonts.Add("lcd", Content.Load<SpriteFont>("Fonts/lcd"));
-            ContentHandler.Fonts.Add("title", Content.Load<SpriteFont>("Fonts/title"));
+            ContentHandler.Fonts.Add("lcd", Content.Load<SpriteFont>(FONT_DIR + "lcd"));
+            ContentHandler.Fonts.Add("title", Content.Load<SpriteFont>(FONT_DIR + "/title"));
 
             //TEXTURES
-            ContentHandler.Textures.Add(AsteroidManager.SMALL_ASTEROID, Content.Load<Texture2D>("Textures/Asteroid1"));
-            ContentHandler.Textures.Add(AsteroidManager.ORE_ASTEROID, Content.Load<Texture2D>("Textures/Asteroid2"));
-            ContentHandler.Textures.Add(AsteroidManager.LARGE_ASTEROID, Content.Load<Texture2D>("Textures/Asteroid3"));
-            ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>("Textures/SmallJunk01"));
-            ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>("Textures/SmallJunk02"));
-            ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>("Textures/SmallJunk03"));
-            ContentHandler.Textures.Add(Player.SHIP_TEXTURE, Content.Load<Texture2D>("Textures/Ship"));
+            ContentHandler.Textures.Add(AsteroidManager.SMALL_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid1"));
+            ContentHandler.Textures.Add(AsteroidManager.ORE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid2"));
+            ContentHandler.Textures.Add(AsteroidManager.LARGE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid3"));
+            ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk01"));
+            ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk02"));
+            ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk03"));
+            ContentHandler.Textures.Add(Player.SHIP_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + "Ship"));
 
-            ContentHandler.Textures.Add("particle", //Generated texture
+            ContentHandler.Textures.Add("particle", //General generated particle texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
 
             //SOUNDEFFECTS
+
+            //Static SFX:
+            ContentHandler.SFX.Add(Player.COLLISION_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.COLLISION_SFX));
+
+            //Instances:
+            ContentHandler.InstanceSFX.Add(Player.ENGINE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.ENGINE_SFX).CreateInstance());
+            ContentHandler.InstanceSFX[Player.ENGINE_SFX].IsLooped = true; //init and add engine sound
 
             //MUSIC
 
@@ -95,8 +110,8 @@ namespace AsteroidsInc
             Player.Initialize();
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
             title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White);
-            cameraData = new UIString<string>("", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
-            temp = new AsteroidManager(20, 50, 100, 1, 2, asteroid, particle, true);
+            health = new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
+            temp = new AsteroidManager(70, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
 
@@ -112,26 +127,25 @@ namespace AsteroidsInc
         {
             InputHandler.Update(); //update InputHandler
 
-            if (InputHandler.IsKeyDown(Keys.Left))
-                Camera.Position += new Vector2(-3f, 0f);
-            if (InputHandler.IsKeyDown(Keys.Right))
-                Camera.Position += new Vector2(3f, 0f);
-            if (InputHandler.IsKeyDown(Keys.Up))
-                Camera.Position += new Vector2(0f, -3f);
-            if (InputHandler.IsKeyDown(Keys.Down))
-                Camera.Position += new Vector2(0f, 3f);
             if(InputHandler.IsNewKeyPress(Keys.Space)) //delete a random asteroid
             {
                 Random rnd = new Random();
                 temp.DestroyAsteroid(temp.Asteroids[rnd.Next(temp.Asteroids.Count)]);
             }
+
+            if (InputHandler.IsNewKeyPress(Keys.S))
+                ContentHandler.TogglePlaySFX(); //toggle play SFX
+
+            if (InputHandler.IsNewKeyPress(Keys.M))
+                ContentHandler.TogglePlayMusic(); //toggle play music
+
             if (InputHandler.IsKeyDown(Keys.Escape))
                 this.Exit(); //exit on escape
 
             fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
             //calculate framerate to the nearest int
-            cameraData.Value = " " + Camera.CenterPosition.ToString() + " - " + Camera.ScreenSize.ToString();
-            //get camera pos & size
+            health.Value = "Health: " + Player.Health.ToString();
+            //get health
 
             temp.Update(gameTime);
             Player.Update(gameTime);
@@ -149,7 +163,7 @@ namespace AsteroidsInc
             temp.Draw(spriteBatch);
             Player.Draw(spriteBatch);
             title.Draw(spriteBatch);
-            cameraData.Draw(spriteBatch);
+            health.Draw(spriteBatch);
 
             spriteBatch.End(); //END SPRITE DRAW
             base.Draw(gameTime);

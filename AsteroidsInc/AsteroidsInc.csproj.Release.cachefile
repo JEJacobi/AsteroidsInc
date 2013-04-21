@@ -1,2 +1,10 @@
-Content\lcd.xnb
-Content\ballsprite.xnb
+Content\Fonts\lcd.xnb
+Content\Fonts\title.xnb
+Content\Textures\Asteroid1.xnb
+Content\Textures\Asteroid2.xnb
+Content\Textures\Asteroid3.xnb
+Content\Textures\SmallJunk01.xnb
+Content\Textures\SmallJunk02.xnb
+Content\Textures\SmallJunk03.xnb
+Content\Textures\Ship.xnb
+Content\Sound\engine.xnb
