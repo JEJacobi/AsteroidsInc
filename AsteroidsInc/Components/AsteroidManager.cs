@@ -64,6 +64,8 @@ namespace AsteroidsInc.Components
         readonly Color[] SCRAPE_COLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
         readonly Color[] EXPLOSION_COLORS = { Color.LawnGreen, Color.White, Color.LightSlateGray, Color.LightGray };
 
+        public const int LARGE_ASTEROID_DAMAGE_THRESHOLD = 25;
+
         #endregion
 
         public AsteroidManager(
@@ -147,8 +149,23 @@ namespace AsteroidsInc.Components
                 Projectile p;
                 if (ProjectileManager.IsHit(Asteroids[x], out p))
                 {
-                    DestroyAsteroid(Asteroids[x], true);
-                    break;
+                    if (Asteroids[x].Texture == ContentHandler.Textures[LARGE_ASTEROID]) //if it's a big asteroid
+                    {
+                        if (p.Damage >= LARGE_ASTEROID_DAMAGE_THRESHOLD)
+                        {
+                            DestroyAsteroid(Asteroids[x], true);
+                            break;
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                    else
+                    {
+                        DestroyAsteroid(Asteroids[x], true);
+                        break;
+                    }
                 }
 
                 if(Asteroids[x].IsPixelColliding(Player.Ship))
@@ -348,7 +365,7 @@ namespace AsteroidsInc.Components
                 true,
                 true,
                 PARTICLE_TIME_TO_EMIT,
-                EXPLOSION_PARTICLES, //emit max particles in one tick
+                EXPLOSION_PARTICLES / PARTICLE_TIME_TO_EMIT, //emit max particles in one tick
                 EXPLOSION_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
                 0f, //no direction needed
@@ -373,7 +390,7 @@ namespace AsteroidsInc.Components
                 true,
                 true, //fading enabled
                 PARTICLE_TIME_TO_EMIT,
-                SCRAPE_PARTICLES,
+                SCRAPE_PARTICLES / PARTICLE_TIME_TO_EMIT,
                 SCRAPE_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
                 MathHelper.ToDegrees(normal.RotateTo()), //get the velocity angle + 90 degrees
@@ -389,7 +406,7 @@ namespace AsteroidsInc.Components
                 true,
                 true,
                 PARTICLE_TIME_TO_EMIT,
-                SCRAPE_PARTICLES,
+                SCRAPE_PARTICLES / PARTICLE_TIME_TO_EMIT,
                 SCRAPE_EJECTION_SPEED,
                 PARTICLERANDOMIZATION,
                 MathHelper.ToDegrees(normal.RotateTo() + 180),

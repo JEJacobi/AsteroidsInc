@@ -35,6 +35,7 @@ namespace AsteroidsInc
         const string TEXTURE_DIR = "Textures/";
         const string FONT_DIR = "Fonts/";
         const string SOUND_DIR = "Sound/";
+        const string MUSIC_DIR = "Music/";
 
 	    #endregion
 
@@ -96,7 +97,10 @@ namespace AsteroidsInc
             ContentHandler.InstanceSFX.Add(Player.ENGINE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.ENGINE_SFX).CreateInstance());
             ContentHandler.InstanceSFX[Player.ENGINE_SFX].IsLooped = true; //init and add engine sound
 
+            ContentHandler.InstanceSFX.Add(Player.DEATH_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.DEATH_SFX).CreateInstance());
+
             //MUSIC
+            ContentHandler.Songs.Add("menu", Content.Load<Song>(MUSIC_DIR + "menu"));
 
             //END CONTENT LOAD
             Logger.WriteLog("Content loaded successfully..."); //log content load
@@ -116,8 +120,10 @@ namespace AsteroidsInc
             //COMPONENT INITIALIZATION
 
             Player.Initialize();
+            Player.DeadEvent += new EventHandler(Player_DeadEvent);
+
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
-            title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White);
+            title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
             health = new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
             temp = new AsteroidManager(70, 50, 100, 1, 2, asteroid, particle, true);
 
@@ -153,9 +159,6 @@ namespace AsteroidsInc
                     health.Value = "Health: " + Player.Health.ToString();
                     //get health
 
-                    if (Player.Health <= 0)
-                        SwitchGameState(GameState.Dead); //temp
-
                     base.Update(gameTime);
 
                     //GAME UPDATE END
@@ -184,7 +187,6 @@ namespace AsteroidsInc
                     ProjectileManager.Draw(spriteBatch);
                     Player.Draw(spriteBatch);
                     temp.Draw(spriteBatch);
-                    title.Draw(spriteBatch);
                     health.Draw(spriteBatch);
 
                     spriteBatch.End(); //END SPRITE DRAW
@@ -194,7 +196,13 @@ namespace AsteroidsInc
                     break;
                 case GameState.Dead:
 
-                    GraphicsDevice.Clear(Color.CornflowerBlue); //TEMP
+                    GraphicsDevice.Clear(Color.Black);
+
+                    spriteBatch.Begin();
+
+                    title.Draw(spriteBatch);
+
+                    spriteBatch.End();
 
                     break;
                 default:
@@ -202,11 +210,25 @@ namespace AsteroidsInc
             }
         }
 
+        #region Local Methods
+
         private void SwitchGameState(GameState state)
         {
             gameState = state; //switch the state
             ContentHandler.StopAll(); //and stop the sound
         }
+
+        #endregion
+
+        #region Event Handlers
+
+        void Player_DeadEvent(object sender, EventArgs e)
+        {
+            SwitchGameState(GameState.Dead);
+            ContentHandler.PlaySong("menu");
+        }
+
+        #endregion
     }
 
     public enum GameState

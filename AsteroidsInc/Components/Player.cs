@@ -18,6 +18,7 @@ namespace AsteroidsInc.Components
 
         public static GameObject Ship { get; set; } //main player sprite
         public static int Health { get; set; }
+        public static bool StabilizeRotation { get; set; }
 
         public static ParticleEmitter LeftEngineTrail { get; set; }
         public static ParticleEmitter RightEngineTrail { get; set; }
@@ -30,9 +31,11 @@ namespace AsteroidsInc.Components
         public static string Slot2 { get; set; }
         public static Slots ActiveSlot { get; set; } //which key is being used
 
-        public static bool StabilizeRotation { get; set; }
+        public static event EventHandler DeadEvent;
 
         static int shotDelay = 0; //counter variable
+        static bool dead;
+        static bool play;
 
         #endregion
 
@@ -45,6 +48,7 @@ namespace AsteroidsInc.Components
 
         public const string ENGINE_SFX = "engine"; //sfx indexes
         public const string COLLISION_SFX = "collision";
+        public const string DEATH_SFX = "death";
 
         public const float VELOCITY_MAX = 500f; //max velocity
         public static Vector2 VECTOR_VELOCITY_MAX //max velocity to a Vector
@@ -76,7 +80,7 @@ namespace AsteroidsInc.Components
         public const int ASTEROID_COLLISION_DAMAGE = 10;
 
         public const int MISSILE_FIRE_DELAY = 50;
-        public const int LASER_FIRE_DELAY = 10;
+        public const int LASER_FIRE_DELAY = 5;
 
         public const float MISSILE_VELOCITY = 300;
         public const float LASER_VELOCITY = 750;
@@ -87,12 +91,21 @@ namespace AsteroidsInc.Components
         public const int MISSILE_DAMAGE = 50;
         public const int LASER_DAMAGE = 5;
 
+        public const float MISSILE_RANDOM = 0f;
+        public const float LASER_RANDOM = 150f;
+
         public const int MISSILE_COL_RADIUS = 20;
         public const int LASER_COL_RADIUS = 8;
 
         public const float SHIP_DEPTH = 0.5f; //draw depth
 
         public const float ROT_VEL_BOUNCE_CHANGE = 20f; //randomization for collision
+
+        public const int EXPLOSION_PARTICLES_TO_EMIT = 400;
+        public const int EXPLOSION_FTL = 200;
+        public const int EXPLOSION_TIME_TO_EMIT = 1;
+        public const float EXPLOSION_EJECTION_SPEED = 50f;
+        public const float EXPLOSION_RANDOMIZATION = 2f;
 
         public const Slots INITIAL_ACTIVE_SLOT = Slots.Slot1;
 
@@ -110,6 +123,7 @@ namespace AsteroidsInc.Components
             EquipmentDictionary.Add(MISSILE_KEY, new EquipmentData(
                 ContentHandler.Textures[MISSILE_KEY],
                 MISSILE_VELOCITY,
+                MISSILE_RANDOM,
                 MISSILE_KEY,
                 COLLISION_SFX,
                 MISSILE_MAX_RANGE,
@@ -121,6 +135,7 @@ namespace AsteroidsInc.Components
             EquipmentDictionary.Add(LASER_KEY, new EquipmentData(
                 ContentHandler.Textures[LASER_KEY],
                 LASER_VELOCITY,
+                LASER_RANDOM,
                 LASER_KEY,
                 COLLISION_SFX,
                 LASER_MAX_RANGE,
@@ -182,131 +197,181 @@ namespace AsteroidsInc.Components
                 0f,
                 TRAIL_SPRAYWIDTH);
 
+            //explosion particle textures
+            List<Texture2D> temp = new List<Texture2D>();
+            temp.Add(ContentHandler.Textures["junk1"]);
+            temp.Add(ContentHandler.Textures["junk2"]);
+            temp.Add(ContentHandler.Textures["junk3"]);
+
+            ExplosionEmitter = new ParticleEmitter(
+                EXPLOSION_PARTICLES_TO_EMIT,
+                Ship.WorldCenter,
+                temp,
+                EXPLOSION_COLORS.ToList<Color>(),
+                EXPLOSION_FTL,
+                false,
+                true,
+                EXPLOSION_TIME_TO_EMIT,
+                EXPLOSION_PARTICLES_TO_EMIT / EXPLOSION_TIME_TO_EMIT,
+                EXPLOSION_EJECTION_SPEED,
+                EXPLOSION_RANDOMIZATION,
+                0f, 180f);
+
             #endregion
         }
 
         public static void Update(GameTime gameTime)
         {
-            if (shotDelay != 0)
-                shotDelay--;
-
-            float rotVel = Ship.RotationVelocityDegrees;
-            Vector2 vel = Ship.Velocity; //temp vars, variable assignment workaround
-
-            //LET Update
-            LeftEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
-            LeftEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, ROTATION_OFFSET);
-            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
-
-            //RET Update
-            RightEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
-            RightEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, -ROTATION_OFFSET);
-            //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
-
-            #region Input
-
-            //Handle firing
-            if (shotDelay == 0 && InputHandler.IsKeyDown(Keys.Space))
+            if (dead == false)
             {
-                ProjectileManager.AddShot(
-                    EquipmentDictionary[getActiveSlot()],
-                    GameObject.GetOffset(Ship, FIRE_OFFSET),
-                    Ship.Rotation,
-                    Ship.Velocity,
-                    FoF_Ident.Friendly);
+                if (shotDelay != 0)
+                    shotDelay--;
 
-                shotDelay = EquipmentDictionary[getActiveSlot()].RefireDelay;
-                //set the refire delay to whatever equipment is equipped
+                float rotVel = Ship.RotationVelocityDegrees;
+                Vector2 vel = Ship.Velocity; //temp vars, variable assignment workaround
+
+                //LET Update
+                LeftEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
+                LeftEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, ROTATION_OFFSET);
+                //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+
+                //RET Update
+                RightEngineTrail.DirectionInDegrees = Ship.RotationDegrees + 180;
+                RightEngineTrail.WorldPosition = GameObject.GetOffset(Ship, THRUST_OFFSET, -ROTATION_OFFSET);
+                //LeftEngineTrail.VelocityToInherit = Ship.Velocity / 2;
+
+                #region Input
+
+                //Handle firing
+                if (shotDelay == 0 && InputHandler.IsKeyDown(Keys.Space))
+                {
+                    ProjectileManager.AddShot(
+                        EquipmentDictionary[getActiveSlot()],
+                        GameObject.GetOffset(Ship, FIRE_OFFSET),
+                        Ship.Rotation,
+                        Ship.Velocity,
+                        FoF_Ident.Friendly);
+
+                    shotDelay = EquipmentDictionary[getActiveSlot()].RefireDelay;
+                    //set the refire delay to whatever equipment is equipped
+                }
+
+                //Handle rotational input
+                if (InputHandler.IsKeyDown(Keys.Right))
+                    rotVel += ROT_VEL_CHANGE; //rotate to the right
+                if (InputHandler.IsKeyDown(Keys.Left))
+                    rotVel -= ROT_VEL_CHANGE; //and to the left
+
+                //Handle acceleration
+                if (InputHandler.IsKeyDown(Keys.Up)) //is accelerating?
+                {
+                    float accelAmount;
+
+                    if (InputHandler.IsKeyDown(Keys.LeftShift)) //BOOOOST!
+                    {
+                        accelAmount = VEL_CHANGE_FACTOR * 2;
+                        ContentHandler.InstanceSFX[ENGINE_SFX].Pitch = 1f; //up the pitch by one octave to show boosting
+                    }
+                    else
+                    {
+                        ContentHandler.InstanceSFX[ENGINE_SFX].Pitch = 0f; //reset the pitch
+                        accelAmount = VEL_CHANGE_FACTOR; //normal thrust
+                    }
+
+                    vel += Ship.Rotation.RotationToVector() * accelAmount;
+                    LeftEngineTrail.Emitting = true; //enable trails
+                    RightEngineTrail.Emitting = true;
+
+                    Ship.Animating = true; //animate the ship
+
+                    if (ContentHandler.ShouldPlaySFX)
+                        ContentHandler.PlaySFX(ENGINE_SFX); //start engine sound effect
+                }
+                else if (InputHandler.WasKeyDown(Keys.Up)) //just stopped accelerating?
+                {
+                    LeftEngineTrail.Emitting = false; //turn off trails
+                    RightEngineTrail.Emitting = false;
+
+                    Ship.Animating = false; //stop animating
+                    Ship.CurrentFrame = 0; //set first frame
+
+                    ContentHandler.PauseInstancedSFX(ENGINE_SFX); //pause engine sound effect
+                }
+
+                //handle equipment switching
+                if (InputHandler.IsNewKeyPress(Keys.F))
+                {
+                    switch (ActiveSlot)
+                    {
+                        case Slots.Slot1:
+                            ActiveSlot = Slots.Slot2;
+                            break;
+                        case Slots.Slot2:
+                            ActiveSlot = Slots.Slot1;
+                            break;
+                        default:
+                            throw new ArgumentException();
+                    }
+                    ContentHandler.PlaySFX("switch");
+                }
+
+                //return clamped rotational velocity
+                Ship.RotationVelocityDegrees = MathHelper.Clamp(rotVel, -MAX_ROT_VEL, MAX_ROT_VEL);
+                //return clamped velocity
+                Ship.Velocity = Vector2.Clamp(vel, -VECTOR_VELOCITY_MAX, VECTOR_VELOCITY_MAX);
+
+                #endregion
+
+                //Stabilize rotation if wanted
+                if (StabilizeRotation && Ship.RotationVelocityDegrees != 0)
+                {
+                    float newRotVel = Ship.RotationVelocityDegrees;
+                    if (newRotVel > 0) //if rotating right
+                        newRotVel -= STABILIZATION_FACTOR * newRotVel;
+                    if (newRotVel < 0) //if rotating left
+                        newRotVel += STABILIZATION_FACTOR * -newRotVel;
+                    Ship.RotationVelocityDegrees = newRotVel; //and assign
+                }
+
+                Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER); //center the camera
+                LeftEngineTrail.Update(gameTime); //update the trails
+                RightEngineTrail.Update(gameTime);
+                Ship.Update(gameTime); //update the sprite itself, make sure to do this last
             }
 
-            //Handle rotational input
-            if (InputHandler.IsKeyDown(Keys.Right))
-                rotVel += ROT_VEL_CHANGE; //rotate to the right
-            if (InputHandler.IsKeyDown(Keys.Left))
-                rotVel -= ROT_VEL_CHANGE; //and to the left
-
-            //Handle acceleration
-            if (InputHandler.IsKeyDown(Keys.Up)) //is accelerating?
+            if (Health <= MIN_HEALTH)
             {
-                float accelAmount;
+                dead = true;
+                Ship.Active = false;
+                ExplosionEmitter.WorldPosition = Ship.WorldCenter;
 
-                if (InputHandler.IsKeyDown(Keys.LeftShift)) //BOOOOST!
+                if (play == false)
                 {
-                    accelAmount = VEL_CHANGE_FACTOR * 2;
-                    ContentHandler.InstanceSFX[ENGINE_SFX].Pitch = 1f; //up the pitch by one octave to show boosting
+                    ContentHandler.StopAll();
+                    ExplosionEmitter.Emitting = true;
+                    ContentHandler.PlaySFX(DEATH_SFX);
+                    play = true;
                 }
                 else
                 {
-                    ContentHandler.InstanceSFX[ENGINE_SFX].Pitch = 0f; //reset the pitch
-                    accelAmount = VEL_CHANGE_FACTOR; //normal thrust
+                    if (ContentHandler.InstanceSFX[DEATH_SFX].State == SoundState.Stopped &&
+                        DeadEvent != null)
+                        DeadEvent(Ship, EventArgs.Empty); //if done playing call DeadEvent
                 }
 
-                vel += Ship.Rotation.RotationToVector() * accelAmount;
-                LeftEngineTrail.Emitting = true; //enable trails
-                RightEngineTrail.Emitting = true;
-
-                Ship.Animating = true; //animate the ship
-
-                if (ContentHandler.ShouldPlaySFX)
-                    ContentHandler.PlaySFX(ENGINE_SFX); //start engine sound effect
+                ExplosionEmitter.Update(gameTime);
             }
-            else if (InputHandler.WasKeyDown(Keys.Up)) //just stopped accelerating?
-            {
-                LeftEngineTrail.Emitting = false; //turn off trails
-                RightEngineTrail.Emitting = false;
-
-                Ship.Animating = false; //stop animating
-                Ship.CurrentFrame = 0; //set first frame
-
-                ContentHandler.PauseInstancedSFX(ENGINE_SFX); //pause engine sound effect
-            }
-
-            //handle equipment switching
-            if (InputHandler.IsNewKeyPress(Keys.F))
-            {
-                switch (ActiveSlot)
-                {
-                    case Slots.Slot1:
-                        ActiveSlot = Slots.Slot2;
-                        break;
-                    case Slots.Slot2:
-                        ActiveSlot = Slots.Slot1;
-                        break;
-                    default:
-                        throw new ArgumentException();
-                }
-                ContentHandler.PlaySFX("switch");
-            }
-
-            //return clamped rotational velocity
-            Ship.RotationVelocityDegrees = MathHelper.Clamp(rotVel, -MAX_ROT_VEL, MAX_ROT_VEL);
-            //return clamped velocity
-            Ship.Velocity = Vector2.Clamp(vel, -VECTOR_VELOCITY_MAX, VECTOR_VELOCITY_MAX);
-
-            #endregion
-
-            //Stabilize rotation if wanted
-            if (StabilizeRotation && Ship.RotationVelocityDegrees != 0)
-            {
-                float newRotVel = Ship.RotationVelocityDegrees;
-                if (newRotVel > 0) //if rotating right
-                    newRotVel -= STABILIZATION_FACTOR * newRotVel;
-                if (newRotVel < 0) //if rotating left
-                    newRotVel += STABILIZATION_FACTOR * -newRotVel;
-                Ship.RotationVelocityDegrees = newRotVel; //and assign
-            }
-
-            Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER); //center the camera
-            LeftEngineTrail.Update(gameTime); //update the trails
-            RightEngineTrail.Update(gameTime);
-            Ship.Update(gameTime); //update the sprite itself, make sure to do this last
         }
 
         public static void Draw(SpriteBatch spriteBatch)
         {
-            LeftEngineTrail.Draw(spriteBatch);
-            RightEngineTrail.Draw(spriteBatch);
-            Ship.Draw(spriteBatch);
+            if (dead == false)
+            {
+                LeftEngineTrail.Draw(spriteBatch);
+                RightEngineTrail.Draw(spriteBatch);
+                Ship.Draw(spriteBatch);
+            }
+            ExplosionEmitter.Draw(spriteBatch);
         }
 
         static string getActiveSlot()
@@ -327,6 +392,7 @@ namespace AsteroidsInc.Components
     {
         public Texture2D Texture { get; set; }
         public float Speed { get; set; }
+        public float Randomization { get; set; }
         public string LaunchSoundIndex { get; set; }
         public string HitSoundIndex { get; set; }
         public int MaxRange { get; set; }
@@ -337,6 +403,7 @@ namespace AsteroidsInc.Components
         public EquipmentData(
             Texture2D texture,
             float speed,
+            float randomization,
             string launchSound,
             string hitSound,
             int maxRange,
@@ -346,6 +413,7 @@ namespace AsteroidsInc.Components
         {
             Texture = texture;
             Speed = speed;
+            Randomization = randomization;
             LaunchSoundIndex = launchSound;
             HitSoundIndex = hitSound;
             MaxRange = maxRange;

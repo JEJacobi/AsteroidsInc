@@ -26,10 +26,13 @@ namespace AsteroidsInc.Components
         const float EFFECT_RANDOMIZATION = 0.2f;
         const float EFFECT_SPRAY_WIDTH = 50f;
 
+        static Random rnd;
+
         static ProjectileManager()
         {
             Projectiles = new List<Projectile>();
             HitEffects = new List<ParticleEmitter>();
+            rnd = new Random();
         }
 
         public static void Update(GameTime gameTime)
@@ -105,6 +108,15 @@ namespace AsteroidsInc.Components
         {
             Vector2 shotVel = Vector2.Multiply(rotation.RotationToVector(), shotData.Speed) + inheritVelocity;
             //get the scaled and inherited shot velocity
+
+            if (shotData.Randomization != 0)
+            {
+                float tempX = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
+                float tempY = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
+
+                shotVel.X += tempX;
+                shotVel.Y += tempY;
+            }
 
             Projectiles.Add(new Projectile( //and generate a new projectile according to shotData
                 shotData.Texture,
