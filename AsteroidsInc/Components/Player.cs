@@ -65,7 +65,7 @@ namespace AsteroidsInc.Components
 
         public const float THRUST_OFFSET = -25f; //for trail offset calculation
         public const float ROTATION_OFFSET = 20f;
-        public const float FIRE_OFFSET = 20f;
+        public const float FIRE_OFFSET = 40f;
 
         public const int TRAIL_FTL = 30;
         public const int TRAIL_PPT = 1;
@@ -107,6 +107,8 @@ namespace AsteroidsInc.Components
         public const float EXPLOSION_EJECTION_SPEED = 50f;
         public const float EXPLOSION_RANDOMIZATION = 2f;
 
+        public const int COLLISION_RADIUS = 24;
+
         public const Slots INITIAL_ACTIVE_SLOT = Slots.Slot1;
 
         #endregion
@@ -129,7 +131,8 @@ namespace AsteroidsInc.Components
                 MISSILE_MAX_RANGE,
                 MISSILE_DAMAGE,
                 MISSILE_COL_RADIUS,
-                MISSILE_FIRE_DELAY));
+                MISSILE_FIRE_DELAY,
+                true));
 
             //add lasers
             EquipmentDictionary.Add(LASER_KEY, new EquipmentData(
@@ -162,7 +165,7 @@ namespace AsteroidsInc.Components
                 0f,
                 1f,
                 SHIP_DEPTH,
-                ContentHandler.Textures[SHIP_TEXTURE].GetMeanRadius(4, 1),
+                COLLISION_RADIUS,
                 0, 0, SpriteEffects.None, 8, 1, 8, 2);
 
             //init the left-side particle engine trail
@@ -399,6 +402,7 @@ namespace AsteroidsInc.Components
         public int Damage { get; set; }
         public int CollisionRadius { get; set; }
         public int RefireDelay { get; set; }
+        public bool DetonateEffect { get; set; }
 
         public EquipmentData(
             Texture2D texture,
@@ -409,7 +413,8 @@ namespace AsteroidsInc.Components
             int maxRange,
             int damage,
             int cRadius,
-            int refireDelay)
+            int refireDelay,
+            bool detonateEffect = false)
         {
             Texture = texture;
             Speed = speed;
@@ -420,6 +425,7 @@ namespace AsteroidsInc.Components
             Damage = damage;
             CollisionRadius = cRadius;
             RefireDelay = refireDelay;
+            DetonateEffect = detonateEffect;
         }
     }
 

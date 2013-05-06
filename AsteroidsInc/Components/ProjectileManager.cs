@@ -18,13 +18,22 @@ namespace AsteroidsInc.Components
         public static List<ParticleEmitter> HitEffects { get; set; }
 
         static readonly Color[] EFFECT_COLORS = { Color.Orange, Color.White };
+        static readonly Color[] DETONATE_COLORS = { Color.White, Color.LightYellow, Color.PaleVioletRed };
 
+        //Hit effect particle emission constants
         const int EFFECT_MAX_PARTICLES = 10;
-        const int EFFECT_FRAMES_TO_LIVE = 200;
+        const int EFFECT_FRAMES_TO_LIVE = 100;
         const int EFFECT_TIME_TO_EMIT = 1;
         const int EFFECT_EJECTION_SPEED = 200;
-        const float EFFECT_RANDOMIZATION = 0.2f;
+        const float EFFECT_RANDOMIZATION = 0.3f;
         const float EFFECT_SPRAY_WIDTH = 50f;
+
+        const int DETONATE_MAX_PARTICLES = 500;
+        const int DETONATE_FRAMES_TO_LIVE = 25;
+        const int DETONATE_TIME_TO_EMIT = 1;
+        const int DETONATE_EJECTION_SPEED = 200;
+        const float DETONATE_RANDOMIZATION = 0.1f;
+        const float DETONATE_SPRAY_WIDTH = ParticleEmitter.EXPLOSIONSPRAY;
 
         static Random rnd;
 
@@ -69,7 +78,7 @@ namespace AsteroidsInc.Components
             {
                 if (shot.Identification != alignment) //check if friendly
                 {
-                    if (obj.IsPixelColliding(shot)) //check if colliding
+                    if (obj.IsCircleColliding(shot)) //check if colliding
                     {
                         HitEffects.Add(new ParticleEmitter( //add a hit effect
                             EFFECT_MAX_PARTICLES,
@@ -80,7 +89,7 @@ namespace AsteroidsInc.Components
                             true,
                             true,
                             EFFECT_TIME_TO_EMIT,
-                            EFFECT_MAX_PARTICLES,
+                            EFFECT_MAX_PARTICLES / DETONATE_TIME_TO_EMIT,
                             EFFECT_EJECTION_SPEED,
                             EFFECT_RANDOMIZATION,
                             shot.RotationDegrees + 180,
@@ -89,14 +98,30 @@ namespace AsteroidsInc.Components
                         shotHit = shot; //set the out param
                         shot.Active = false;
 
+                        if (shot.DetonateEffect)
+                            HitEffects.Add(new ParticleEmitter(
+                                DETONATE_MAX_PARTICLES,
+                                shot.WorldCenter,
+                                ContentHandler.Textures["particle"].ToTextureList(),
+                                DETONATE_COLORS.ToList<Color>(),
+                                DETONATE_FRAMES_TO_LIVE,
+                                true,
+                                true,
+                                DETONATE_TIME_TO_EMIT,
+                                DETONATE_MAX_PARTICLES / DETONATE_TIME_TO_EMIT,
+                                DETONATE_EJECTION_SPEED,
+                                DETONATE_RANDOMIZATION,
+                                0,
+                                DETONATE_SPRAY_WIDTH));  
+
                         ContentHandler.PlaySFX(shot.HitSound);
 
                         return true; //return true
                     }
                 }
             }
-            shotHit = null;
-            return false;
+            shotHit = null; //set the shot to null
+            return false; //and return false
         }
 
         public static void AddShot(
@@ -109,7 +134,7 @@ namespace AsteroidsInc.Components
             Vector2 shotVel = Vector2.Multiply(rotation.RotationToVector(), shotData.Speed) + inheritVelocity;
             //get the scaled and inherited shot velocity
 
-            if (shotData.Randomization != 0)
+            if (shotData.Randomization != 0) //randomize the velocity by the provided factor
             {
                 float tempX = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
                 float tempY = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
@@ -127,9 +152,11 @@ namespace AsteroidsInc.Components
                 senderIdent,
                 shotData.MaxRange,
                 shotData.Damage,
+                shotData.DetonateEffect,
                 shotData.CollisionRadius));
-
-            ContentHandler.PlaySFX(shotData.LaunchSoundIndex); //play the launch sound
+            
+            if(shotData.LaunchSoundIndex != "" || shotData.LaunchSoundIndex != null)
+                ContentHandler.PlaySFX(shotData.LaunchSoundIndex); //play the launch sound
         }
     }
 }

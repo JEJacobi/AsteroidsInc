@@ -58,8 +58,6 @@ namespace AsteroidsInc
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
             Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //create the world
             Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
-
-            Logger.WriteLog("\nInitializing components..."); //log it
             base.Initialize();
         }
 
@@ -103,8 +101,6 @@ namespace AsteroidsInc
             ContentHandler.Songs.Add("menu", Content.Load<Song>(MUSIC_DIR + "menu"));
 
             //END CONTENT LOAD
-            Logger.WriteLog("Content loaded successfully..."); //log content load
-
 
             List<Texture2D> particle = new List<Texture2D>(); //particle list
             particle.Add(ContentHandler.Textures["junk1"]);
@@ -134,7 +130,7 @@ namespace AsteroidsInc
 
         protected override void UnloadContent()
         {
-            Logger.WriteLog("Unloading Content...");
+            //Nothing yet...
         }
 
         protected override void Update(GameTime gameTime)
@@ -184,10 +180,12 @@ namespace AsteroidsInc
                     spriteBatch.Begin(); //BEGIN SPRITE DRAW
 
                     fpsDisplay.Draw(spriteBatch);
+                    health.Draw(spriteBatch); //UI elements first
+
+                    Player.Draw(spriteBatch); //Player next
+
                     ProjectileManager.Draw(spriteBatch);
-                    Player.Draw(spriteBatch);
-                    temp.Draw(spriteBatch);
-                    health.Draw(spriteBatch);
+                    temp.Draw(spriteBatch); //And then the rest of the game components
 
                     spriteBatch.End(); //END SPRITE DRAW
                     base.Draw(gameTime);

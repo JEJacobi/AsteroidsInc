@@ -125,7 +125,17 @@ namespace AsteroidsInc.Components
             }
         }
 
-        public Rectangle BoundingBox //get bounding box for use in collision detection
+        public Matrix Transform
+        {
+            get
+            {
+                return Matrix.CreateTranslation(new Vector3(-this.Origin, 0.0f)) *
+                        Matrix.CreateRotationZ(this.Rotation) *
+                        Matrix.CreateTranslation(new Vector3(this.WorldCenter, 0.0f));
+            }
+        }
+
+        public Rectangle GetRect //get non bb rectangle
         {
             get
             {
@@ -135,6 +145,11 @@ namespace AsteroidsInc.Components
                     GetWidth - (BoundingXPadding * 2),
                     GetHeight - (BoundingYPadding * 2));
             }
+        }
+
+        public Rectangle BoundingBox //get bounding box rectangle
+        {
+            get { return CalculateBoundingRectangle(this.GetRect, this.Transform); }
         }
 
         public Vector2 ScreenLocation
@@ -309,40 +324,6 @@ namespace AsteroidsInc.Components
                 return false;
         }
 
-        public bool IsPixelColliding(GameObject obj) //pixel perfect collision detection, more expensive than circle or bb
-        {
-            if (IsBoxColliding(obj) || IsCircleColliding(obj)) //if it's colliding at all
-            {
-                Color[] objA = new Color[Texture.Width * Texture.Height]; //arrays of texels
-                Color[] objB = new Color[obj.Texture.Width * obj.Texture.Height];
-
-                this.Texture.GetData(objA); //get data for each
-                obj.Texture.GetData(objB);
-
-                int x1 = Math.Max(this.BoundingBox.X, obj.BoundingBox.X); //calculate the intersection
-                int x2 = Math.Min(this.BoundingBox.X + this.BoundingBox.Width, obj.BoundingBox.X + obj.BoundingBox.Width);
-
-                int y1 = Math.Max(this.BoundingBox.Y, obj.BoundingBox.Y);
-                int y2 = Math.Min(this.BoundingBox.Y + this.BoundingBox.Height, obj.BoundingBox.Y + obj.BoundingBox.Height);
-
-                for (int y = y1; y < y2; ++y)
-                {
-                    for (int x = x1; x < x2; ++x)
-                    {
-                        //taken from a StackExchange question; gets the index of each pixel
-                        Color a = objA[(x - this.BoundingBox.X) + (y - this.BoundingBox.Y) * this.Texture.Width];
-                        Color b = objB[(x - obj.BoundingBox.X) + (y - obj.BoundingBox.Y) * obj.Texture.Width];
-
-                        if (a.A != 0 && b.A != 0) //if the alpha value of both pixels is not zero, return true
-                            return true;
-                    }
-                }
-                return false; //if no collision, return false
-            }
-            else
-                return false; //no bb or circle collision
-        }
-
         public void RotateTo(Vector2 point) //rotates the GameObject to a point
         {
             Rotation = point.RotateTo();
@@ -398,6 +379,31 @@ namespace AsteroidsInc.Components
             Vector2 temp = (root.Rotation + MathHelper.ToRadians(rotation)).RotationToVector();
             temp *= radius;
             return root.WorldCenter + temp;
+        }
+
+        public static Rectangle CalculateBoundingRectangle(Rectangle rectangle, Matrix transform)
+        {
+            // Get all four corners in local space
+            Vector2 leftTop = new Vector2(rectangle.Left, rectangle.Top);
+            Vector2 rightTop = new Vector2(rectangle.Right, rectangle.Top);
+            Vector2 leftBottom = new Vector2(rectangle.Left, rectangle.Bottom);
+            Vector2 rightBottom = new Vector2(rectangle.Right, rectangle.Bottom);
+
+            // Transform all four corners into work space
+            Vector2.Transform(ref leftTop, ref transform, out leftTop);
+            Vector2.Transform(ref rightTop, ref transform, out rightTop);
+            Vector2.Transform(ref leftBottom, ref transform, out leftBottom);
+            Vector2.Transform(ref rightBottom, ref transform, out rightBottom);
+
+            // Find the minimum and maximum extents of the rectangle in world space
+            Vector2 min = Vector2.Min(Vector2.Min(leftTop, rightTop),
+                                      Vector2.Min(leftBottom, rightBottom));
+            Vector2 max = Vector2.Max(Vector2.Max(leftTop, rightTop),
+                                      Vector2.Max(leftBottom, rightBottom));
+
+            // Return that as a rectangle
+            return new Rectangle((int)min.X, (int)min.Y,
+                                 (int)(max.X - min.X), (int)(max.Y - min.Y));
         }
 
         #endregion

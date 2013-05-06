@@ -157,9 +157,7 @@ namespace AsteroidsInc.Components
                             break;
                         }
                         else
-                        {
-
-                        }
+                            break;
                     }
                     else
                     {
@@ -168,7 +166,7 @@ namespace AsteroidsInc.Components
                     }
                 }
 
-                if(Asteroids[x].IsPixelColliding(Player.Ship))
+                if(Asteroids[x].IsCircleColliding(Player.Ship))
                 {
                     Player.Health -= Player.ASTEROID_COLLISION_DAMAGE; //add damage
                     Player.Ship = GameObject.Bounce(Player.Ship, Asteroids[x]).Object1; //bounce the ship
@@ -326,7 +324,7 @@ namespace AsteroidsInc.Components
 
             if (counter >= MAX_TRIES)
             {
-                Logger.WriteLog("Asteroid placement overflow, canceling.");
+                return;
             }
             else
             {
@@ -413,8 +411,9 @@ namespace AsteroidsInc.Components
                 SCRAPE_SPRAY);
 
             //inherit velocities
-            temp1.VelocityToInherit = objects.Object1.Velocity;
-            temp2.VelocityToInherit = objects.Object2.Velocity;
+            Vector2 temp = objects.Object1.Velocity.Center(objects.Object2.Velocity);
+            temp1.VelocityToInherit = temp;
+            temp2.VelocityToInherit = temp;
 
             //set depths
             temp1.ParticleDrawDepth = EFFECT_DRAW_DEPTH;

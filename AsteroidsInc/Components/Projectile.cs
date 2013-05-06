@@ -19,6 +19,7 @@ namespace AsteroidsInc.Components
         public FoF_Ident Identification { get; set; }
         public string HitSound { get; set; }
         public float DistanceTravelled { get; private set; }
+        public bool DetonateEffect { get; set; }
 
         public readonly int Damage;
         public readonly float MaxRange;
@@ -42,6 +43,7 @@ namespace AsteroidsInc.Components
             FoF_Ident ident,
             int range,
             int dmg,
+            bool detEffect,
             int collisionRadius = 1)
             : base(texture, initialLocation, velocity, Color.White, false, rotation, 0f, 1f, PROJECTILE_DEPTH, collisionRadius)
         {
@@ -49,6 +51,7 @@ namespace AsteroidsInc.Components
             Damage = dmg;
             MaxRange = range;
             HitSound = hitSound;
+            DetonateEffect = detEffect;
 
             DistanceTravelled = 0f;
             lastLoc = initialLocation;
