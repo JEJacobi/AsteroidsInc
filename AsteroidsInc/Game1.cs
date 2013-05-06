@@ -73,12 +73,19 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add(AsteroidManager.SMALL_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid1"));
             ContentHandler.Textures.Add(AsteroidManager.ORE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid2"));
             ContentHandler.Textures.Add(AsteroidManager.LARGE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid3"));
+
             ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk01"));
             ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk02"));
             ContentHandler.Textures.Add("junk3", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk03"));
+
             ContentHandler.Textures.Add(Player.SHIP_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + Player.SHIP_TEXTURE));
             ContentHandler.Textures.Add(Player.MISSILE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.MISSILE_KEY));
             ContentHandler.Textures.Add(Player.LASER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.LASER_KEY));
+
+            ContentHandler.Textures.Add("star1", Content.Load<Texture2D>(TEXTURE_DIR + "star1"));
+            ContentHandler.Textures.Add("star2", Content.Load<Texture2D>(TEXTURE_DIR + "star2"));
+            ContentHandler.Textures.Add("star3", Content.Load<Texture2D>(TEXTURE_DIR + "star3"));
+            ContentHandler.Textures.Add("star4", Content.Load<Texture2D>(TEXTURE_DIR + "star4"));
 
             ContentHandler.Textures.Add("particle", //General generated particle texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -115,12 +122,25 @@ namespace AsteroidsInc
 
             //COMPONENT INITIALIZATION
 
+            //Player
             Player.Initialize();
             Player.DeadEvent += new EventHandler(Player_DeadEvent);
 
+            //StarField
+            List<Texture2D> stars = new List<Texture2D>();
+            stars.Add(ContentHandler.Textures["star1"]);
+            stars.Add(ContentHandler.Textures["star2"]);
+            stars.Add(ContentHandler.Textures["star3"]);
+            stars.Add(ContentHandler.Textures["star4"]);
+            stars.Add(ContentHandler.Textures["particle"]);
+            StarField.Generate(stars);
+
+            //UI
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
             title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
             health = new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
+
+            //AsteroidManager
             temp = new AsteroidManager(70, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
@@ -148,6 +168,7 @@ namespace AsteroidsInc
                     ProjectileManager.Update(gameTime);
                     temp.Update(gameTime);
                     Player.Update(gameTime);
+                    StarField.Update(gameTime);
                     title.Update(gameTime);
 
                     fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
@@ -179,13 +200,14 @@ namespace AsteroidsInc
                     GraphicsDevice.Clear(Color.Black);
                     spriteBatch.Begin(); //BEGIN SPRITE DRAW
 
-                    fpsDisplay.Draw(spriteBatch);
-                    health.Draw(spriteBatch); //UI elements first
+                    StarField.Draw(spriteBatch);
 
                     Player.Draw(spriteBatch); //Player next
 
                     ProjectileManager.Draw(spriteBatch);
                     temp.Draw(spriteBatch); //And then the rest of the game components
+                    fpsDisplay.Draw(spriteBatch);
+                    health.Draw(spriteBatch); //UI elements last
 
                     spriteBatch.End(); //END SPRITE DRAW
                     base.Draw(gameTime);
