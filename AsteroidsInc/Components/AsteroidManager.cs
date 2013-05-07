@@ -312,7 +312,7 @@ namespace AsteroidsInc.Components
 
                 foreach (GameObject asteroid in Asteroids)
                 {
-                    if (tempAsteroid.BoundingBox.Intersects(asteroid.BoundingBox))
+                    if (tempAsteroid.GetRect.Intersects(asteroid.GetRect)) //TEMP - GetRect
                     {
                         isOverlap = true; //flag if overlapping
                         break; //and break; no need to check all other asteroids

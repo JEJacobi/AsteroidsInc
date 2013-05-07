@@ -52,17 +52,18 @@ namespace AsteroidsInc
 
         protected override void Initialize()
         {
-            gameState = GameState.Game;
+            gameState = GameState.Game; //set the initial gamestate, will eventually be the main menu
 
             Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width; //init the camera
             Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 2, (int)Camera.ScreenSize.Y * 2); //create the world
+            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 3, (int)Camera.ScreenSize.Y * 3); //create the world
             Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
+            #region Content Loading
             //START CONTENT LOAD
 
             //FONTS
@@ -108,18 +109,9 @@ namespace AsteroidsInc
             ContentHandler.Songs.Add("menu", Content.Load<Song>(MUSIC_DIR + "menu"));
 
             //END CONTENT LOAD
+            #endregion
 
-            List<Texture2D> particle = new List<Texture2D>(); //particle list
-            particle.Add(ContentHandler.Textures["junk1"]);
-            particle.Add(ContentHandler.Textures["junk2"]);
-            particle.Add(ContentHandler.Textures["junk3"]);
-
-            List<Texture2D> asteroid = new List<Texture2D>(); //asteroid list
-            asteroid.Add(ContentHandler.Textures[AsteroidManager.SMALL_ASTEROID]);
-            asteroid.Add(ContentHandler.Textures[AsteroidManager.LARGE_ASTEROID]);
-            asteroid.Add(ContentHandler.Textures[AsteroidManager.ORE_ASTEROID]);
-
-
+            #region Content-Specific Component Init
             //COMPONENT INITIALIZATION
 
             //Player
@@ -141,11 +133,20 @@ namespace AsteroidsInc
             health = new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
 
             //AsteroidManager
-            temp = new AsteroidManager(70, 50, 100, 1, 2, asteroid, particle, true);
+            List<Texture2D> particle = new List<Texture2D>(); //particle list
+            particle.Add(ContentHandler.Textures["junk1"]);
+            particle.Add(ContentHandler.Textures["junk2"]);
+            particle.Add(ContentHandler.Textures["junk3"]);
+            List<Texture2D> asteroid = new List<Texture2D>(); //asteroid list
+            asteroid.Add(ContentHandler.Textures[AsteroidManager.SMALL_ASTEROID]);
+            asteroid.Add(ContentHandler.Textures[AsteroidManager.LARGE_ASTEROID]);
+            asteroid.Add(ContentHandler.Textures[AsteroidManager.ORE_ASTEROID]);
+            temp = new AsteroidManager(15, 50, 100, 1, 2, asteroid, particle, true);
 
             spriteBatch = new SpriteBatch(GraphicsDevice); //initialize the spriteBatch
 
             //END COMPONENT INIT
+            #endregion
         }
 
         protected override void UnloadContent()
@@ -165,16 +166,17 @@ namespace AsteroidsInc
                 case GameState.Game:
                     //GAME UPDATE BEGIN
 
-                    ProjectileManager.Update(gameTime);
-                    temp.Update(gameTime);
-                    Player.Update(gameTime);
                     StarField.Update(gameTime);
-                    title.Update(gameTime);
+                    ProjectileManager.Update(gameTime);
+                    Player.Update(gameTime);
 
+                    //UI Stuff:
                     fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
                     //calculate framerate to the nearest int
                     health.Value = "Health: " + Player.Health.ToString();
                     //get health
+                    temp.Update(gameTime);
+                    title.Update(gameTime);
 
                     base.Update(gameTime);
 
@@ -202,10 +204,9 @@ namespace AsteroidsInc
 
                     StarField.Draw(spriteBatch);
 
-                    Player.Draw(spriteBatch); //Player next
-
                     ProjectileManager.Draw(spriteBatch);
                     temp.Draw(spriteBatch); //And then the rest of the game components
+                    Player.Draw(spriteBatch); //Player next
                     fpsDisplay.Draw(spriteBatch);
                     health.Draw(spriteBatch); //UI elements last
 
@@ -217,11 +218,12 @@ namespace AsteroidsInc
                 case GameState.Dead:
 
                     GraphicsDevice.Clear(Color.Black);
-
                     spriteBatch.Begin();
+                    //BEGIN DRAW
 
                     title.Draw(spriteBatch);
 
+                    //END DRAW
                     spriteBatch.End();
 
                     break;

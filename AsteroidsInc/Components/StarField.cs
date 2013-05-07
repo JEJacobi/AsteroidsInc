@@ -20,15 +20,21 @@ namespace AsteroidsInc.Components
         static readonly Color starColor = Color.White;
 
         const float maxAlphaScalar = 0.8f;
-        const int minStars = 200;
-        const int maxStars = 6000;
+        const int starAmountRandomization = 25;
         const float starDepth = 0.1f;
+
+        const float autoStarGen = 43690.667f; //arbitrary value, produces a nice amount of stars IMO
 
         public static void Generate(List<Texture2D> Textures)
         {
             Stars = new List<GameObject>(); //wipe the list
 
-            for (int i = 0; i < rnd.Next(minStars, maxStars); i++)
+            int starsToGenerate = //divide the total pixels in the world by the autogen divisor, then round to nearest int
+                (int)Math.Round(((float)(Camera.WorldRectangle.Width * Camera.WorldRectangle.Height) / autoStarGen), 0);
+
+            starsToGenerate += rnd.Next(-starAmountRandomization, starAmountRandomization); //add a bit of randomization
+
+            for (int i = 0; i < starsToGenerate; i++)
             {
                 Texture2D tex = Util.PickRandom<Texture2D>(Textures); //get a random texture
                 Color color = starColor;

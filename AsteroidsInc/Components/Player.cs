@@ -65,7 +65,7 @@ namespace AsteroidsInc.Components
 
         public const float THRUST_OFFSET = -25f; //for trail offset calculation
         public const float ROTATION_OFFSET = 20f;
-        public const float FIRE_OFFSET = 40f;
+        public const float FIRE_OFFSET = 30f;
 
         public const int TRAIL_FTL = 30;
         public const int TRAIL_PPT = 1;
