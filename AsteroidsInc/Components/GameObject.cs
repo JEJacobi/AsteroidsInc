@@ -215,9 +215,8 @@ namespace AsteroidsInc.Components
         {
             if (Active) //if object is active
             {
-                WorldLocation += Velocity * (1f / 60f);
-                Rotation += RotationalVelocity; //Rotate according to the velocity
-                //Move by Velocity times a roughly 60FPS scalar
+                WorldLocation += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                Rotation += RotationalVelocity;
 
                 if (TotalFrames > 1 && Animating)
                 {

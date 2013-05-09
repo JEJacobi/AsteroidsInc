@@ -39,9 +39,10 @@ namespace AsteroidsInc.Components
 
         #region Methods
 
-        public static void PlaySong(string key)
+        public static void PlaySong(string key, bool loop = false)
         {
-            if (ShouldPlayMusic)
+            MediaPlayer.IsRepeating = loop;
+            if (ShouldPlayMusic && MediaPlayer.State != MediaState.Playing)
                 MediaPlayer.Play(Songs[key]);
         }
 

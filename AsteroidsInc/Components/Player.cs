@@ -18,11 +18,12 @@ namespace AsteroidsInc.Components
 
         public static GameObject Ship { get; set; } //main player sprite
         public static int Health { get; set; }
-        public static bool StabilizeRotation { get; set; }
+        public static bool StabilizeRotation { get; set; } //slowly bring rotational velocity to zero?
 
-        public static ParticleEmitter LeftEngineTrail { get; set; }
-        public static ParticleEmitter RightEngineTrail { get; set; }
-        public static ParticleEmitter ExplosionEmitter { get; set; }
+        public static GameObject Shield { get; set; } //overlaid shield sprite
+        public static ParticleEmitter LeftEngineTrail { get; set; } //emitter for left engine trail
+        public static ParticleEmitter RightEngineTrail { get; set; } //same for right
+        public static ParticleEmitter ExplosionEmitter { get; set; } //activated on death
 
         public static Dictionary<string, EquipmentData> EquipmentDictionary { get; set; }
         //dictionary to hold all equipment data
@@ -34,6 +35,7 @@ namespace AsteroidsInc.Components
         public static event EventHandler DeadEvent;
 
         static int shotDelay = 0; //counter variable
+        static int shieldFade = 0;
         static bool dead;
         static bool play;
 
@@ -42,6 +44,7 @@ namespace AsteroidsInc.Components
         #region Constants
 
         public const string SHIP_TEXTURE = "ship"; //texture indexes
+        public const string SHIELD_KEY = "shield";
         public const string MISSILE_KEY = "missile";
         public const string LASER_KEY = "laser";
         public const string CANNON_KEY = "cannon";
@@ -107,8 +110,6 @@ namespace AsteroidsInc.Components
         public const float EXPLOSION_EJECTION_SPEED = 50f;
         public const float EXPLOSION_RANDOMIZATION = 2f;
 
-        public const int COLLISION_RADIUS = 24;
-
         public const Slots INITIAL_ACTIVE_SLOT = Slots.Slot1;
 
         #endregion
@@ -165,8 +166,15 @@ namespace AsteroidsInc.Components
                 0f,
                 1f,
                 SHIP_DEPTH,
-                COLLISION_RADIUS,
+                ContentHandler.Textures[SHIELD_KEY].GetMeanRadius(), //use the shield texture as a collision boundary
                 0, 0, SpriteEffects.None, 8, 1, 8, 2);
+
+            //init the shield overlay
+            Shield = new GameObject(
+                ContentHandler.Textures[SHIELD_KEY],
+                Ship.WorldCenter,
+                Ship.Velocity,
+                Color.Transparent);
 
             //init the left-side particle engine trail
             LeftEngineTrail = new ParticleEmitter(
@@ -229,6 +237,14 @@ namespace AsteroidsInc.Components
             {
                 if (shotDelay != 0)
                     shotDelay--;
+
+                if (shieldFade != 0)
+                {
+                    Shield.TintColor = Color.Lerp(Color.Transparent, Color.White, (float)shieldFade / 100);
+                    shieldFade--;
+                }
+                else if (shieldFade == 0) //if shield has faded, set to transparent
+                    Shield.TintColor = Color.Transparent;
 
                 float rotVel = Ship.RotationVelocityDegrees;
                 Vector2 vel = Ship.Velocity; //temp vars, variable assignment workaround
@@ -322,6 +338,11 @@ namespace AsteroidsInc.Components
                 Ship.RotationVelocityDegrees = MathHelper.Clamp(rotVel, -MAX_ROT_VEL, MAX_ROT_VEL);
                 //return clamped velocity
                 Ship.Velocity = Vector2.Clamp(vel, -VECTOR_VELOCITY_MAX, VECTOR_VELOCITY_MAX);
+                //Shield Overlay Update
+                Shield.WorldCenter = Ship.WorldCenter;
+                Shield.Velocity = Ship.Velocity;
+                Shield.RotationalVelocity = Ship.RotationalVelocity;
+                Shield.Rotation = Ship.Rotation;
 
                 #endregion
 
@@ -339,6 +360,7 @@ namespace AsteroidsInc.Components
                 Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER); //center the camera
                 LeftEngineTrail.Update(gameTime); //update the trails
                 RightEngineTrail.Update(gameTime);
+                Shield.Update(gameTime);
                 Ship.Update(gameTime); //update the sprite itself, make sure to do this last
             }
 
@@ -372,9 +394,16 @@ namespace AsteroidsInc.Components
             {
                 LeftEngineTrail.Draw(spriteBatch);
                 RightEngineTrail.Draw(spriteBatch);
+                Shield.Draw(spriteBatch);
                 Ship.Draw(spriteBatch);
             }
-            ExplosionEmitter.Draw(spriteBatch);
+            ExplosionEmitter.Draw(spriteBatch); //out of if dead check since activated on death
+        }
+
+        public static void TriggerShield(int fadeVal = 100)
+        {
+            ContentHandler.PlaySFX(SHIELD_KEY);
+            shieldFade = fadeVal;
         }
 
         static string getActiveSlot()

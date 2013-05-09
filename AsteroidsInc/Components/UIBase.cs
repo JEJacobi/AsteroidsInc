@@ -74,7 +74,7 @@ namespace AsteroidsInc.Components
         #region Methods
 
         public abstract void Draw(SpriteBatch spriteBatch); //Main draw method
-        public virtual void Update(GameTime gameTime) //TODO: Test!
+        public virtual void Update(GameTime gameTime)
         {
             if (MouseOver != null && InputHandler.IsMouseOverObject(this.GetBoundingBox())) //if mouse is in the bounding box
                 MouseOver(this, new EventArgs());

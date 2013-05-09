@@ -15,6 +15,8 @@ namespace AsteroidsInc.Components
     public static class StarField
     {
         public static List<GameObject> Stars { get; set; }
+        public static List<Texture2D> Textures = new List<Texture2D>();
+        public static bool Scrolling = false;
 
         static Random rnd = new Random();
         static readonly Color starColor = Color.White;
@@ -23,9 +25,10 @@ namespace AsteroidsInc.Components
         const int starAmountRandomization = 25;
         const float starDepth = 0.1f;
 
+        static readonly Vector2 STAR_SCROLL = new Vector2(0, 40);
         const float autoStarGen = 43690.667f; //arbitrary value, produces a nice amount of stars IMO
 
-        public static void Generate(List<Texture2D> Textures)
+        public static void Generate()
         {
             Stars = new List<GameObject>(); //wipe the list
 
@@ -59,7 +62,14 @@ namespace AsteroidsInc.Components
         public static void Update(GameTime gameTime)
         {
             for (int i = 0; i < Stars.Count; i++)
+            {
+                if (Scrolling)
+                    Stars[i].Velocity = STAR_SCROLL;
+                else
+                    Stars[i].Velocity = Vector2.Zero;
+
                 Stars[i].Update(gameTime);
+            }
         }
 
         public static void Draw(SpriteBatch spriteBatch)

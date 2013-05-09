@@ -154,6 +154,7 @@ namespace AsteroidsInc.Components
                         if (p.Damage >= LARGE_ASTEROID_DAMAGE_THRESHOLD)
                         {
                             DestroyAsteroid(Asteroids[x], true);
+                            ProjectileManager.PlayShotHitSound(p);
                             break;
                         }
                         else
@@ -162,6 +163,7 @@ namespace AsteroidsInc.Components
                     else
                     {
                         DestroyAsteroid(Asteroids[x], true);
+                        ProjectileManager.PlayShotHitSound(p);
                         break;
                     }
                 }
@@ -170,13 +172,14 @@ namespace AsteroidsInc.Components
                 {
                     Player.Health -= Player.ASTEROID_COLLISION_DAMAGE; //add damage
                     Player.Ship = GameObject.Bounce(Player.Ship, Asteroids[x]).Object1; //bounce the ship
+                    Player.TriggerShield(); //activate the shield effect
 
                     Player.Ship.RotationVelocityDegrees = (float)rnd.NextDouble(
                         -Player.ROT_VEL_BOUNCE_CHANGE, Player.ROT_VEL_BOUNCE_CHANGE);
 
                     DestroyAsteroid(Asteroids[x], true); //and blow up the asteroid
 
-                    ContentHandler.PlaySFX(Player.COLLISION_SFX);
+                    //ContentHandler.PlaySFX(Player.COLLISION_SFX);
                     break;
                 }
             }

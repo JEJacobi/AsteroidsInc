@@ -55,8 +55,8 @@ namespace AsteroidsInc.Components
         public override Rectangle GetBoundingBox()
         {
             return new Rectangle(
-                (int)ScreenPosition.X,
-                (int)ScreenPosition.Y,
+                (int)ScreenPosition.X - (IsCenterOrigin ? (int)Texture.Width / 2 : 0),
+                (int)ScreenPosition.Y - (IsCenterOrigin ? (int)Texture.Height / 2 : 0),
                 Texture.Width,
                 Texture.Height);
         }

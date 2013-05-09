@@ -52,7 +52,6 @@ namespace AsteroidsInc.Components
                     Scale,
                     Effects,
                     UILAYERDEPTH);
-
         }
         public override Vector2 GetOrigin()
         {
@@ -64,8 +63,8 @@ namespace AsteroidsInc.Components
         public override Rectangle GetBoundingBox()
         {
             return new Rectangle(
-                (int)ScreenPosition.X,
-                (int)ScreenPosition.Y,
+                (int)ScreenPosition.X - (IsCenterOrigin ? (int)StringLength.X / 2 : 0),
+                (int)ScreenPosition.Y - (IsCenterOrigin ? (int)StringLength.Y / 2 : 0),
                 (int)StringLength.X,
                 (int)StringLength.Y);
         }

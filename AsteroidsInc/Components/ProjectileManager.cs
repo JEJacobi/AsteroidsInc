@@ -114,8 +114,6 @@ namespace AsteroidsInc.Components
                                 0,
                                 DETONATE_SPRAY_WIDTH));  
 
-                        ContentHandler.PlaySFX(shot.HitSound);
-
                         return true; //return true
                     }
                 }
@@ -157,6 +155,11 @@ namespace AsteroidsInc.Components
             
             if(shotData.LaunchSoundIndex != "" || shotData.LaunchSoundIndex != null)
                 ContentHandler.PlaySFX(shotData.LaunchSoundIndex); //play the launch sound
+        }
+
+        public static void PlayShotHitSound(Projectile shot)
+        {
+            ContentHandler.PlaySFX(shot.HitSound);
         }
     }
 }
