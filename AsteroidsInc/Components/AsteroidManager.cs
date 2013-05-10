@@ -151,9 +151,9 @@ namespace AsteroidsInc.Components
                 {
                     if (Asteroids[x].Texture == ContentHandler.Textures[LARGE_ASTEROID]) //if it's a big asteroid
                     {
-                        if (p.Damage >= LARGE_ASTEROID_DAMAGE_THRESHOLD)
+                        if (p.Damage >= LARGE_ASTEROID_DAMAGE_THRESHOLD) //and the shot meets the damage threshold
                         {
-                            DestroyAsteroid(Asteroids[x], true);
+                            DestroyAsteroid(Asteroids[x], true); //destroy it
                             ProjectileManager.PlayShotHitSound(p);
                             break;
                         }
@@ -162,7 +162,7 @@ namespace AsteroidsInc.Components
                     }
                     else
                     {
-                        DestroyAsteroid(Asteroids[x], true);
+                        DestroyAsteroid(Asteroids[x], true); //any shot can destroy the smaller ones
                         ProjectileManager.PlayShotHitSound(p);
                         break;
                     }
@@ -174,7 +174,7 @@ namespace AsteroidsInc.Components
                     Player.Ship = GameObject.Bounce(Player.Ship, Asteroids[x]).Object1; //bounce the ship
                     Player.TriggerShield(); //activate the shield effect
 
-                    Player.Ship.RotationVelocityDegrees = (float)rnd.NextDouble(
+                    Player.Ship.RotationVelocityDegrees = (float)rnd.NextDouble( //add randomization to the bounce
                         -Player.ROT_VEL_BOUNCE_CHANGE, Player.ROT_VEL_BOUNCE_CHANGE);
 
                     DestroyAsteroid(Asteroids[x], true); //and blow up the asteroid
@@ -193,11 +193,10 @@ namespace AsteroidsInc.Components
             {
                 Asteroids[i].Draw(spriteBatch);
 
-                //TEMPORARY - FOR DEBUG
-                spriteBatch.DrawString(ContentHandler.Fonts["lcd"],
-                    i.ToString(),
-                    Camera.GetLocalCoords(Asteroids[i].WorldLocation),
-                    Color.White);
+                //spriteBatch.DrawString(ContentHandler.Fonts["lcd"],
+                //    i.ToString(),
+                //    Camera.GetLocalCoords(Asteroids[i].WorldLocation),
+                //    Color.White);
             }
 
             for (int i = 0; i < emitters.Count; i++)

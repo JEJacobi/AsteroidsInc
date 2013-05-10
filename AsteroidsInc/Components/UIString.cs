@@ -15,9 +15,9 @@ namespace AsteroidsInc.Components
     public class UIString<T> : UIBase where T : IConvertible
     {
         public T Value; //main value
-        public SpriteFont Font { get; set; }
+        public SpriteFont Font { get; set; } //what font to draw the value in
 
-        public Vector2 StringLength
+        public Vector2 StringLength //the vector length of the specified string in the specified font
         {
             get { return Font.MeasureString(Value.ToString()); }
         }
@@ -41,6 +41,11 @@ namespace AsteroidsInc.Components
         //Methods
         public override void Draw(SpriteBatch spriteBatch)
         {
+            //spriteBatch.Draw(
+            //    ContentHandler.Textures["particle"],
+            //    GetBoundingBox(),
+            //    Color.White);
+
             if (Active)
                 spriteBatch.DrawString(
                     Font,
@@ -63,7 +68,7 @@ namespace AsteroidsInc.Components
         public override Rectangle GetBoundingBox()
         {
             return new Rectangle(
-                (int)ScreenPosition.X - (IsCenterOrigin ? (int)StringLength.X / 2 : 0),
+                (int)ScreenPosition.X - (IsCenterOrigin ? (int)StringLength.X / 2 : 0), //woo, ternary!
                 (int)ScreenPosition.Y - (IsCenterOrigin ? (int)StringLength.Y / 2 : 0),
                 (int)StringLength.X,
                 (int)StringLength.Y);

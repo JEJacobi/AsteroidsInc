@@ -23,9 +23,14 @@ namespace AsteroidsInc.Components
         {
             get
             {
-                return new Vector2(
+                Vector2 temp = new Vector2(
                     Camera.ScreenSize.X * RelativePos.X,
                     Camera.ScreenSize.Y * RelativePos.Y);
+
+                temp.X = (int)Math.Round(temp.X, 0); //rounding to int to get rid of weird aliasing draw bugs
+                temp.Y = (int)Math.Round(temp.Y, 0);
+
+                return temp;
             }
             set
             {

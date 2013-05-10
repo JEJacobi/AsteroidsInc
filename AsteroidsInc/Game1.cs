@@ -27,7 +27,8 @@ namespace AsteroidsInc
         UIString<string> loc;
 
         //MENU UI
-        UIString<string> title;
+        UIString<string> title1;
+        UIString<string> title2;
         UIString<string> exit;
         UIString<string> start;
 
@@ -40,6 +41,9 @@ namespace AsteroidsInc
         const string FONT_DIR = "Fonts/";
         const string SOUND_DIR = "Sound/";
         const string MUSIC_DIR = "Music/";
+
+        readonly Color HIGHLIGHT_COLOR = Color.Yellow;
+        readonly Color NORMAL_COLOR = Color.White;
 
 	    #endregion
 
@@ -76,7 +80,9 @@ namespace AsteroidsInc
 
             //FONTS
             ContentHandler.Fonts.Add("lcd", Content.Load<SpriteFont>(FONT_DIR + "lcd"));
-            ContentHandler.Fonts.Add("title", Content.Load<SpriteFont>(FONT_DIR + "/title"));
+            ContentHandler.Fonts.Add("title", Content.Load<SpriteFont>(FONT_DIR + "title"));
+            ContentHandler.Fonts.Add("title2", Content.Load<SpriteFont>(FONT_DIR + "title2"));
+            ContentHandler.Fonts.Add("menu", Content.Load<SpriteFont>(FONT_DIR + "menu"));
 
             //TEXTURES
             ContentHandler.Textures.Add(AsteroidManager.SMALL_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid1"));
@@ -144,9 +150,10 @@ namespace AsteroidsInc
             loc = new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
 
             //MENU UI
-            title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
-            start = new UIString<string>("Start!", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["lcd"], Color.White, true);
-            exit = new UIString<string>("Exit?", new Vector2(0.5f, 0.55f), ContentHandler.Fonts["lcd"], Color.White, true);
+            title1 = new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
+            title2 = new UIString<string>("INC", new Vector2(0.5f, 0.275f), ContentHandler.Fonts["title2"], Color.White, true);
+            start = new UIString<string>("Start", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["menu"], Color.White, true);
+            exit = new UIString<string>("Exit", new Vector2(0.5f, 0.575f), ContentHandler.Fonts["menu"], Color.White, true);
 
             //UI Events
             start.OnClick += new UIBase.MouseClickHandler(start_OnClick);
@@ -203,7 +210,8 @@ namespace AsteroidsInc
                     loc.Value = InputHandler.MouseState.X.ToString() + ", " + InputHandler.MouseState.Y.ToString();
                     //get loc value
                     temp.Update(gameTime);
-                    title.Update(gameTime);
+                    title1.Update(gameTime);
+                    title2.Update(gameTime);
                     loc.Update(gameTime);
 
                     base.Update(gameTime);
@@ -217,7 +225,7 @@ namespace AsteroidsInc
 
                     ContentHandler.PlaySong("menu", true);
 
-                    title.Update(gameTime);
+                    title1.Update(gameTime);
                     start.Update(gameTime);
                     exit.Update(gameTime);
 
@@ -265,7 +273,8 @@ namespace AsteroidsInc
 
                     StarField.Draw(spriteBatch);
 
-                    title.Draw(spriteBatch);
+                    title1.Draw(spriteBatch);
+                    title2.Draw(spriteBatch);
                     start.Draw(spriteBatch);
                     exit.Draw(spriteBatch);
 
@@ -299,12 +308,12 @@ namespace AsteroidsInc
 
         void exit_MouseAway(object sender, EventArgs e)
         {
-            exit.Color = Color.White;
+            exit.Color = NORMAL_COLOR;
         }
 
         void exit_MouseOver(object sender, EventArgs e)
         {
-            exit.Color = Color.Yellow;
+            exit.Color = HIGHLIGHT_COLOR;
         }
 
         void exit_OnClick(UIBase sender, MouseClickArgs e)
@@ -314,18 +323,19 @@ namespace AsteroidsInc
 
         void start_MouseAway(object sender, EventArgs e)
         {
-            start.Color = Color.White;
+            start.Color = NORMAL_COLOR;
         }
 
         void start_MouseOver(object sender, EventArgs e)
         {
-            start.Color = Color.Yellow;
+            start.Color = HIGHLIGHT_COLOR;
         }
 
         void Player_DeadEvent(object sender, EventArgs e)
         {
-            SwitchGameState(GameState.Menu);
-            ContentHandler.PlaySong("menu");
+            SwitchGameState(GameState.Menu); //switch the state
+            ContentHandler.PlaySong("menu"); //play menu music
+            Player.Initialize(); //reset the player
         }
 
         #endregion

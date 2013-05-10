@@ -23,7 +23,12 @@ namespace AsteroidsInc.Components
         public float Rotation
         {
             get { return rotation % MathHelper.TwoPi; } //mod by 2pi in case of direction overflow
-            set { rotation = value % MathHelper.TwoPi; }
+            set
+            {
+                rotation = value % MathHelper.TwoPi;
+                if (rotation < 0)
+                    rotation += MathHelper.TwoPi; //if going into negative, overflow to equal positive position
+            }
         }
         float rotation;
 

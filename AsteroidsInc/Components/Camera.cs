@@ -61,14 +61,14 @@ namespace AsteroidsInc
                 return new Vector2(WorldRectangle.Width / 2, WorldRectangle.Height / 2);
             }
         }
-        public static Vector2 UL_CORNER
+        public static Vector2 UL_CORNER //upper-left corner
         {
             get
             {
                 return new Vector2(WorldRectangle.X, WorldRectangle.Y);
             }
         }
-        public static Vector2 BR_CORNER
+        public static Vector2 BR_CORNER //bottom-right corner
         {
             get
             {
