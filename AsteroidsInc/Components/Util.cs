@@ -50,7 +50,7 @@ namespace AsteroidsInc.Components
 
         public static float RotateTo(this Vector2 vector) //get the rotation to a point
         {
-            return (float)Math.Atan2(vector.Y, vector.X); //gotta love simple trig
+            return (float)Math.Atan2(vector.X, -vector.Y); //gotta love simple trig
         }
 
         //Ripped from a StackOverflow question//

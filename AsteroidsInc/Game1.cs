@@ -24,6 +24,7 @@ namespace AsteroidsInc
         //GAME UI
         UIString<int> fpsDisplay;
         UIString<string> health;
+        UIString<string> loc;
 
         //MENU UI
         UIString<string> title;
@@ -140,6 +141,7 @@ namespace AsteroidsInc
             //GAME UI
             fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
             health = new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
+            loc = new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
 
             //MENU UI
             title = new UIString<string>("Asteroids Inc.", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
@@ -198,8 +200,11 @@ namespace AsteroidsInc
                     //calculate framerate to the nearest int
                     health.Value = "Health: " + Player.Health.ToString();
                     //get health
+                    loc.Value = InputHandler.MouseState.X.ToString() + ", " + InputHandler.MouseState.Y.ToString();
+                    //get loc value
                     temp.Update(gameTime);
                     title.Update(gameTime);
+                    loc.Update(gameTime);
 
                     base.Update(gameTime);
 
@@ -245,6 +250,7 @@ namespace AsteroidsInc
                     Player.Draw(spriteBatch); //Player next
                     fpsDisplay.Draw(spriteBatch);
                     health.Draw(spriteBatch); //UI elements last
+                    loc.Draw(spriteBatch);
 
                     spriteBatch.End(); //END SPRITE DRAW
                     base.Draw(gameTime);

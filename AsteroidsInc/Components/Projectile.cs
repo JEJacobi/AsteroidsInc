@@ -24,6 +24,8 @@ namespace AsteroidsInc.Components
         public readonly int Damage;
         public readonly float MaxRange;
 
+        const float velTrackSpeed = 0.005f;
+
         Vector2 lastLoc;
         
         #endregion
@@ -61,6 +63,21 @@ namespace AsteroidsInc.Components
         {
             lastLoc = WorldCenter;
             //update the last location
+
+            float target = Vector2.Normalize(Velocity).RotateTo();
+
+            if (target < Rotation + 0.1f)
+                RotationalVelocity -= velTrackSpeed;
+            if (target > Rotation - 0.1f)
+                RotationalVelocity += velTrackSpeed;
+
+            //stabilize rotation; ripped from Player class
+            float newRotVel = RotationVelocityDegrees;
+            if (newRotVel > 0) //if rotating right
+                newRotVel -= Player.STABILIZATION_FACTOR * newRotVel;
+            if (newRotVel < 0) //if rotating left
+                newRotVel += Player.STABILIZATION_FACTOR * -newRotVel;
+            RotationVelocityDegrees = newRotVel; //and assign
 
             base.Update(gameTime);
             //GameObject update

@@ -63,9 +63,9 @@ namespace AsteroidsInc.Components
         {
             for (int i = 0; i < Stars.Count; i++)
             {
-                if (Scrolling)
+                if (Scrolling && Stars[i].Velocity != STAR_SCROLL)
                     Stars[i].Velocity = STAR_SCROLL;
-                else
+                else if (Scrolling == false && Stars[i].Velocity != Vector2.Zero)
                     Stars[i].Velocity = Vector2.Zero;
 
                 Stars[i].Update(gameTime);
