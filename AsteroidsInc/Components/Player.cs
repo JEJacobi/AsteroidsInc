@@ -166,6 +166,7 @@ namespace AsteroidsInc.Components
                 0f,
                 1f,
                 SHIP_DEPTH,
+                false,
                 ContentHandler.Textures[SHIELD_KEY].GetMeanRadius(), //use the shield texture as a collision boundary
                 0, 0, SpriteEffects.None, 8, 1, 8, 2);
 

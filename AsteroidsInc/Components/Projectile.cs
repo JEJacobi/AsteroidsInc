@@ -45,7 +45,7 @@ namespace AsteroidsInc.Components
             int dmg,
             bool detEffect,
             int collisionRadius = 1)
-            : base(texture, initialLocation, velocity, Color.White, false, rotation, 0f, 1f, PROJECTILE_DEPTH, collisionRadius)
+            : base(texture, initialLocation, velocity, Color.White, false, rotation, 0f, 1f, PROJECTILE_DEPTH, false, collisionRadius)
         {
             Identification = ident;
             Damage = dmg;

@@ -26,14 +26,10 @@ namespace AsteroidsInc.Components
         const float starDepth = 0.1f;
 
         static readonly Vector2 STAR_SCROLL = new Vector2(0, 40);
-        const float autoStarGen = 43690.667f; //arbitrary value, produces a nice amount of stars IMO
 
-        public static void Generate()
+        public static void Generate(int starsToGenerate)
         {
             Stars = new List<GameObject>(); //wipe the list
-
-            int starsToGenerate = //divide the total pixels in the world by the autogen divisor, then round to nearest int
-                (int)Math.Round(((float)(Camera.WorldRectangle.Width * Camera.WorldRectangle.Height) / autoStarGen), 0);
 
             starsToGenerate += rnd.Next(-starAmountRandomization, starAmountRandomization); //add a bit of randomization
 
@@ -64,9 +60,15 @@ namespace AsteroidsInc.Components
             for (int i = 0; i < Stars.Count; i++)
             {
                 if (Scrolling && Stars[i].Velocity != STAR_SCROLL)
+                {
+                    Stars[i].LiteMode = false;
                     Stars[i].Velocity = STAR_SCROLL;
+                }
                 else if (Scrolling == false && Stars[i].Velocity != Vector2.Zero)
+                {
+                    Stars[i].LiteMode = true;
                     Stars[i].Velocity = Vector2.Zero;
+                }
 
                 Stars[i].Update(gameTime);
             }

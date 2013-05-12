@@ -41,6 +41,7 @@ namespace AsteroidsInc.Components
             TTL = framesToLive; //most of the actual work is handled by GameObject
             Fade = fade;
             InitialTTL = framesToLive;
+            LiteMode = true; //set lite mode to true; particles do not need to be looped
             rnd = new Random();
         }
 

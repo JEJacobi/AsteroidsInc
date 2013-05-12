@@ -38,10 +38,19 @@ namespace AsteroidsInc
         const int DEFAULT_WINDOWED_WIDTH = 1024;
         const int DEFAULT_WINDOWED_HEIGHT = 768;
 
+        const int TEMP_STARS_TO_GEN = 100;
+
         readonly Color HIGHLIGHT_COLOR = Color.Yellow;
         readonly Color NORMAL_COLOR = Color.White;
 
 	    #endregion
+
+        #region Events
+
+        public delegate void StateChangeHandler(object sender, StateArgs e);
+        public event StateChangeHandler OnStateChange;
+
+        #endregion
 
         public Game1()
         {
@@ -59,10 +68,12 @@ namespace AsteroidsInc
             Camera.Initialize( //initialize the camera
                 DEFAULT_WINDOWED_WIDTH,
                 DEFAULT_WINDOWED_HEIGHT,
-                8000, 8000);
+                2000, 2000);
 
             GameUI = new Dictionary<string, UIBase>();
             MenuUI = new Dictionary<string, UIBase>();
+
+            OnStateChange += new StateChangeHandler(handleSwitching);
 
             base.Initialize();
         }
@@ -141,7 +152,8 @@ namespace AsteroidsInc
             stars.Add(ContentHandler.Textures["star4"]);
             stars.Add(ContentHandler.Textures["particle"]);
             StarField.Textures = stars;
-            StarField.Generate();
+            StarField.Generate(TEMP_STARS_TO_GEN);
+            StarField.Scrolling = true;
 
             //GAME UI
             GameUI.Add("fpsDisplay", new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false)); //TEMP
@@ -244,8 +256,6 @@ namespace AsteroidsInc
                     Player.Update(gameTime);
 
                     //UI Stuff:
-                    ((UIString<int>)GameUI["fpsDisplay"]).Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
-                    //calculate framerate to the nearest int
                     ((UIString<string>)GameUI["health"]).Value = "Health: " + Player.Health.ToString();
                     //get health
                     ((UIString<string>)GameUI["loc"]).Value = Player.Ship.WorldCenter.ToString();
@@ -259,10 +269,6 @@ namespace AsteroidsInc
                     break;
 
                 case GameState.Menu:
-
-                    StarField.Scrolling = true;
-
-                    ContentHandler.PlaySong("menu", true);
 
                     foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
                         elementPair.Value.Update(gameTime); //update each UI element
@@ -294,6 +300,9 @@ namespace AsteroidsInc
                     ProjectileManager.Draw(spriteBatch);
                     temp.Draw(spriteBatch); //And then the rest of the game components
                     Player.Draw(spriteBatch); //Player next
+
+                    ((UIString<int>)GameUI["fpsDisplay"]).Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
+                    //calculate framerate to the nearest int, must be done in draw
 
                     foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
                         elementPair.Value.Draw(spriteBatch);
@@ -327,9 +336,9 @@ namespace AsteroidsInc
 
         private void SwitchGameState(GameState state)
         {
-            StarField.Generate();
+            if (OnStateChange != null) //trigger the event with state data
+                OnStateChange(this, new StateArgs(gameState, state));
             gameState = state; //switch the state
-            ContentHandler.StopAll(); //and stop the sound
         }
 
         #endregion
@@ -367,14 +376,45 @@ namespace AsteroidsInc
             MenuUI["start"].Color = HIGHLIGHT_COLOR;
         }
 
+        void handleSwitching(object sender, StateArgs e)
+        {
+            if (e.TargetState == GameState.Menu)
+            {
+                StarField.Scrolling = true;
+
+                ContentHandler.PlaySong("menu", true); //play menu music if target is menu
+            }
+            if (e.TargetState == GameState.Game)
+            {
+                StarField.Scrolling = false;
+
+                ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
+            }
+
+            ContentHandler.StopAll(); //stop the sound
+        }
+
         void Player_DeadEvent(object sender, EventArgs e)
         {
+            StarField.Generate(TEMP_STARS_TO_GEN); //regenerate the starfield
             SwitchGameState(GameState.Menu); //switch the state
-            ContentHandler.PlaySong("menu"); //play menu music
+            ((UIString<string>)MenuUI["start"]).Value = "Start"; //player has died, reset the resume button
             Player.Initialize(); //reset the player
         }
 
         #endregion
+    }
+
+    public class StateArgs : EventArgs
+    {
+        public GameState StartingState;
+        public GameState TargetState;
+
+        public StateArgs(GameState startState, GameState targetState)
+        {
+            StartingState = startState;
+            TargetState = targetState;
+        }
     }
 
     public enum GameState

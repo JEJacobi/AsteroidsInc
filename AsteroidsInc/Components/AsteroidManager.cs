@@ -316,7 +316,7 @@ namespace AsteroidsInc.Components
                 }
 
                 tempAsteroid = new GameObject( //init a temporary asteroid to check for overlaps
-                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, ASTEROID_DRAW_DEPTH, text.GetMeanRadius());
+                    text, worldPos, vel, Color.White, false, rot, rotVel, 1f, ASTEROID_DRAW_DEPTH, false, text.GetMeanRadius());
 
                 foreach (GameObject asteroid in Asteroids)
                 {
@@ -355,6 +355,7 @@ namespace AsteroidsInc.Components
                 asteroidToSplit.RotationalVelocity,
                 asteroidToSplit.Scale,
                 asteroidToSplit.Depth,
+                false,
                 ContentHandler.Textures[SMALL_ASTEROID].GetMeanRadius()); //get rounded radius
 
             Asteroids.Add(split);

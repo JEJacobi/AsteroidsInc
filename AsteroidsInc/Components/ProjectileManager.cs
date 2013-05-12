@@ -52,8 +52,8 @@ namespace AsteroidsInc.Components
 
                 if (Projectiles[i].Active == false)
                 {
-                    if (Projectiles[i].DetonateEffect) //add a detonation effect if wanted
-                        addDetonateEffect(Projectiles[i].WorldCenter);
+                    if (Projectiles[i].DetonateEffect && Camera.IsObjectVisible(Projectiles[i].BoundingBox))
+                        addDetonateEffect(Projectiles[i].WorldCenter); //add a detonation effect if visible and wanted
 
                     Projectiles.RemoveAt(i); //if inactive; remove
                 }

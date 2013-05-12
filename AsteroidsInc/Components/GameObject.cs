@@ -51,6 +51,8 @@ namespace AsteroidsInc.Components
         public int BoundingXPadding { get; set; }
         public int BoundingYPadding { get; set; } //Padding for bounding box collision
 
+        public bool LiteMode;
+
         public int TotalFrames
         {
             get //simple get
@@ -169,6 +171,7 @@ namespace AsteroidsInc.Components
             float rotationalVelocity = 0f,
             float scale = 1f, //default to 1:1 scale
             float depth = 0f, //default to 0 layerDepth
+            bool liteMode = false, //handle world-looping and other
             int collisionRadius = 0, //collision radius used in bounding circle collision, default to 0 or no bounding circle
             int xPadding = 0, //amount of x padding, used in bounding box collision, default to 0, or no bounding box
             int yPadding = 0, //amount of y padding, used in bounding box collision, default to 0, or no bounding box
@@ -205,8 +208,10 @@ namespace AsteroidsInc.Components
         {
             if (Active) //if object is active
             {
-                WorldLocation += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-                Rotation += RotationalVelocity;
+                if(Velocity != Vector2.Zero)
+                    WorldLocation += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if(RotationalVelocity != 0)
+                    Rotation += RotationalVelocity;
 
                 if (TotalFrames > 1 && Animating)
                 {
@@ -215,7 +220,7 @@ namespace AsteroidsInc.Components
                         CurrentFrame = StartFrame; //Loop animation
                 }
 
-                if (Camera.IsObjectInWorld(this.WorldRectangle) == false)
+                if (LiteMode == false && Camera.IsObjectInWorld(this.WorldRectangle) == false)
                 {
                     if (Camera.LOOPWORLD) //if world is looping and the object is out of bounds
                     {
@@ -235,7 +240,7 @@ namespace AsteroidsInc.Components
 
                         WorldCenter = temp; //Assign updated position
                     }
-                    if (Camera.LOOPWORLD == false)
+                    if (LiteMode || Camera.LOOPWORLD == false)
                     {
                         Active = false; //if the object is outside the world but the LOOPWORLD constant is false, set inactive
                     }
