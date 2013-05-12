@@ -14,6 +14,35 @@ namespace AsteroidsInc.Components
 {
     public static class Util //Utility class, used for extensions, general functions, etc...
     {
+        static float[] sinLook = new float[360];
+        static float[] cosLook = new float[360];
+
+        static Util()
+        {
+            for (int i = 0; i < sinLook.Length; i++) //fill the sin lookup table
+                sinLook[i] = (float)Math.Sin(MathHelper.ToRadians(i));
+            for (int i = 0; i < cosLook.Length; i++) //and the cos one
+                cosLook[i] = (float)Math.Cos(MathHelper.ToRadians(i));
+        }
+
+        public static float FastSin(float radian) //sin lookup
+        {
+            int index = (int)Math.Round(MathHelper.ToDegrees(radian), 0); //get the rounded degree index
+
+            index = (int)VerifyAngle(index); //verify the angle
+
+            return sinLook[index];
+        }
+
+        public static float FastCos(float radian) //cos lookup
+        {
+            int index = (int)Math.Round(MathHelper.ToDegrees(radian), 0); //get the rounded degree index
+
+            index = (int)VerifyAngle(index);
+
+            return cosLook[index];
+        }
+
         public static double NextDouble(this Random rnd, double min, double max) //extension for Random
         {
             return rnd.NextDouble() * (max - min) + min;
@@ -28,8 +57,8 @@ namespace AsteroidsInc.Components
         public static Vector2 RotationToVector(this float rotationRadians) //get a normalized vector from a rotation in radians
         {
             return new Vector2(
-                (float)Math.Sin(rotationRadians), //sin/cos weirdness is due to me preferring a more
-                (float)-Math.Cos(rotationRadians)); //normal direction system
+                FastSin(rotationRadians), //sin/cos weirdness is due to me preferring a more
+                -FastCos(rotationRadians)); //normal direction system
         }
 
         public static int GetMeanRadius(this Texture2D texture, int columns = 1, int rows = 1) //get the mean radius using the texture's height and width
@@ -103,6 +132,21 @@ namespace AsteroidsInc.Components
 
             tempTexture.SetData(colors); //set colors
             return tempTexture;
+        }
+
+        public static float VerifyAngle(float input) //verify that the provided angle is non-negative 0-359 degrees
+        {
+            if (input < 0)
+                input += 360;
+            if (input > 359)
+                input %= 360;
+
+            return input;
+        }
+
+        public static void VerifyAngle(ref float input) //overload of previous with ref param instead
+        {
+            input = VerifyAngle(input);
         }
     }
 }

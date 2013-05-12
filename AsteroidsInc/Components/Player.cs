@@ -158,7 +158,7 @@ namespace AsteroidsInc.Components
             //init the ship
             Ship = new GameObject(
                 ContentHandler.Textures[SHIP_TEXTURE],
-                new Vector2(300, 300), //TEMP
+                Camera.CENTER_OF_WORLD,
                 Vector2.Zero,
                 Color.White,
                 false,
