@@ -35,6 +35,10 @@ namespace AsteroidsInc.Components
         #endregion
 
         #region Constants
+
+        const float autoAsteroidGen = 1310720; //same as with StarField, used as a divisor
+        const int genRandomization = 5;
+
         //Draw depths
         const float EFFECT_DRAW_DEPTH = 0.8f;
         const float ASTEROID_DRAW_DEPTH = 0.5f;
@@ -69,7 +73,6 @@ namespace AsteroidsInc.Components
         #endregion
 
         public AsteroidManager(
-            int initialAsteroids,
             float minVel,
             float maxVel,
             float minRotVel,
@@ -80,7 +83,10 @@ namespace AsteroidsInc.Components
         {
             rnd = new Random(); //randomize the randomizer
 
-            InitialAsteroids = initialAsteroids;
+            InitialAsteroids =
+                (int)Math.Round((float)(Camera.WorldRectangle.Width * Camera.WorldRectangle.Height) / autoAsteroidGen, 0);
+            InitialAsteroids += rnd.Next(-genRandomization, genRandomization); //add a bit of randomization
+
             MinVelocity = minVel;
             MaxVelocity = maxVel;
             MinRotationalVelocity = minRotVel;

@@ -333,6 +333,30 @@ namespace AsteroidsInc.Components
             Rotation = point.RotateTo();
         }
 
+        public void VectorTrack(Vector2 targetVector, float velTrackSpeed = 0.8f, float stabilization = 0.3f) //rotates the GameObject to a vector target
+        {
+            float target = Vector2.Normalize(targetVector).RotateTo(); //get the target angle from this projectile's velocity
+            target = MathHelper.ToDegrees(target);
+
+            if (target < 0) //convert from Atan2's -180/180 degree range to a 0/360 degree range
+            {
+                target += 360;
+            }
+
+            if (target < RotationDegrees - 10)
+                RotationVelocityDegrees -= velTrackSpeed;
+            if (target > RotationDegrees + 10)
+                RotationVelocityDegrees += velTrackSpeed;
+
+            //stabilize rotation; ripped from Player class
+            float newRotVel = RotationVelocityDegrees;
+            if (newRotVel > 0) //if rotating right
+                newRotVel -= stabilization * newRotVel;
+            if (newRotVel < 0) //if rotating left
+                newRotVel += stabilization * -newRotVel;
+            RotationVelocityDegrees = newRotVel; //and assign
+        }
+
         protected Vector2 rotationToVector()
         {
             return Rotation.RotationToVector();

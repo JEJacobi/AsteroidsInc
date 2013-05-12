@@ -24,9 +24,6 @@ namespace AsteroidsInc.Components
         public readonly int Damage;
         public readonly float MaxRange;
 
-        const float velTrackSpeed = 0.3f;
-        const float stabilization = 0.1f;
-
         Vector2 lastLoc;
         
         #endregion
@@ -65,32 +62,15 @@ namespace AsteroidsInc.Components
             lastLoc = WorldCenter;
             //update the last location
 
-            float target = Vector2.Normalize(Velocity).RotateTo(); //get the target angle from this projectile's velocity
-            target = MathHelper.ToDegrees(target);
-
-            if (target < 0) //convert from Atan2's -180/180 degree range to a 0/360 degree range
-            {
-                target += 360;
-            }
-
-            if (target < RotationDegrees - 10)
-                RotationVelocityDegrees -= velTrackSpeed;
-            if (target > RotationDegrees + 10)
-                RotationVelocityDegrees += velTrackSpeed;
-
-            //stabilize rotation; ripped from Player class
-            float newRotVel = RotationVelocityDegrees;
-            if (newRotVel > 0) //if rotating right
-                newRotVel -= stabilization * newRotVel;
-            if (newRotVel < 0) //if rotating left
-                newRotVel += stabilization * -newRotVel;
-            RotationVelocityDegrees = newRotVel; //and assign
+            VectorTrack(Velocity);
+            //rotate to the velocity vector
 
             base.Update(gameTime);
             //GameObject update
-
-            DistanceTravelled += Vector2.Distance(WorldCenter, lastLoc);
-            //update the distance travelled
+            
+            if(Camera.IsObjectInWorld(this.BoundingBox))
+                DistanceTravelled += Vector2.Distance(WorldCenter, lastLoc);
+            //update the distance travelled as long as the projectile is in world
 
             if (DistanceTravelled > MaxRange)
                 Active = false; //if max range has been exceeded, projectile is no longer active

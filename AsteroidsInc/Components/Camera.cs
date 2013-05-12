@@ -80,6 +80,14 @@ namespace AsteroidsInc
 
         #region Methods
 
+        public static void Initialize(int windowWidth, int windowHeight, int worldWidth, int worldHeight)
+        {
+            Camera.ScreenSize.X = windowWidth; //init the camera
+            Camera.ScreenSize.Y = windowHeight;
+            Camera.WorldRectangle = new Rectangle(0, 0, worldWidth, worldHeight); //create the world
+            Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
+        }
+
         public static void Move(Vector2 offset) //Offset camera method
         {
             Position += offset;

@@ -21,16 +21,9 @@ namespace AsteroidsInc
         SpriteBatch spriteBatch;
         GameState gameState;
 
-        //GAME UI
-        UIString<int> fpsDisplay;
-        UIString<string> health;
-        UIString<string> loc;
-
-        //MENU UI
-        UIString<string> title1;
-        UIString<string> title2;
-        UIString<string> exit;
-        UIString<string> start;
+        //UI element dictionaries
+        Dictionary<string, UIBase> GameUI;
+        Dictionary<string, UIBase> MenuUI;
 
         AsteroidManager temp; //TODO: Staticify
         #endregion
@@ -42,6 +35,9 @@ namespace AsteroidsInc
         const string SOUND_DIR = "Sound/";
         const string MUSIC_DIR = "Music/";
 
+        const int DEFAULT_WINDOWED_WIDTH = 1024;
+        const int DEFAULT_WINDOWED_HEIGHT = 768;
+
         readonly Color HIGHLIGHT_COLOR = Color.Yellow;
         readonly Color NORMAL_COLOR = Color.White;
 
@@ -50,9 +46,8 @@ namespace AsteroidsInc
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-            graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            //graphics.IsFullScreen = true;
+            graphics.PreferredBackBufferHeight = DEFAULT_WINDOWED_HEIGHT;
+            graphics.PreferredBackBufferWidth = DEFAULT_WINDOWED_WIDTH; //set the window size to defaults
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true; //mouse should be visible
         }
@@ -61,10 +56,14 @@ namespace AsteroidsInc
         {
             gameState = GameState.Menu; //set the initial gamestate
 
-            Camera.ScreenSize.X = GraphicsDevice.Viewport.Bounds.Width; //init the camera
-            Camera.ScreenSize.Y = GraphicsDevice.Viewport.Bounds.Height;
-            Camera.WorldRectangle = new Rectangle(0, 0, (int)Camera.ScreenSize.X * 3, (int)Camera.ScreenSize.Y * 3); //create the world
-            Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
+            Camera.Initialize( //initialize the camera
+                DEFAULT_WINDOWED_WIDTH,
+                DEFAULT_WINDOWED_HEIGHT,
+                8000, 8000);
+
+            GameUI = new Dictionary<string, UIBase>();
+            MenuUI = new Dictionary<string, UIBase>();
+
             base.Initialize();
         }
 
@@ -145,23 +144,26 @@ namespace AsteroidsInc
             StarField.Generate();
 
             //GAME UI
-            fpsDisplay = new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false); //TEMP
-            health = new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
-            loc = new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false);
+            GameUI.Add("fpsDisplay", new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false)); //TEMP
+            GameUI.Add("health", new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            GameUI.Add("loc", new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
 
             //MENU UI
-            title1 = new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true);
-            title2 = new UIString<string>("INC", new Vector2(0.5f, 0.275f), ContentHandler.Fonts["title2"], Color.White, true);
-            start = new UIString<string>("Start", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["menu"], Color.White, true);
-            exit = new UIString<string>("Exit", new Vector2(0.5f, 0.575f), ContentHandler.Fonts["menu"], Color.White, true);
+            MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));
+            MenuUI.Add("title2", new UIString<string>("INC", new Vector2(0.5f, 0.29f), ContentHandler.Fonts["title2"], Color.White, true));
+            MenuUI.Add("start", new UIString<string>("Start", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["menu"], Color.White, true));
+            MenuUI.Add("exit", new UIString<string>("Exit", new Vector2(0.5f, 0.65f), ContentHandler.Fonts["menu"], Color.White, true));
+            MenuUI.Add("sound", new UIString<string>("F11 - Toggle SFX", new Vector2(0.01f, 0.87f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI.Add("music", new UIString<string>("F12 - Toggle Music", new Vector2(0.01f, 0.93f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI.Add("fullscreen", new UIString<string>("F10 - Toggle Fullscreen", new Vector2(0.01f, 0.81f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
 
             //UI Events
-            start.OnClick += new UIBase.MouseClickHandler(start_OnClick);
-            start.MouseOver += new EventHandler(start_MouseOver);
-            start.MouseAway += new EventHandler(start_MouseAway);
-            exit.OnClick += new UIBase.MouseClickHandler(exit_OnClick);
-            exit.MouseOver += new EventHandler(exit_MouseOver);
-            exit.MouseAway += new EventHandler(exit_MouseAway);
+            MenuUI["start"].OnClick += new UIBase.MouseClickHandler(start_OnClick);
+            MenuUI["start"].MouseOver += new EventHandler(start_MouseOver);
+            MenuUI["start"].MouseAway += new EventHandler(start_MouseAway);
+            MenuUI["exit"].OnClick += new UIBase.MouseClickHandler(exit_OnClick);
+            MenuUI["exit"].MouseOver += new EventHandler(exit_MouseOver);
+            MenuUI["exit"].MouseAway += new EventHandler(exit_MouseAway);
 
             //AsteroidManager
             List<Texture2D> particle = new List<Texture2D>(); //particle list
@@ -172,7 +174,7 @@ namespace AsteroidsInc
             asteroid.Add(ContentHandler.Textures[AsteroidManager.SMALL_ASTEROID]);
             asteroid.Add(ContentHandler.Textures[AsteroidManager.LARGE_ASTEROID]);
             asteroid.Add(ContentHandler.Textures[AsteroidManager.ORE_ASTEROID]);
-            temp = new AsteroidManager(15, 50, 100, 1, 2, asteroid, particle, true);
+            temp = new AsteroidManager(50, 100, 1, 2, asteroid, particle, true);
             //END COMPONENT INIT
             #endregion
 
@@ -188,6 +190,44 @@ namespace AsteroidsInc
         {
             InputHandler.Update(); //update InputHandler regardless of gamestate
 
+            if (InputHandler.IsNewKeyPress(Keys.F10)) //handle fullscreen switching
+            {
+                if (graphics.IsFullScreen)
+                {
+                    graphics.ToggleFullScreen();
+                    graphics.PreferredBackBufferWidth = DEFAULT_WINDOWED_WIDTH;
+                    graphics.PreferredBackBufferHeight = DEFAULT_WINDOWED_HEIGHT;
+                    //reset to default windowed resolution and toggle
+
+                    graphics.ApplyChanges();
+                    Camera.Initialize( //reinit the camera to fit windowed mode
+                        DEFAULT_WINDOWED_WIDTH,
+                        DEFAULT_WINDOWED_HEIGHT,
+                        Camera.WorldRectangle.Width,
+                        Camera.WorldRectangle.Height);
+                }
+                else
+                {
+                    graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+                    graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+                    graphics.ApplyChanges();
+
+                    graphics.ToggleFullScreen(); //set the fullscreen window to native resolution and toggle
+
+                    Camera.Initialize( //reinit the camera to fit fullscreen
+                        GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width,
+                        GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height,
+                        Camera.WorldRectangle.Width,
+                        Camera.WorldRectangle.Height);
+                }
+            }
+
+            if (InputHandler.IsNewKeyPress(Keys.F11))
+                ContentHandler.TogglePlaySFX(); //toggle play SFX
+
+            if (InputHandler.IsNewKeyPress(Keys.F12))
+                ContentHandler.TogglePlayMusic(); //toggle play music
+
             switch (gameState) //MAIN GAMESTATE SWITCH
             {
                 case GameState.Game:
@@ -200,19 +240,18 @@ namespace AsteroidsInc
                     StarField.Scrolling = false;
 
                     ProjectileManager.Update(gameTime);
+                    temp.Update(gameTime); //TEMP
                     Player.Update(gameTime);
 
                     //UI Stuff:
-                    fpsDisplay.Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
+                    ((UIString<int>)GameUI["fpsDisplay"]).Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
                     //calculate framerate to the nearest int
-                    health.Value = "Health: " + Player.Health.ToString();
+                    ((UIString<string>)GameUI["health"]).Value = "Health: " + Player.Health.ToString();
                     //get health
-                    loc.Value = InputHandler.MouseState.X.ToString() + ", " + InputHandler.MouseState.Y.ToString();
+                    ((UIString<string>)GameUI["loc"]).Value = Player.Ship.WorldCenter.ToString();
                     //get loc value
-                    temp.Update(gameTime);
-                    title1.Update(gameTime);
-                    title2.Update(gameTime);
-                    loc.Update(gameTime);
+                    foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
+                        elementPair.Value.Update(gameTime);
 
                     base.Update(gameTime);
 
@@ -225,9 +264,8 @@ namespace AsteroidsInc
 
                     ContentHandler.PlaySong("menu", true);
 
-                    title1.Update(gameTime);
-                    start.Update(gameTime);
-                    exit.Update(gameTime);
+                    foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
+                        elementPair.Value.Update(gameTime); //update each UI element
 
                     StarField.Update(gameTime);
 
@@ -256,9 +294,9 @@ namespace AsteroidsInc
                     ProjectileManager.Draw(spriteBatch);
                     temp.Draw(spriteBatch); //And then the rest of the game components
                     Player.Draw(spriteBatch); //Player next
-                    fpsDisplay.Draw(spriteBatch);
-                    health.Draw(spriteBatch); //UI elements last
-                    loc.Draw(spriteBatch);
+
+                    foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
+                        elementPair.Value.Draw(spriteBatch);
 
                     spriteBatch.End(); //END SPRITE DRAW
                     base.Draw(gameTime);
@@ -273,10 +311,8 @@ namespace AsteroidsInc
 
                     StarField.Draw(spriteBatch);
 
-                    title1.Draw(spriteBatch);
-                    title2.Draw(spriteBatch);
-                    start.Draw(spriteBatch);
-                    exit.Draw(spriteBatch);
+                    foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
+                        elementPair.Value.Draw(spriteBatch);
 
                     //END DRAW
                     spriteBatch.End();
@@ -308,12 +344,12 @@ namespace AsteroidsInc
 
         void exit_MouseAway(object sender, EventArgs e)
         {
-            exit.Color = NORMAL_COLOR;
+            MenuUI["exit"].Color = NORMAL_COLOR;
         }
 
         void exit_MouseOver(object sender, EventArgs e)
         {
-            exit.Color = HIGHLIGHT_COLOR;
+            MenuUI["exit"].Color = HIGHLIGHT_COLOR;
         }
 
         void exit_OnClick(UIBase sender, MouseClickArgs e)
@@ -323,12 +359,12 @@ namespace AsteroidsInc
 
         void start_MouseAway(object sender, EventArgs e)
         {
-            start.Color = NORMAL_COLOR;
+            MenuUI["start"].Color = NORMAL_COLOR;
         }
 
         void start_MouseOver(object sender, EventArgs e)
         {
-            start.Color = HIGHLIGHT_COLOR;
+            MenuUI["start"].Color = HIGHLIGHT_COLOR;
         }
 
         void Player_DeadEvent(object sender, EventArgs e)

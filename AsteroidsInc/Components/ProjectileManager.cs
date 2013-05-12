@@ -51,7 +51,12 @@ namespace AsteroidsInc.Components
                 Projectiles[i].Update(gameTime); //update the projectile
 
                 if (Projectiles[i].Active == false)
+                {
+                    if (Projectiles[i].DetonateEffect) //add a detonation effect if wanted
+                        addDetonateEffect(Projectiles[i].WorldCenter);
+
                     Projectiles.RemoveAt(i); //if inactive; remove
+                }
             }
 
             for (int i = 0; i < HitEffects.Count; i++)
@@ -99,20 +104,7 @@ namespace AsteroidsInc.Components
                         shot.Active = false;
 
                         if (shot.DetonateEffect)
-                            HitEffects.Add(new ParticleEmitter(
-                                DETONATE_MAX_PARTICLES,
-                                shot.WorldCenter,
-                                ContentHandler.Textures["particle"].ToTextureList(),
-                                DETONATE_COLORS.ToList<Color>(),
-                                DETONATE_FRAMES_TO_LIVE,
-                                true,
-                                true,
-                                DETONATE_TIME_TO_EMIT,
-                                DETONATE_MAX_PARTICLES / DETONATE_TIME_TO_EMIT,
-                                DETONATE_EJECTION_SPEED,
-                                DETONATE_RANDOMIZATION,
-                                0,
-                                DETONATE_SPRAY_WIDTH));  
+                            addDetonateEffect(shot.WorldCenter);
 
                         return true; //return true
                     }
@@ -160,6 +152,24 @@ namespace AsteroidsInc.Components
         public static void PlayShotHitSound(Projectile shot)
         {
             ContentHandler.PlaySFX(shot.HitSound);
+        }
+
+        private static void addDetonateEffect(Vector2 worldPos)
+        {
+            HitEffects.Add(new ParticleEmitter(
+                DETONATE_MAX_PARTICLES,
+                worldPos,
+                ContentHandler.Textures["particle"].ToTextureList(),
+                DETONATE_COLORS.ToList<Color>(),
+                DETONATE_FRAMES_TO_LIVE,
+                true,
+                true,
+                DETONATE_TIME_TO_EMIT,
+                DETONATE_MAX_PARTICLES / DETONATE_TIME_TO_EMIT,
+                DETONATE_EJECTION_SPEED,
+                DETONATE_RANDOMIZATION,
+                0,
+                DETONATE_SPRAY_WIDTH));  
         }
     }
 }
