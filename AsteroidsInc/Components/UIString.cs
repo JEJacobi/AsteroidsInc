@@ -31,8 +31,10 @@ namespace AsteroidsInc.Components
             float scale = 1f,
             float rotation = 0f,
             bool isCenterOrigin = true,
-            SpriteEffects effects = SpriteEffects.None)
-            : base(relativePosition, color, active, scale, rotation, isCenterOrigin, effects)
+            SpriteEffects effects = SpriteEffects.None,
+            int xPadding = 0,
+            int yPadding = 0)
+            : base(relativePosition, color, active, scale, rotation, isCenterOrigin, effects, xPadding, yPadding)
         {
             Value = initialValue;
             Font = font;
@@ -68,10 +70,10 @@ namespace AsteroidsInc.Components
         public override Rectangle GetBoundingBox()
         {
             return new Rectangle(
-                (int)ScreenPosition.X - (IsCenterOrigin ? (int)StringLength.X / 2 : 0), //woo, ternary!
-                (int)ScreenPosition.Y - (IsCenterOrigin ? (int)StringLength.Y / 2 : 0),
-                (int)StringLength.X,
-                (int)StringLength.Y);
+                ((int)ScreenPosition.X - (IsCenterOrigin ? (int)StringLength.X / 2 : 0)) + XPadding, //woo, ternary!
+                ((int)ScreenPosition.Y - (IsCenterOrigin ? (int)StringLength.Y / 2 : 0)) + YPadding,
+                (int)StringLength.X - (XPadding * 2),
+                (int)StringLength.Y - (XPadding * 2));
         }
         public override string ToString() //override tostring, gets converted value
         {

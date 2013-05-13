@@ -29,14 +29,14 @@ namespace AsteroidsInc
         {
             get
             {
-                return new Vector2(Position.X + (Viewport.Width / 2),
-                    Position.Y + (Viewport.Height / 2));
+                return new Vector2(Position.X + (Viewport.Width >> 1),
+                    Position.Y + (Viewport.Height >> 1));
             }
             set
             {
                 float x = Position.X; float y = Position.Y;
-                x = value.X - (Viewport.Width / 2);
-                y = value.Y - (Viewport.Height / 2);
+                x = value.X - (Viewport.Width >> 1);
+                y = value.Y - (Viewport.Height >> 1);
                 Position = new Vector2(x, y);
             }
         }//camera position, but with a center origin
@@ -58,7 +58,7 @@ namespace AsteroidsInc
         {
             get
             {
-                return new Vector2(WorldRectangle.Width / 2, WorldRectangle.Height / 2);
+                return new Vector2(WorldRectangle.Width >> 1, WorldRectangle.Height >> 1);
             }
         }
         public static Vector2 UL_CORNER //upper-left corner
@@ -85,7 +85,7 @@ namespace AsteroidsInc
             Camera.ScreenSize.X = windowWidth; //init the camera
             Camera.ScreenSize.Y = windowHeight;
             Camera.WorldRectangle = new Rectangle(0, 0, worldWidth, worldHeight); //create the world
-            Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height / 2);
+            Camera.CenterPosition = new Vector2(Camera.WorldRectangle.Width >> 1, Camera.WorldRectangle.Height >> 1);
         }
 
         public static void Move(Vector2 offset) //Offset camera method
@@ -95,6 +95,18 @@ namespace AsteroidsInc
 
         public static bool IsObjectVisible(Rectangle obj)
         { return Viewport.Intersects(obj); } //Check if obj intersects with the viewport
+
+        public static bool IsObjectVisible(Vector2 obj) //Overload with Vector2
+        {
+            //create a 2x2 rectangle at Vector2's position
+            //2x2 is to account for int cast truncation
+            Rectangle temp = new Rectangle(
+                (int)obj.X - 1,
+                (int)obj.Y - 1,
+                2, 2);
+
+            return IsObjectVisible(temp); //and check
+        }
 
         public static Vector2 GetLocalCoords(Vector2 point)
         { return point - Position; } //Transform point to position - used in converting to screen coords

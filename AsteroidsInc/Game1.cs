@@ -17,6 +17,7 @@ namespace AsteroidsInc
     {
         #region Declarations
 
+        //Core game components
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         GameState gameState;
@@ -25,23 +26,30 @@ namespace AsteroidsInc
         Dictionary<string, UIBase> GameUI;
         Dictionary<string, UIBase> MenuUI;
 
-        AsteroidManager temp; //TODO: Staticify
         #endregion
 
         #region Properties & Constants
 
+        //Content address prefixes
         const string TEXTURE_DIR = "Textures/";
         const string FONT_DIR = "Fonts/";
         const string SOUND_DIR = "Sound/";
         const string MUSIC_DIR = "Music/";
 
+        //Default windowed mode's resolution
         const int DEFAULT_WINDOWED_WIDTH = 1024;
         const int DEFAULT_WINDOWED_HEIGHT = 768;
+        
+        const int TEMP_STARS_TO_GEN = 100; //TEMP
+        const int TEMP_ASTEROIDS_TO_GEN = 150;
 
-        const int TEMP_STARS_TO_GEN = 100;
+        const int WORLD_SIZE = 3000;
 
+        //UI constants
         readonly Color HIGHLIGHT_COLOR = Color.Yellow;
         readonly Color NORMAL_COLOR = Color.White;
+        const float HIGHLIGHT_SCALE = 1.1f;
+        const float NORMAL_SCALE = 1f;
 
 	    #endregion
 
@@ -68,7 +76,9 @@ namespace AsteroidsInc
             Camera.Initialize( //initialize the camera
                 DEFAULT_WINDOWED_WIDTH,
                 DEFAULT_WINDOWED_HEIGHT,
-                2000, 2000);
+                WORLD_SIZE, WORLD_SIZE);
+
+            Camera.Position = Vector2.Zero;
 
             GameUI = new Dictionary<string, UIBase>();
             MenuUI = new Dictionary<string, UIBase>();
@@ -168,6 +178,7 @@ namespace AsteroidsInc
             MenuUI.Add("sound", new UIString<string>("F11 - Toggle SFX", new Vector2(0.01f, 0.87f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             MenuUI.Add("music", new UIString<string>("F12 - Toggle Music", new Vector2(0.01f, 0.93f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             MenuUI.Add("fullscreen", new UIString<string>("F10 - Toggle Fullscreen", new Vector2(0.01f, 0.81f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI["exit"].XPadding = -10;
 
             //UI Events
             MenuUI["start"].OnClick += new UIBase.MouseClickHandler(start_OnClick);
@@ -186,9 +197,11 @@ namespace AsteroidsInc
             asteroid.Add(ContentHandler.Textures[AsteroidManager.SMALL_ASTEROID]);
             asteroid.Add(ContentHandler.Textures[AsteroidManager.LARGE_ASTEROID]);
             asteroid.Add(ContentHandler.Textures[AsteroidManager.ORE_ASTEROID]);
-            temp = new AsteroidManager(50, 100, 1, 2, asteroid, particle, true);
+            AsteroidManager.Initialize(TEMP_ASTEROIDS_TO_GEN, asteroid, particle, true);
             //END COMPONENT INIT
             #endregion
+
+            ContentHandler.PlaySong("menu", true);
 
             spriteBatch.End();
         }
@@ -201,7 +214,109 @@ namespace AsteroidsInc
         protected override void Update(GameTime gameTime)
         {
             InputHandler.Update(); //update InputHandler regardless of gamestate
+            handleGlobalInputs(); //handle any global inputs
 
+            switch (gameState) //MAIN GAMESTATE SWITCH
+            {
+                case GameState.Game:
+                    //GAME UPDATE BEGIN
+
+                    StarField.Update(gameTime);
+
+                    ProjectileManager.Update(gameTime);
+                    AsteroidManager.Update(gameTime); //TEMP
+                    Player.Update(gameTime);
+
+                    //UI Stuff:
+                    ((UIString<string>)GameUI["health"]).Value = "Health: " + Player.Health.ToString();
+                    //get health
+                    ((UIString<string>)GameUI["loc"]).Value = Camera.Position.ToString();
+                    //get loc value
+                    foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
+                        elementPair.Value.Update(gameTime);
+
+                    if (InputHandler.WasKeyDown(Keys.Escape))
+                        SwitchGameState(GameState.Menu); //if in game and esc is pressed, exit to menu
+
+                    base.Update(gameTime);
+
+                    //GAME UPDATE END
+                    break;
+
+                case GameState.Menu:
+
+                    foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
+                        elementPair.Value.Update(gameTime); //update each UI element
+
+                    StarField.Update(gameTime);
+
+                    if (InputHandler.IsKeyDown(Keys.Escape))
+                        this.Exit(); //if in menu and esc is pressed, exit
+
+                    break;
+
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            switch (gameState) //MAIN GAMESTATE DRAW SWITCH
+            {
+                case GameState.Game:
+                    //BEGIN GAME DRAW
+
+                    GraphicsDevice.Clear(Color.Black);
+                    spriteBatch.Begin(); //BEGIN SPRITE DRAW
+
+                    StarField.Draw(spriteBatch);
+                    ProjectileManager.Draw(spriteBatch);
+                    AsteroidManager.Draw(spriteBatch); //And then the rest of the game components
+                    Player.Draw(spriteBatch); //Player next
+
+                    ((UIString<int>)GameUI["fpsDisplay"]).Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
+                    //calculate framerate to the nearest int, must be done in draw
+
+                    foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
+                        elementPair.Value.Draw(spriteBatch); //draw each element in GameUI
+
+                    spriteBatch.End(); //END SPRITE DRAW
+                    base.Draw(gameTime);
+
+                    //END GAME DRAW
+                    break;
+                case GameState.Menu:
+
+                    GraphicsDevice.Clear(Color.Black);
+                    spriteBatch.Begin();
+                    //BEGIN DRAW
+
+                    StarField.Draw(spriteBatch);
+
+                    foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
+                        elementPair.Value.Draw(spriteBatch); //draw each element in MenuUI
+
+                    //END DRAW
+                    spriteBatch.End();
+
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        #region Local Methods
+
+        private void SwitchGameState(GameState state)
+        {
+            if (OnStateChange != null) //trigger the event with state data
+                OnStateChange(this, new StateArgs(gameState, state));
+            gameState = state; //switch the state
+        }
+
+        private void handleGlobalInputs() //handle things like fullscreen/windowed switching, toggling music on/off, etc
+        {
             if (InputHandler.IsNewKeyPress(Keys.F10)) //handle fullscreen switching
             {
                 if (graphics.IsFullScreen)
@@ -239,111 +354,24 @@ namespace AsteroidsInc
 
             if (InputHandler.IsNewKeyPress(Keys.F12))
                 ContentHandler.TogglePlayMusic(); //toggle play music
-
-            switch (gameState) //MAIN GAMESTATE SWITCH
-            {
-                case GameState.Game:
-                    //GAME UPDATE BEGIN
-
-                    if (InputHandler.WasKeyDown(Keys.Escape))
-                        SwitchGameState(GameState.Menu); //if in game and esc is pressed, exit to menu
-
-                    StarField.Update(gameTime);
-                    StarField.Scrolling = false;
-
-                    ProjectileManager.Update(gameTime);
-                    temp.Update(gameTime); //TEMP
-                    Player.Update(gameTime);
-
-                    //UI Stuff:
-                    ((UIString<string>)GameUI["health"]).Value = "Health: " + Player.Health.ToString();
-                    //get health
-                    ((UIString<string>)GameUI["loc"]).Value = Player.Ship.WorldCenter.ToString();
-                    //get loc value
-                    foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
-                        elementPair.Value.Update(gameTime);
-
-                    base.Update(gameTime);
-
-                    //GAME UPDATE END
-                    break;
-
-                case GameState.Menu:
-
-                    foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
-                        elementPair.Value.Update(gameTime); //update each UI element
-
-                    StarField.Update(gameTime);
-
-                    if (InputHandler.IsKeyDown(Keys.Escape))
-                        this.Exit(); //if in menu and esc is pressed, exit
-
-                    break;
-
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        protected override void Draw(GameTime gameTime)
-        {
-            switch (gameState) //MAIN GAMESTATE DRAW SWITCH
-            {
-                case GameState.Game:
-                    //BEGIN GAME DRAW
-
-                    GraphicsDevice.Clear(Color.Black);
-                    spriteBatch.Begin(); //BEGIN SPRITE DRAW
-
-                    StarField.Draw(spriteBatch);
-
-                    ProjectileManager.Draw(spriteBatch);
-                    temp.Draw(spriteBatch); //And then the rest of the game components
-                    Player.Draw(spriteBatch); //Player next
-
-                    ((UIString<int>)GameUI["fpsDisplay"]).Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
-                    //calculate framerate to the nearest int, must be done in draw
-
-                    foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
-                        elementPair.Value.Draw(spriteBatch);
-
-                    spriteBatch.End(); //END SPRITE DRAW
-                    base.Draw(gameTime);
-
-                    //END GAME DRAW
-                    break;
-                case GameState.Menu:
-
-                    GraphicsDevice.Clear(Color.Black);
-                    spriteBatch.Begin();
-                    //BEGIN DRAW
-
-                    StarField.Draw(spriteBatch);
-
-                    foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
-                        elementPair.Value.Draw(spriteBatch);
-
-                    //END DRAW
-                    spriteBatch.End();
-
-                    break;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        #region Local Methods
-
-        private void SwitchGameState(GameState state)
-        {
-            if (OnStateChange != null) //trigger the event with state data
-                OnStateChange(this, new StateArgs(gameState, state));
-            gameState = state; //switch the state
         }
 
         #endregion
 
         #region Event Handlers
+
+        //MENU UI - START
+        void start_MouseAway(object sender, EventArgs e)
+        {
+            MenuUI["start"].Color = NORMAL_COLOR;
+            MenuUI["start"].Scale = NORMAL_SCALE;
+        }
+
+        void start_MouseOver(object sender, EventArgs e)
+        {
+            MenuUI["start"].Color = HIGHLIGHT_COLOR;
+            MenuUI["start"].Scale = 1.2f;
+        }
 
         void start_OnClick(UIBase sender, MouseClickArgs e)
         {
@@ -351,14 +379,17 @@ namespace AsteroidsInc
             SwitchGameState(GameState.Game);
         }
 
+        //MENU UI - EXIT
         void exit_MouseAway(object sender, EventArgs e)
         {
             MenuUI["exit"].Color = NORMAL_COLOR;
+            MenuUI["exit"].Scale = NORMAL_SCALE;
         }
 
         void exit_MouseOver(object sender, EventArgs e)
         {
             MenuUI["exit"].Color = HIGHLIGHT_COLOR;
+            MenuUI["exit"].Scale = HIGHLIGHT_SCALE;
         }
 
         void exit_OnClick(UIBase sender, MouseClickArgs e)
@@ -366,40 +397,34 @@ namespace AsteroidsInc
             this.Exit();
         }
 
-        void start_MouseAway(object sender, EventArgs e)
-        {
-            MenuUI["start"].Color = NORMAL_COLOR;
-        }
-
-        void start_MouseOver(object sender, EventArgs e)
-        {
-            MenuUI["start"].Color = HIGHLIGHT_COLOR;
-        }
-
+        //Game state switch logic
         void handleSwitching(object sender, StateArgs e)
         {
-            if (e.TargetState == GameState.Menu)
+            ContentHandler.StopAll(); //stop the sound
+
+            if (e.TargetState == GameState.Menu) //if going to the menu
             {
-                StarField.Scrolling = true;
+                StarField.Scrolling = true; //set the starfield to scroll for a decorative effect
+                Camera.Position = Camera.UL_CORNER; //and set the camera to the upper-left corner of the world
 
                 ContentHandler.PlaySong("menu", true); //play menu music if target is menu
             }
-            if (e.TargetState == GameState.Game)
+            if (e.TargetState == GameState.Game) //if going to the game/continuing
             {
-                StarField.Scrolling = false;
+                Camera.CenterPosition = Player.Ship.WorldCenter; //recenter the camera
+                StarField.Scrolling = false; //cancel the scrolling
 
                 ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
             }
-
-            ContentHandler.StopAll(); //stop the sound
         }
 
+        //On player death
         void Player_DeadEvent(object sender, EventArgs e)
         {
             StarField.Generate(TEMP_STARS_TO_GEN); //regenerate the starfield
             SwitchGameState(GameState.Menu); //switch the state
             ((UIString<string>)MenuUI["start"]).Value = "Start"; //player has died, reset the resume button
-            Player.Initialize(); //reset the player
+            Player.Reset(); //reset the player
         }
 
         #endregion

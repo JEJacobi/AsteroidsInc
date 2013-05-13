@@ -24,8 +24,10 @@ namespace AsteroidsInc.Components
             float scale = 1f,
             float rotation = 0f,
             bool isCenterOrigin = true,
-            SpriteEffects effects = SpriteEffects.None)
-            : base(relativePosition, tintColor, active, scale, rotation, isCenterOrigin, effects)
+            SpriteEffects effects = SpriteEffects.None,
+            int xPadding = 0,
+            int yPadding = 0)
+            : base(relativePosition, tintColor, active, scale, rotation, isCenterOrigin, effects, xPadding, yPadding)
         {
             Texture = texture;
         }
@@ -55,10 +57,10 @@ namespace AsteroidsInc.Components
         public override Rectangle GetBoundingBox()
         {
             return new Rectangle(
-                (int)ScreenPosition.X - (IsCenterOrigin ? (int)Texture.Width / 2 : 0),
-                (int)ScreenPosition.Y - (IsCenterOrigin ? (int)Texture.Height / 2 : 0),
-                Texture.Width,
-                Texture.Height);
+                ((int)ScreenPosition.X - (IsCenterOrigin ? (int)Texture.Width / 2 : 0)) + XPadding,
+                ((int)ScreenPosition.Y - (IsCenterOrigin ? (int)Texture.Height / 2 : 0)) + YPadding,
+                Texture.Width - (XPadding * 2),
+                Texture.Height - (YPadding * 2));
         }
     }
 }

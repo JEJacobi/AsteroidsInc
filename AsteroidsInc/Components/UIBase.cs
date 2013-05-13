@@ -55,6 +55,8 @@ namespace AsteroidsInc.Components
         } //position on the screen itself
         public float Rotation { get; set; } //in radians
         public SpriteEffects Effects;
+        public int XPadding { get; set; }
+        public int YPadding { get; set; }
 
         public const float UILAYERDEPTH = 0.3f;
 
@@ -65,7 +67,9 @@ namespace AsteroidsInc.Components
             float scale,
             float rotation,
             bool isCenterOrigin,
-            SpriteEffects effects)
+            SpriteEffects effects,
+            int xPad,
+            int yPad)
         {
             RelativePos = relativePos;
             Color = color;
@@ -74,6 +78,8 @@ namespace AsteroidsInc.Components
             Rotation = rotation;
             IsCenterOrigin = isCenterOrigin;
             Effects = effects;
+            XPadding = xPad;
+            YPadding = yPad;
         }
 
         #region Methods

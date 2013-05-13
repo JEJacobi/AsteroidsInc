@@ -16,7 +16,17 @@ namespace AsteroidsInc.Components
     {
         #region Declarations
 
-        public Texture2D Texture { get; set; } //what to draw
+        public Texture2D Texture //what to draw
+        {
+            get { return text; }
+            set
+            {
+                text = value;
+                recalcTextureData();
+            }
+        }
+        Texture2D text;
+
         public Vector2 Origin { get; set; } //where to rotate from
         public Color TintColor { get; set; } //what to tint the texture with
 
@@ -112,13 +122,11 @@ namespace AsteroidsInc.Components
 
         #region Properties
 
-        public int GetWidth { get { return Texture.Width / Columns; } } //Width of a frame
-        public int GetHeight { get { return Texture.Height / Rows; } } //Height of a frame
-        public int GetRow { get { return (int)((float)CurrentFrame / (float)Columns); } } //Current row
-        public int GetColumn { get { return CurrentFrame % Columns; } } //Current column
-
-        public Vector2 SpriteCenter
-        { get { return new Vector2(GetWidth / 2, GetHeight / 2); } } //Get this Sprite's center
+        public int GetWidth { get; set; } //Width of a frame
+        public int GetHeight { get; set; } //Height of a frame
+        public int GetRow { get; set; } //Current row
+        public int GetColumn { get; set; } //Current column
+        public Vector2 SpriteCenter { get; set; } //Get this Sprite's center
         
         public Rectangle WorldRectangle //get rectangle in world coords with width of sprite
         {
@@ -136,11 +144,13 @@ namespace AsteroidsInc.Components
         {
             get
             {
+                int max = Math.Max(GetWidth, GetHeight); //get the dominant length
+
                 return new Rectangle( //Get bounding box with respect to padding values
-                    (int)WorldLocation.X + BoundingXPadding, 
-                    (int)WorldLocation.Y + BoundingYPadding,
-                    GetWidth - (BoundingXPadding * 2),
-                    GetHeight - (BoundingYPadding * 2));
+                    ((int)WorldCenter.X - (max >> 1)) + BoundingXPadding, //bitwise divide by 2
+                    ((int)WorldCenter.Y - (max >> 1)) + BoundingYPadding,
+                    max - (BoundingXPadding * 2), //essentially a worst case scenario bb, just in case of any rotation
+                    max - (BoundingYPadding * 2));
             }
         }
 
@@ -183,7 +193,7 @@ namespace AsteroidsInc.Components
 
         {
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
-            Texture = texture; //assign parameters
+            //assign parameters
             TintColor = tintColor; 
             Rotation = rotation;
             RotationalVelocity = rotationalVelocity;
@@ -196,6 +206,8 @@ namespace AsteroidsInc.Components
 
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; StartFrame = startFrame; //assign animation data
+
+            Texture = texture; //texture assignment needs to be below row/column
 
             WorldCenter = worldLocation; //NEEDS TO BE BELOW ROW & COLUMN ASSIGNMENTS
 
@@ -228,15 +240,15 @@ namespace AsteroidsInc.Components
 
                         //X-Axis Component
                         if (WorldCenter.X > Camera.WorldRectangle.Width)
-                            temp.X = Camera.WorldRectangle.X - (GetWidth / 2); //If X is out of bounds to the right, move X to the left side
+                            temp.X = Camera.WorldRectangle.X - (GetWidth >> 1); //If X is out of bounds to the right, move X to the left side
                         if (WorldCenter.X < Camera.WorldRectangle.X)
-                            temp.X = Camera.WorldRectangle.Width + (GetWidth / 2); //If X is out of bound to the left, move X to the right side
+                            temp.X = Camera.WorldRectangle.Width + (GetWidth >> 1); //If X is out of bound to the left, move X to the right side
 
                         //Y-Axis Component
                         if (WorldCenter.Y > Camera.WorldRectangle.Height)
-                            temp.Y = Camera.WorldRectangle.Y - (GetHeight / 2); //If Y is out of bounds to the bottom, move Y to the top
+                            temp.Y = Camera.WorldRectangle.Y - (GetHeight >> 1); //If Y is out of bounds to the bottom, move Y to the top
                         if (WorldCenter.Y < Camera.WorldRectangle.Y)
-                            temp.Y = Camera.WorldRectangle.Height + (GetHeight / 2); //If Y is out of bounds to the top, move Y to the bottom
+                            temp.Y = Camera.WorldRectangle.Height + (GetHeight >> 1); //If Y is out of bounds to the top, move Y to the bottom
 
                         WorldCenter = temp; //Assign updated position
                     }
@@ -285,6 +297,11 @@ namespace AsteroidsInc.Components
                     }
                 }
             }
+
+            //spriteBatch.Draw(
+            //    ContentHandler.Textures["particle"],
+            //    Camera.GetLocalCoords(BoundingBox),
+            //    Color.White); //debug
         } 
 
         public bool IsBoxColliding(Rectangle obj) //bounding box collision test
@@ -300,22 +317,14 @@ namespace AsteroidsInc.Components
                 return false;
         }
 
-        public bool IsCircleColliding(Vector2 objCenter, float objRadius) //simple bounding circle collision algorithm
+        public bool IsCircleColliding(GameObject obj) //simple bounding cicle collision detection check
         {
-            if (Vector2.Distance(WorldCenter, objCenter) <
-                (CollisionRadius + objRadius))  //if the distance between centers is greater than the sum
-                return true;                    //of the radii, collision has occurred
-            else
-                return false; //if not, return false
-        }
+            float distance = Vector2.Distance(this.WorldCenter, obj.WorldCenter);
+            int totalradii = CollisionRadius + obj.CollisionRadius;
 
-        public bool IsCircleColliding(GameObject obj) //overload of previous which takes a GameObject instead of loose values
-        {
-            if (Vector2.Distance(this.WorldCenter, obj.WorldCenter) <
-                (CollisionRadius + obj.CollisionRadius))
+            if (distance < totalradii)
                 return true;
-            else
-                return false;
+            return false;
         }
 
         public void RotateTo(Vector2 point) //rotates the GameObject to a point
@@ -348,6 +357,15 @@ namespace AsteroidsInc.Components
         {
             return Rotation.RotationToVector();
         } //local version of extension method
+
+        private void recalcTextureData() //recalculate the width, height, row, column, and sprite center; done on new texture assignment
+        {
+            GetWidth = Texture.Width / Columns;
+            GetHeight = Texture.Height / Rows;
+            GetRow = (int)((float)CurrentFrame / (float)Columns);
+            GetColumn = CurrentFrame % Columns;
+            SpriteCenter = new Vector2(GetWidth >> 1, GetHeight >> 1); //binary shift == divide by two
+        }
 
         #endregion
 

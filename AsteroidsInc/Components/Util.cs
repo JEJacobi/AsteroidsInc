@@ -63,11 +63,11 @@ namespace AsteroidsInc.Components
 
         public static int GetMeanRadius(this Texture2D texture, int columns = 1, int rows = 1) //get the mean radius using the texture's height and width
         {
-            int width = texture.Width / columns; //get width/height
-            int height = texture.Height / rows;
+            float width = texture.Width / columns; //get width/height
+            float height = texture.Height / rows;
 
-            float temp = (((width / 2) + (height / 2)) / 2); //Get the mean and return
-            return (int)Math.Round(temp, 0); //SINGLE FRAME SPRITES ONLY
+            float temp = (((width / 2f) + (height / 2f)) / 2f); //Get the mean and return
+            return (int)Math.Round(temp, 0);
         }
 
         public static List<Texture2D> ToTextureList(this Texture2D texture) //turn a texture object into a List<Texture2D>

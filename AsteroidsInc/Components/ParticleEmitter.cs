@@ -92,16 +92,17 @@ namespace AsteroidsInc.Components
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            for (int i = 0; i < Particles.Count; i++)
+            if (Camera.IsObjectVisible(WorldPosition)) //if emitter isn't visible, don't bother drawing
             {
-                if (Camera.IsObjectVisible(Particles[i].WorldRectangle))
-                    Particles[i].Draw(spriteBatch); //If I is visible, draw...
+                for (int i = 0; i < Particles.Count; i++)
+                    Particles[i].Draw(spriteBatch);
             }
         }
 
         public void Update(GameTime gameTime)
         {
-            if ((TimeToEmit >= 1 || TimeToEmit == -1) && Emitting) //if timetoemit is positive/infinite and emitting
+            if ((TimeToEmit >= 1 || TimeToEmit == -1) //if timetoemit is positive/infinite and emitting, and emitter is visible
+                && Emitting && Camera.IsObjectVisible(WorldPosition))
             {
                 for (int i = 0; i < ParticlesPerTick; i++)
                     EmitParticle();

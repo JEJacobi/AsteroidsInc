@@ -34,6 +34,7 @@ namespace AsteroidsInc.Components
 
         public static event EventHandler DeadEvent;
 
+        static List<Texture2D> explosionParticles = new List<Texture2D>();
         static int shotDelay = 0; //counter variable
         static int shieldFade = 0;
         static bool dead;
@@ -210,15 +211,14 @@ namespace AsteroidsInc.Components
                 TRAIL_SPRAYWIDTH);
 
             //explosion particle textures
-            List<Texture2D> temp = new List<Texture2D>();
-            temp.Add(ContentHandler.Textures["junk1"]);
-            temp.Add(ContentHandler.Textures["junk2"]);
-            temp.Add(ContentHandler.Textures["junk3"]);
+            explosionParticles.Add(ContentHandler.Textures["junk1"]);
+            explosionParticles.Add(ContentHandler.Textures["junk2"]);
+            explosionParticles.Add(ContentHandler.Textures["junk3"]);
 
             ExplosionEmitter = new ParticleEmitter(
                 EXPLOSION_PARTICLES_TO_EMIT,
                 Ship.WorldCenter,
-                temp,
+                explosionParticles,
                 EXPLOSION_COLORS.ToList<Color>(),
                 EXPLOSION_FTL,
                 false,
@@ -399,6 +399,46 @@ namespace AsteroidsInc.Components
                 Ship.Draw(spriteBatch);
             }
             ExplosionEmitter.Draw(spriteBatch); //out of if dead check since activated on death
+        }
+
+        public static void Reset() //reset the player, location, equipment and explosion emitter
+        {
+            //reset the ship object
+            Ship.Animating = false;
+            Ship.CurrentFrame = 0;
+            Ship.WorldCenter = Camera.CENTER_OF_WORLD;
+            Ship.RotationalVelocity = 0f;
+            Ship.Rotation = 0f;
+            Ship.Velocity = Vector2.Zero;
+
+            //the engine trails
+            LeftEngineTrail.Emitting = false;
+            RightEngineTrail.Emitting = false;
+
+            //equipment and flags
+            Slot1 = MISSILE_KEY;
+            Slot2 = LASER_KEY;
+            ActiveSlot = INITIAL_ACTIVE_SLOT;
+            Health = STARTING_HEALTH;
+            dead = false;
+            StabilizeRotation = true;
+            Ship.Active = true;
+
+            //and the on-death particle emitter
+            ExplosionEmitter = new ParticleEmitter(
+                EXPLOSION_PARTICLES_TO_EMIT,
+                Ship.WorldCenter,
+                explosionParticles,
+                EXPLOSION_COLORS.ToList<Color>(),
+                EXPLOSION_FTL,
+                false,
+                true,
+                EXPLOSION_TIME_TO_EMIT,
+                EXPLOSION_PARTICLES_TO_EMIT / EXPLOSION_TIME_TO_EMIT,
+                EXPLOSION_EJECTION_SPEED,
+                EXPLOSION_RANDOMIZATION,
+                0f, 180f);
+            ExplosionEmitter.WorldPosition = Ship.WorldCenter;
         }
 
         public static void TriggerShield(int fadeVal = 100)
