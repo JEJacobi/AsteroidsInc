@@ -41,9 +41,9 @@ namespace AsteroidsInc
         const int DEFAULT_WINDOWED_HEIGHT = 768;
         
         const int TEMP_STARS_TO_GEN = 100; //TEMP
-        const int TEMP_ASTEROIDS_TO_GEN = 150;
+        const int TEMP_ASTEROIDS_TO_GEN = 35;
 
-        const int WORLD_SIZE = 3000;
+        const int WORLD_SIZE = 2000;
 
         //UI constants
         readonly Color HIGHLIGHT_COLOR = Color.Yellow;

@@ -28,7 +28,7 @@ namespace AsteroidsInc.Components
         const float EFFECT_RANDOMIZATION = 0.3f;
         const float EFFECT_SPRAY_WIDTH = 50f;
 
-        const int DETONATE_MAX_PARTICLES = 500;
+        const int DETONATE_MAX_PARTICLES = 250;
         const int DETONATE_FRAMES_TO_LIVE = 25;
         const int DETONATE_TIME_TO_EMIT = 1;
         const int DETONATE_EJECTION_SPEED = 200;

@@ -61,6 +61,7 @@ namespace AsteroidsInc.Components
         public int BoundingXPadding { get; set; }
         public int BoundingYPadding { get; set; } //Padding for bounding box collision
 
+        //if true, omit looping if it goes off the edge, don't do minor functions, general optimization...
         public bool LiteMode;
 
         public int TotalFrames
@@ -264,25 +265,25 @@ namespace AsteroidsInc.Components
         {
             if (Active) //if the sprite is active...
             {
-                if (TotalFrames > 1 && Camera.IsObjectVisible(WorldRectangle)) //if multi-frame animation & object is visible
-                {
-                    Rectangle sourceRectangle = new Rectangle(GetWidth * GetColumn,
-                        GetHeight * GetRow, GetWidth, GetHeight); //get source rectangle to use
+                if (Camera.IsObjectVisible(WorldRectangle))
+	            {
+                    if (TotalFrames > 1) //if multi-frame animation & object is visible
+                    {
+                        Rectangle sourceRectangle = new Rectangle(GetWidth * GetColumn,
+                            GetHeight * GetRow, GetWidth, GetHeight); //get source rectangle to use
 
-                    spriteBatch.Draw( //draw it
-                        Texture,
-                        ScreenCenter,
-                        sourceRectangle, //use generated source rectangle
-                        TintColor,
-                        Rotation,
-                        Origin,
-                        Scale,
-                        Effects,
-                        Depth);
-                }
-                else //if single frame sprite
-                {
-                    if (Camera.IsObjectVisible(WorldRectangle)) //check if sprite is visible to camera
+                        spriteBatch.Draw( //draw it
+                            Texture,
+                            ScreenCenter,
+                            sourceRectangle, //use generated source rectangle
+                            TintColor,
+                            Rotation,
+                            Origin,
+                            Scale,
+                            Effects,
+                            Depth);
+                    }
+                    else //if single frame sprite
                     {
                         spriteBatch.Draw(
                             Texture,
@@ -295,7 +296,7 @@ namespace AsteroidsInc.Components
                             Effects, //spriteeffects
                             Depth); //layerdepth
                     }
-                }
+	            }
             }
 
             //spriteBatch.Draw(
