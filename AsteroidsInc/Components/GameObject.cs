@@ -21,8 +21,8 @@ namespace AsteroidsInc.Components
             get { return text; }
             set
             {
-                text = value;
-                recalcTextureData();
+                text = value; //whenever a new texture is assigned, recalculate the texture data
+                RecalcTextureData();
             }
         }
         Texture2D text;
@@ -102,6 +102,9 @@ namespace AsteroidsInc.Components
         }
         private int currentFrame;
 
+        public float FrameDelay { get; set; }
+        float delayCounter = 0f;
+
         public int Rows { get; set; } //rows in the sprite sheet, 1 is default
         public int Columns { get; set; } //columns in the sprite sheet, 1 is also default
         public bool Animating { get; set; }
@@ -125,8 +128,8 @@ namespace AsteroidsInc.Components
 
         public int GetWidth { get; set; } //Width of a frame
         public int GetHeight { get; set; } //Height of a frame
-        public int GetRow { get; set; } //Current row
-        public int GetColumn { get; set; } //Current column
+        public int GetRow { get { return (int)((float)CurrentFrame / (float)Columns); } } //Current row
+        public int GetColumn { get { return CurrentFrame % Columns; } } //Current column
         public Vector2 SpriteCenter { get; set; } //Get this Sprite's center
         
         public Rectangle WorldRectangle //get rectangle in world coords with width of sprite
@@ -190,7 +193,8 @@ namespace AsteroidsInc.Components
             int totalFrames = 0,
             int rows = 1,
             int columns = 1,
-            int startingFrame = 0)
+            int startingFrame = 0,
+            float frameDelay = 0)
 
         {
             if (texture == null) { throw new NullReferenceException("Null texture reference."); }
@@ -206,7 +210,7 @@ namespace AsteroidsInc.Components
             Active = true;
 
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
-            Rows = rows; Columns = columns; this.TotalFrames = totalFrames; StartFrame = startFrame; //assign animation data
+            Rows = rows; Columns = columns; this.TotalFrames = totalFrames; StartFrame = startFrame; FrameDelay = frameDelay; //assign animation data
 
             Texture = texture; //texture assignment needs to be below row/column
 
@@ -226,9 +230,15 @@ namespace AsteroidsInc.Components
                 if(RotationalVelocity != 0)
                     Rotation += RotationalVelocity;
 
-                if (TotalFrames > 1 && Animating)
+                if (TotalFrames > 1 && Animating) //if the gameobject is animated
                 {
-                    CurrentFrame++;
+                    delayCounter += (float)gameTime.ElapsedGameTime.TotalMilliseconds; //add the elapsed time to the delay counter
+                    if (delayCounter >= FrameDelay) //if frame delay met
+                    {
+                        delayCounter = 0; //reset
+                        CurrentFrame++; //increment the current frame
+                    }
+
                     if (CurrentFrame >= TotalFrames)
                         CurrentFrame = StartFrame; //Loop animation
                 }
@@ -318,12 +328,21 @@ namespace AsteroidsInc.Components
                 return false;
         }
 
-        public bool IsCircleColliding(GameObject obj) //simple bounding cicle collision detection check
+        public bool IsCircleColliding(GameObject obj) //simple bounding circle collision detection check
         {
-            float distance = Vector2.Distance(this.WorldCenter, obj.WorldCenter);
-            int totalradii = CollisionRadius + obj.CollisionRadius;
+            //Distance squared to avoid costly sqrt
+            float distance = Vector2.DistanceSquared(this.WorldCenter, obj.WorldCenter);
+            int totalradii = CollisionRadius + obj.CollisionRadius; //get the total radii
+            totalradii *= totalradii; //and raise it by the power of two (multiplied by itself instead of Math.Pow)
 
-            if (distance < totalradii)
+            if (distance < totalradii) //if the distance is smaller than the sum of the radii
+                return true; //collision!
+            return false;
+        }
+
+        public bool IsCircleAndBoxColliding(GameObject obj) //tests for both bb and bc collisions with another game object
+        {
+            if (IsBoxColliding(obj) && IsCircleColliding(obj))
                 return true;
             return false;
         }
@@ -354,19 +373,17 @@ namespace AsteroidsInc.Components
             RotationVelocityDegrees = newRotVel; //and assign
         }
 
+        public void RecalcTextureData() //recalculate the width, height, row, column, and sprite center; done on new texture assignment
+        {
+            GetWidth = Texture.Width / Columns;
+            GetHeight = Texture.Height / Rows;
+            SpriteCenter = new Vector2(GetWidth >> 1, GetHeight >> 1); //binary shift == divide by two
+        }
+
         protected Vector2 rotationToVector()
         {
             return Rotation.RotationToVector();
         } //local version of extension method
-
-        private void recalcTextureData() //recalculate the width, height, row, column, and sprite center; done on new texture assignment
-        {
-            GetWidth = Texture.Width / Columns;
-            GetHeight = Texture.Height / Rows;
-            GetRow = (int)((float)CurrentFrame / (float)Columns);
-            GetColumn = CurrentFrame % Columns;
-            SpriteCenter = new Vector2(GetWidth >> 1, GetHeight >> 1); //binary shift == divide by two
-        }
 
         #endregion
 
@@ -374,8 +391,9 @@ namespace AsteroidsInc.Components
 
         public static GameObjectPair Bounce(GameObject obj1, GameObject obj2) //bounce two objects and return a pair
         {
-            if (obj1.Equals(obj2))
+            if (obj1.Equals(obj2)) //can't bounce the same object!
                 throw new InvalidOperationException("Identical objects");
+
             Vector2 centerOfMass = (obj1.Velocity + obj2.Velocity) / 2; //calculate the center of mass
             Vector2 normal1 = GetNormal(new GameObjectPair(obj1, obj2));
             Vector2 normal2 = GetNormal(new GameObjectPair(obj2, obj1));

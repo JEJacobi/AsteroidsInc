@@ -18,6 +18,8 @@ namespace AsteroidsInc.Components
 
         public static GameObject Ship { get; set; } //main player sprite
         public static int Health { get; set; }
+        public static int CurrentOre { get; set; }
+        public static int OreWinCondition { get; set; }
         public static bool StabilizeRotation { get; set; } //slowly bring rotational velocity to zero?
 
         public static GameObject Shield { get; set; } //overlaid shield sprite
@@ -33,6 +35,7 @@ namespace AsteroidsInc.Components
         public static Slots ActiveSlot { get; set; } //which key is being used
 
         public static event EventHandler DeadEvent;
+        public static event EventHandler LevelCompleteEvent;
 
         static List<Texture2D> explosionParticles = new List<Texture2D>();
         static int shotDelay = 0; //counter variable
@@ -53,6 +56,7 @@ namespace AsteroidsInc.Components
         public const string ENGINE_SFX = "engine"; //sfx indexes
         public const string COLLISION_SFX = "collision";
         public const string DEATH_SFX = "death";
+        public const string WIN_SFX = "win";
 
         public const float VELOCITY_MAX = 500f; //max velocity
         public static Vector2 VECTOR_VELOCITY_MAX //max velocity to a Vector
@@ -63,6 +67,7 @@ namespace AsteroidsInc.Components
         public const float STABILIZATION_FACTOR = 0.08f;
         public const float ROT_VEL_CHANGE = 0.6f;
         public const float VEL_CHANGE_FACTOR = 4f;
+        public const float SHIP_FRAME_DELAY = 0.7f;
 
         public static readonly Color[] TRAIL_COLORS = { Color.Orange, Color.OrangeRed, Color.MediumVioletRed };
         public static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.Orange, Color.LightGray }; //effect colors
@@ -82,6 +87,8 @@ namespace AsteroidsInc.Components
         public const int MIN_HEALTH = 0;
         public const int DAMAGE_THRESHOLD = 35; //threshold of damage effect
         public const int ASTEROID_COLLISION_DAMAGE = 10;
+
+        public const int STARTING_ORE = 0;
 
         public const int MISSILE_FIRE_DELAY = 50;
         public const int LASER_FIRE_DELAY = 5;
@@ -151,6 +158,10 @@ namespace AsteroidsInc.Components
             #endregion
             
             Health = STARTING_HEALTH;
+            CurrentOre = STARTING_ORE;
+
+            OreWinCondition = 20; //TEMP
+
             ActiveSlot = INITIAL_ACTIVE_SLOT;
             StabilizeRotation = true;
 
@@ -169,7 +180,7 @@ namespace AsteroidsInc.Components
                 SHIP_DEPTH,
                 false,
                 ContentHandler.Textures[SHIELD_KEY].GetMeanRadius(), //use the shield texture as a collision boundary
-                0, 0, SpriteEffects.None, 8, 1, 8, 2);
+                0, 0, SpriteEffects.None, 8, 1, 8, 2, SHIP_FRAME_DELAY);
 
             //init the shield overlay
             Shield = new GameObject(
@@ -365,6 +376,22 @@ namespace AsteroidsInc.Components
                 Ship.Update(gameTime); //update the sprite itself, make sure to do this last
             }
 
+            if (CurrentOre >= OreWinCondition) //if level complete
+            {
+                if (LevelCompleteEvent != null) //trigger the level complete event
+                    LevelCompleteEvent(Ship, EventArgs.Empty);
+
+                if (ContentHandler.ShouldPlaySFX)
+                {
+                    SoundEffectInstance temp = ContentHandler.SFX[WIN_SFX].CreateInstance();
+                    temp.Play(); //play level win sound
+
+                    while (temp.State == SoundState.Playing) ; //wait until done playing
+                }
+
+                Reset(); //reset
+            }
+
             if (Health <= MIN_HEALTH)
             {
                 dead = true;
@@ -420,9 +447,13 @@ namespace AsteroidsInc.Components
             Slot2 = LASER_KEY;
             ActiveSlot = INITIAL_ACTIVE_SLOT;
             Health = STARTING_HEALTH;
+            CurrentOre = STARTING_ORE;
             dead = false;
             StabilizeRotation = true;
             Ship.Active = true;
+
+            //Asteroid Manager's stuff
+            AsteroidManager.OreDrops = new List<Particle>();
 
             //and the on-death particle emitter
             ExplosionEmitter = new ParticleEmitter(
@@ -441,9 +472,11 @@ namespace AsteroidsInc.Components
             ExplosionEmitter.WorldPosition = Ship.WorldCenter;
         }
 
-        public static void TriggerShield(int fadeVal = 100)
+        public static void TriggerShield(int fadeVal = 100, bool playSound = true)
         {
-            ContentHandler.PlaySFX(SHIELD_KEY);
+            if(playSound)
+                ContentHandler.PlaySFX(SHIELD_KEY);
+
             shieldFade = fadeVal;
         }
 

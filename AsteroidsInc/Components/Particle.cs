@@ -35,8 +35,15 @@ namespace AsteroidsInc.Components
             SpriteEffects effects = SpriteEffects.None,
             int collisionRadius = 0,
             int xPadding = 0,
-            int yPadding = 0)
-            : base(texture, worldLocation, velocity, color, false, rotation, rotationalVelocity)
+            int yPadding = 0,
+            int totalFrames = 0,
+            int rows = 1,
+            int columns = 1,
+            int startingFrame = 0,
+            bool liteMode = true,
+            float frameDelay = 0f)
+            : base(texture, worldLocation, velocity, color, false, rotation, rotationalVelocity, scale, depth, liteMode,
+            collisionRadius, xPadding, yPadding, effects, totalFrames, rows, columns, startingFrame, frameDelay)
         {
             TTL = framesToLive; //most of the actual work is handled by GameObject
             Fade = fade;
@@ -47,7 +54,7 @@ namespace AsteroidsInc.Components
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if(TTL >= 1) //If not expired, draw...
+            if (TTL >= 1) //If not expired, draw...
                 base.Draw(spriteBatch);
         }
 

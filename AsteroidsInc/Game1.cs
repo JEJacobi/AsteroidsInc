@@ -43,7 +43,7 @@ namespace AsteroidsInc
         const int TEMP_STARS_TO_GEN = 100; //TEMP
         const int TEMP_ASTEROIDS_TO_GEN = 35;
 
-        const int WORLD_SIZE = 2000;
+        const int WORLD_SIZE = 3000;
 
         //UI constants
         readonly Color HIGHLIGHT_COLOR = Color.Yellow;
@@ -108,6 +108,7 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add(AsteroidManager.SMALL_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid1"));
             ContentHandler.Textures.Add(AsteroidManager.ORE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid2"));
             ContentHandler.Textures.Add(AsteroidManager.LARGE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid3"));
+            ContentHandler.Textures.Add(AsteroidManager.ORE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + AsteroidManager.ORE_KEY));
 
             ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk01"));
             ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk02"));
@@ -133,7 +134,11 @@ namespace AsteroidsInc
             ContentHandler.SFX.Add(Player.SHIELD_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.SHIELD_KEY));
             ContentHandler.SFX.Add(Player.MISSILE_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.MISSILE_KEY));
             ContentHandler.SFX.Add(Player.LASER_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.LASER_KEY));
+            ContentHandler.SFX.Add(Player.WIN_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.WIN_SFX));
             ContentHandler.SFX.Add("switch", Content.Load<SoundEffect>(SOUND_DIR + "switch"));
+            ContentHandler.SFX.Add("click", Content.Load<SoundEffect>(SOUND_DIR + "click"));
+            ContentHandler.SFX.Add("pickup", Content.Load<SoundEffect>(SOUND_DIR + "pickup"));
+            ContentHandler.SFX.Add("pickup2", Content.Load<SoundEffect>(SOUND_DIR + "pickup2"));
 
             //Instances:
             ContentHandler.InstanceSFX.Add(Player.ENGINE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.ENGINE_SFX).CreateInstance());
@@ -166,7 +171,7 @@ namespace AsteroidsInc
             StarField.Scrolling = true;
 
             //GAME UI
-            GameUI.Add("fpsDisplay", new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false)); //TEMP
+            GameUI.Add("ore", new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false)); //TEMP
             GameUI.Add("health", new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("loc", new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
 
@@ -197,7 +202,13 @@ namespace AsteroidsInc
             asteroid.Add(ContentHandler.Textures[AsteroidManager.SMALL_ASTEROID]);
             asteroid.Add(ContentHandler.Textures[AsteroidManager.LARGE_ASTEROID]);
             asteroid.Add(ContentHandler.Textures[AsteroidManager.ORE_ASTEROID]);
-            AsteroidManager.Initialize(TEMP_ASTEROIDS_TO_GEN, asteroid, particle, true);
+            AsteroidManager.Initialize(
+                TEMP_ASTEROIDS_TO_GEN,
+                asteroid,
+                ContentHandler.Textures[AsteroidManager.ORE_KEY].ToTextureList(),
+                particle,
+                ContentHandler.Textures["particle"].ToTextureList(),
+                true);
             //END COMPONENT INIT
             #endregion
 
@@ -232,6 +243,8 @@ namespace AsteroidsInc
                     //get health
                     ((UIString<string>)GameUI["loc"]).Value = Camera.Position.ToString();
                     //get loc value
+                    ((UIString<int>)GameUI["ore"]).Value = Player.CurrentOre;
+                    //get ore
                     foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
                         elementPair.Value.Update(gameTime);
 
@@ -274,9 +287,6 @@ namespace AsteroidsInc
                     ProjectileManager.Draw(spriteBatch);
                     AsteroidManager.Draw(spriteBatch); //And then the rest of the game components
                     Player.Draw(spriteBatch); //Player next
-
-                    ((UIString<int>)GameUI["fpsDisplay"]).Value = (int)Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds, 0);
-                    //calculate framerate to the nearest int, must be done in draw
 
                     foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
                         elementPair.Value.Draw(spriteBatch); //draw each element in GameUI
@@ -376,6 +386,7 @@ namespace AsteroidsInc
         void start_OnClick(UIBase sender, MouseClickArgs e)
         {
             ContentHandler.StopAll();
+            ContentHandler.PlaySFX("click");
             SwitchGameState(GameState.Game);
         }
 
@@ -394,7 +405,13 @@ namespace AsteroidsInc
 
         void exit_OnClick(UIBase sender, MouseClickArgs e)
         {
-            this.Exit();
+            if(ContentHandler.ShouldPlaySFX)
+            {
+                SoundEffectInstance tempClick = ContentHandler.SFX["click"].CreateInstance();
+                tempClick.Play();
+                while (tempClick.State == SoundState.Playing) ; //wait until click is done playing
+            }
+            this.Exit(); //then exit
         }
 
         //Game state switch logic
