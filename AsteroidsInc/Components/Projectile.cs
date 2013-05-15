@@ -21,6 +21,7 @@ namespace AsteroidsInc.Components
         public float DistanceTravelled { get; private set; }
         public bool DetonateEffect { get; set; }
         public bool TrackVelocity { get; set; }
+        public bool IsDummyProjectile { get; set; }
 
         public readonly int Damage;
         public readonly float MaxRange;
@@ -46,6 +47,7 @@ namespace AsteroidsInc.Components
             int dmg,
             bool detEffect,
             bool trackVelocity,
+            bool isDummy,
             int collisionRadius = 1)
             : base(texture, initialLocation, velocity, Color.White, false, rotation, 0f, 1f, PROJECTILE_DEPTH, false, collisionRadius)
         {
@@ -55,6 +57,7 @@ namespace AsteroidsInc.Components
             HitSound = hitSound;
             DetonateEffect = detEffect;
             TrackVelocity = trackVelocity;
+            IsDummyProjectile = isDummy;
 
             DistanceTravelled = 0f;
             lastLoc = initialLocation;

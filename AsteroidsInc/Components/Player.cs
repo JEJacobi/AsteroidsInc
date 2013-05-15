@@ -53,9 +53,11 @@ namespace AsteroidsInc.Components
         public const string LASER_KEY = "laser";
         public const string CANNON_KEY = "cannon";
         public const string SHELL_KEY = "shell";
+        public const string SLIVER_KEY = "sliver";
 
         public const string ENGINE_SFX = "engine"; //sfx indexes
         public const string COLLISION_SFX = "collision";
+        public const string IMPACT_SFX = "quickimpact";
         public const string DEATH_SFX = "death";
         public const string WIN_SFX = "win";
 
@@ -91,34 +93,6 @@ namespace AsteroidsInc.Components
 
         public const int STARTING_ORE = 0;
 
-        public const int LASER_SHOTS_PER_TICK = 1;
-        public const int MISSILE_SHOTS_PER_TICK = 1;
-        public const int SHELL_SHOTS_PER_TICK = 35;
-
-        public const int MISSILE_FIRE_DELAY = 50;
-        public const int LASER_FIRE_DELAY = 5;
-        public const int SHELL_FIRE_DELAY = 35;
-
-        public const float MISSILE_VELOCITY = 300;
-        public const float LASER_VELOCITY = 750;
-        public const float SHELL_VELOCITY = 1000;
-
-        public const int MISSILE_MAX_RANGE = 2000;
-        public const int LASER_MAX_RANGE = 450;
-        public const int SHELL_MAX_RANGE = 225;
-
-        public const int MISSILE_DAMAGE = 50;
-        public const int LASER_DAMAGE = 10;
-        public const int SHELL_DAMAGE = 5;
-
-        public const float MISSILE_RANDOM = 0f;
-        public const float LASER_RANDOM = 150f;
-        public const float SHELL_RANDOM = 350f;
-
-        public const int MISSILE_COL_RADIUS = 20;
-        public const int LASER_COL_RADIUS = 8;
-        public const int SHELL_COL_RADIUS = 3;
-
         public const float SHIP_DEPTH = 0.5f; //draw depth
 
         public const float ROT_VEL_BOUNCE_CHANGE = 20f; //randomization for collision
@@ -138,48 +112,62 @@ namespace AsteroidsInc.Components
             #region Equipment Definitions
 
             Slot1 = SHELL_KEY; //set initial equipment
-            Slot2 = LASER_KEY;
+            Slot2 = SLIVER_KEY;
             EquipmentDictionary = new Dictionary<string, EquipmentData>(); //initialize the dictionary
 
             //add missiles
             EquipmentDictionary.Add(MISSILE_KEY, new EquipmentData(
                 ContentHandler.Textures[MISSILE_KEY],
-                MISSILE_VELOCITY,
-                MISSILE_RANDOM,
+                300,
+                0f,
                 MISSILE_KEY,
                 COLLISION_SFX,
-                MISSILE_MAX_RANGE,
-                MISSILE_DAMAGE,
-                MISSILE_COL_RADIUS,
-                MISSILE_FIRE_DELAY,
-                MISSILE_SHOTS_PER_TICK,
+                2000,
+                50,
+                20,
+                50,
+                1,
                 true, true));
 
             //add lasers
             EquipmentDictionary.Add(LASER_KEY, new EquipmentData(
                 ContentHandler.Textures[LASER_KEY],
-                LASER_VELOCITY,
-                LASER_RANDOM,
+                750,
+                150,
                 LASER_KEY,
                 COLLISION_SFX,
-                LASER_MAX_RANGE,
-                LASER_DAMAGE,
-                LASER_COL_RADIUS,
-                LASER_FIRE_DELAY,
-                LASER_SHOTS_PER_TICK));
+                450,
+                10,
+                6,
+                5,
+                1));
 
             //add shell
             EquipmentDictionary.Add(SHELL_KEY, new EquipmentData(
                 ContentHandler.Textures[SHELL_KEY],
-                SHELL_VELOCITY,
-                SHELL_RANDOM,
+                1000,
+                300,
                 SHELL_KEY,
                 COLLISION_SFX,
-                SHELL_MAX_RANGE,
-                SHELL_DAMAGE,
-                SHELL_COL_RADIUS,
-                SHELL_FIRE_DELAY,
-                SHELL_SHOTS_PER_TICK));
+                225,
+                10,
+                3,
+                35,
+                35,
+                false, true));
+
+            //add rapid-fire sliver
+            EquipmentDictionary.Add(SLIVER_KEY, new EquipmentData(
+                ContentHandler.Textures[SLIVER_KEY],
+                450,
+                50,
+                SLIVER_KEY,
+                IMPACT_SFX,
+                400,
+                1,
+                5,
+                1,
+                2));
 
             #endregion
             
@@ -469,8 +457,6 @@ namespace AsteroidsInc.Components
             RightEngineTrail.Emitting = false;
 
             //equipment and flags
-            Slot1 = MISSILE_KEY;
-            Slot2 = LASER_KEY;
             ActiveSlot = INITIAL_ACTIVE_SLOT;
             Health = STARTING_HEALTH;
             CurrentOre = STARTING_ORE;
@@ -478,8 +464,8 @@ namespace AsteroidsInc.Components
             StabilizeRotation = true;
             Ship.Active = true;
 
-            //Asteroid Manager's stuff
-            AsteroidManager.OreDrops = new List<Particle>();
+            //Ore Manager's stuff
+            OreManager.OreDrops = new List<Particle>();
 
             //and the on-death particle emitter
             ExplosionEmitter = new ParticleEmitter(
@@ -534,6 +520,7 @@ namespace AsteroidsInc.Components
         public int ShotsPerLaunch { get; set; }
         public bool DetonateEffect { get; set; }
         public bool TrackVelocity { get; set; }
+        public string Description { get; set; }
 
         public EquipmentData(
             Texture2D texture,
@@ -547,7 +534,8 @@ namespace AsteroidsInc.Components
             int refireDelay,
             int shotsPerLaunch,
             bool detonateEffect = false,
-            bool trackVelocity = false)
+            bool trackVelocity = false,
+            string description = "")
         {
             Texture = texture;
             Speed = speed;
@@ -561,6 +549,7 @@ namespace AsteroidsInc.Components
             ShotsPerLaunch = shotsPerLaunch;
             DetonateEffect = detonateEffect;
             TrackVelocity = trackVelocity;
+            Description = description;
         }
     }
 

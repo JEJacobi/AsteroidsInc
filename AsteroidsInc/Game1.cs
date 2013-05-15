@@ -25,6 +25,7 @@ namespace AsteroidsInc
         //UI element dictionaries
         Dictionary<string, UIBase> GameUI;
         Dictionary<string, UIBase> MenuUI;
+        Dictionary<string, UIBase> UpgradeUI;
 
         #endregion
 
@@ -82,6 +83,7 @@ namespace AsteroidsInc
 
             GameUI = new Dictionary<string, UIBase>();
             MenuUI = new Dictionary<string, UIBase>();
+            UpgradeUI = new Dictionary<string, UIBase>();
 
             OnStateChange += new StateChangeHandler(handleSwitching);
 
@@ -108,7 +110,8 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add(AsteroidManager.SMALL_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid1"));
             ContentHandler.Textures.Add(AsteroidManager.ORE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid2"));
             ContentHandler.Textures.Add(AsteroidManager.LARGE_ASTEROID, Content.Load<Texture2D>(TEXTURE_DIR + "Asteroid3"));
-            ContentHandler.Textures.Add(AsteroidManager.ORE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + AsteroidManager.ORE_KEY));
+
+            ContentHandler.Textures.Add(OreManager.ORE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + OreManager.ORE_KEY));
 
             ContentHandler.Textures.Add("junk1", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk01"));
             ContentHandler.Textures.Add("junk2", Content.Load<Texture2D>(TEXTURE_DIR + "SmallJunk02"));
@@ -119,11 +122,14 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add(Player.MISSILE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.MISSILE_KEY));
             ContentHandler.Textures.Add(Player.LASER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.LASER_KEY));
             ContentHandler.Textures.Add(Player.SHELL_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.SHELL_KEY));
+            ContentHandler.Textures.Add(Player.SLIVER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.SLIVER_KEY));
 
             ContentHandler.Textures.Add("star1", Content.Load<Texture2D>(TEXTURE_DIR + "star1"));
             ContentHandler.Textures.Add("star2", Content.Load<Texture2D>(TEXTURE_DIR + "star2"));
             ContentHandler.Textures.Add("star3", Content.Load<Texture2D>(TEXTURE_DIR + "star3"));
             ContentHandler.Textures.Add("star4", Content.Load<Texture2D>(TEXTURE_DIR + "star4"));
+
+            ContentHandler.Textures.Add("smallOre", Content.Load<Texture2D>(TEXTURE_DIR + "smallOre"));
 
             ContentHandler.Textures.Add("particle", //General generated particle texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -132,10 +138,12 @@ namespace AsteroidsInc
 
             //Static SFX:
             ContentHandler.SFX.Add(Player.COLLISION_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.COLLISION_SFX));
+            ContentHandler.SFX.Add(Player.IMPACT_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.IMPACT_SFX));
             ContentHandler.SFX.Add(Player.SHIELD_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.SHIELD_KEY));
             ContentHandler.SFX.Add(Player.MISSILE_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.MISSILE_KEY));
             ContentHandler.SFX.Add(Player.LASER_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.LASER_KEY));
             ContentHandler.SFX.Add(Player.SHELL_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.SHELL_KEY));
+            ContentHandler.SFX.Add(Player.SLIVER_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.SLIVER_KEY));
             ContentHandler.SFX.Add(Player.WIN_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.WIN_SFX));
             ContentHandler.SFX.Add("switch", Content.Load<SoundEffect>(SOUND_DIR + "switch"));
             ContentHandler.SFX.Add("click", Content.Load<SoundEffect>(SOUND_DIR + "click"));
@@ -160,6 +168,7 @@ namespace AsteroidsInc
             //Player
             Player.Initialize();
             Player.DeadEvent += new EventHandler(Player_DeadEvent);
+            Player.LevelCompleteEvent += new EventHandler(Player_LevelCompleteEvent);
 
             //StarField
             List<Texture2D> stars = new List<Texture2D>();
@@ -173,9 +182,11 @@ namespace AsteroidsInc
             StarField.Scrolling = true;
 
             //GAME UI
-            GameUI.Add("ore", new UIString<int>(60, Vector2.Zero, ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false)); //TEMP
+            GameUI.Add("oreCount", new UIString<int>(0 , new Vector2(0.057f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("health", new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("loc", new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            GameUI.Add("oreSprite", new UISprite(ContentHandler.Textures["smallOre"], new Vector2(0.01f, 0.01f), Color.White, true, 1f, 0f, false));
+            GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
 
             //MENU UI
             MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));
@@ -187,6 +198,16 @@ namespace AsteroidsInc
             MenuUI.Add("fullscreen", new UIString<string>("F10 - Toggle Fullscreen", new Vector2(0.01f, 0.81f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             MenuUI["exit"].XPadding = -10;
 
+            //UPGRADE UI
+            UpgradeUI.Add("descriptionTitle", new UIString<string>("Description:", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("description", new UIString<string>("", new Vector2(0.5f, 0.3f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("continue", new UIString<string>("Continue", new Vector2(0.5f, 0.9f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("select", new UIString<string>("Select", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("next", new UIString<string>("Next", new Vector2(0.666f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("back", new UIString<string>("Back", new Vector2(0.333f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("slot1", new UIString<string>("Slot 1", new Vector2(0.333f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("slot2", new UIString<string>("Slot 2", new Vector2(0.666f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true));
+
             //UI Events
             MenuUI["start"].OnClick += new UIBase.MouseClickHandler(start_OnClick);
             MenuUI["start"].MouseOver += new EventHandler(start_MouseOver);
@@ -194,6 +215,15 @@ namespace AsteroidsInc
             MenuUI["exit"].OnClick += new UIBase.MouseClickHandler(exit_OnClick);
             MenuUI["exit"].MouseOver += new EventHandler(exit_MouseOver);
             MenuUI["exit"].MouseAway += new EventHandler(exit_MouseAway);
+            UpgradeUI["slot1"].MouseOver += new EventHandler(slot1_MouseOver);
+            UpgradeUI["slot2"].MouseOver += new EventHandler(slot2_MouseOver);
+            UpgradeUI["slot1"].MouseAway += new EventHandler(slot1_MouseAway);
+            UpgradeUI["slot2"].MouseAway += new EventHandler(slot2_MouseAway);
+            UpgradeUI["slot1"].OnClick += new UIBase.MouseClickHandler(slot1_OnClick);
+            UpgradeUI["slot2"].OnClick += new UIBase.MouseClickHandler(slot2_OnClick);
+            UpgradeUI["continue"].MouseAway += new EventHandler(continue_MouseAway);
+            UpgradeUI["continue"].MouseOver += new EventHandler(continue_MouseOver);
+            UpgradeUI["continue"].OnClick += new UIBase.MouseClickHandler(continue_OnClick);   
 
             //AsteroidManager
             List<Texture2D> particle = new List<Texture2D>(); //particle list
@@ -207,15 +237,18 @@ namespace AsteroidsInc
             AsteroidManager.Initialize(
                 TEMP_ASTEROIDS_TO_GEN,
                 asteroid,
-                ContentHandler.Textures[AsteroidManager.ORE_KEY].ToTextureList(),
                 particle,
-                ContentHandler.Textures["particle"].ToTextureList(),
                 true);
+
+            //OreManager
+            OreManager.Initialize(
+                ContentHandler.Textures[OreManager.ORE_KEY].ToTextureList(),
+                ContentHandler.Textures["particle"].ToTextureList());
+
             //END COMPONENT INIT
             #endregion
 
-            ContentHandler.PlaySong("menu", true);
-
+            SwitchGameState(GameState.Upgrade);
             spriteBatch.End();
         }
 
@@ -234,21 +267,21 @@ namespace AsteroidsInc
                 case GameState.Game:
                     //GAME UPDATE BEGIN
 
-                    StarField.Update(gameTime);
-
-                    ProjectileManager.Update(gameTime);
-                    AsteroidManager.Update(gameTime); //TEMP
-                    Player.Update(gameTime);
-
                     //UI Stuff:
                     ((UIString<string>)GameUI["health"]).Value = "Health: " + Player.Health.ToString();
                     //get health
                     ((UIString<string>)GameUI["loc"]).Value = Camera.Position.ToString();
                     //get loc value
-                    ((UIString<int>)GameUI["ore"]).Value = Player.CurrentOre;
-                    //get ore
+                    ((UIString<int>)GameUI["oreCount"]).Value = Player.OreWinCondition - Player.CurrentOre;
+                    //get ore count
                     foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
                         elementPair.Value.Update(gameTime);
+
+                    StarField.Update(gameTime);
+                    ProjectileManager.Update(gameTime);
+                    AsteroidManager.Update(gameTime);
+                    OreManager.Update(gameTime);
+                    Player.Update(gameTime);
 
                     if (InputHandler.WasKeyDown(Keys.Escape))
                         SwitchGameState(GameState.Menu); //if in game and esc is pressed, exit to menu
@@ -257,7 +290,6 @@ namespace AsteroidsInc
 
                     //GAME UPDATE END
                     break;
-
                 case GameState.Menu:
 
                     foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
@@ -269,7 +301,14 @@ namespace AsteroidsInc
                         this.Exit(); //if in menu and esc is pressed, exit
 
                     break;
+                case GameState.Upgrade:
 
+                    foreach (KeyValuePair<string, UIBase> elementPair in UpgradeUI)
+                        elementPair.Value.Update(gameTime);
+
+                    StarField.Update(gameTime);
+
+                    break;
                 default:
                     throw new ArgumentException();
             }
@@ -277,45 +316,50 @@ namespace AsteroidsInc
 
         protected override void Draw(GameTime gameTime)
         {
+            GraphicsDevice.Clear(Color.Black);
+            spriteBatch.Begin(); //BEGIN SPRITE DRAW
+
             switch (gameState) //MAIN GAMESTATE DRAW SWITCH
             {
                 case GameState.Game:
                     //BEGIN GAME DRAW
-
-                    GraphicsDevice.Clear(Color.Black);
-                    spriteBatch.Begin(); //BEGIN SPRITE DRAW
-
                     StarField.Draw(spriteBatch);
                     ProjectileManager.Draw(spriteBatch);
+                    OreManager.Draw(spriteBatch);
                     AsteroidManager.Draw(spriteBatch); //And then the rest of the game components
                     Player.Draw(spriteBatch); //Player next
 
                     foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
                         elementPair.Value.Draw(spriteBatch); //draw each element in GameUI
 
-                    spriteBatch.End(); //END SPRITE DRAW
-                    base.Draw(gameTime);
-
                     //END GAME DRAW
                     break;
                 case GameState.Menu:
-
-                    GraphicsDevice.Clear(Color.Black);
-                    spriteBatch.Begin();
-                    //BEGIN DRAW
+                    //BEGIN MENU DRAW
 
                     StarField.Draw(spriteBatch);
 
                     foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
                         elementPair.Value.Draw(spriteBatch); //draw each element in MenuUI
 
-                    //END DRAW
-                    spriteBatch.End();
+                    //END MENU DRAW
+                    break;
+                case GameState.Upgrade:
+                    //BEGIN UPGRADE DRAW
 
+                    StarField.Draw(spriteBatch);
+
+                    foreach (KeyValuePair<string, UIBase> elementPair in UpgradeUI)
+                        elementPair.Value.Draw(spriteBatch);
+
+                    //END UPGRADE DRAW
                     break;
                 default:
                     throw new ArgumentException();
             }
+
+            base.Draw(gameTime);
+            spriteBatch.End(); //END SPRITE DRAW
         }
 
         #region Local Methods
@@ -416,25 +460,112 @@ namespace AsteroidsInc
             this.Exit(); //then exit
         }
 
+        void continue_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            Player.ActiveSlot = Slots.Slot1;
+            SwitchGameState(GameState.Game);
+        }
+
+        void continue_MouseAway(object sender, EventArgs e)
+        {
+            UpgradeUI["continue"].Color = NORMAL_COLOR;
+        }
+
+        void continue_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["continue"].Color = HIGHLIGHT_COLOR;
+        }
+
+        void slot2_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            UpgradeUI["slot2"].Color = Color.Red;
+            Player.ActiveSlot = Slots.Slot2;
+            UpgradeUI["slot1"].Color = NORMAL_COLOR;
+        }
+
+        void slot1_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            UpgradeUI["slot1"].Color = Color.Red;
+            Player.ActiveSlot = Slots.Slot1;
+            UpgradeUI["slot2"].Color = NORMAL_COLOR;
+        }
+
+        void slot2_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["slot2"].Color = HIGHLIGHT_COLOR;
+        }
+
+        void slot1_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["slot1"].Color = HIGHLIGHT_COLOR;
+        }
+
+        void slot1_MouseAway(object sender, EventArgs e)
+        {
+            if (Player.ActiveSlot == Slots.Slot1)
+                UpgradeUI["slot1"].Color = Color.Red;
+            else
+                UpgradeUI["slot1"].Color = NORMAL_COLOR;
+        }
+
+        void slot2_MouseAway(object sender, EventArgs e)
+        {
+            if (Player.ActiveSlot == Slots.Slot2)
+                UpgradeUI["slot2"].Color = Color.Red;
+            else
+                UpgradeUI["slot2"].Color = NORMAL_COLOR;
+        }
+
         //Game state switch logic
         void handleSwitching(object sender, StateArgs e)
         {
             ContentHandler.StopAll(); //stop the sound
 
-            if (e.TargetState == GameState.Menu) //if going to the menu
+            switch (e.TargetState)
             {
-                StarField.Scrolling = true; //set the starfield to scroll for a decorative effect
-                Camera.Position = Camera.UL_CORNER; //and set the camera to the upper-left corner of the world
+                case GameState.Game:
 
-                ContentHandler.PlaySong("menu", true); //play menu music if target is menu
-            }
-            if (e.TargetState == GameState.Game) //if going to the game/continuing
-            {
-                Camera.CenterPosition = Player.Ship.WorldCenter; //recenter the camera
-                StarField.Scrolling = false; //cancel the scrolling
+                    Camera.CenterPosition = Player.Ship.WorldCenter; //recenter the camera
+                    StarField.Scrolling = false; //cancel the scrolling
+                    ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
 
-                ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
+                    break;
+                case GameState.Menu:
+
+                    StarField.Scrolling = true; //set the starfield to scroll for a decorative effect
+                    Camera.Position = Camera.UL_CORNER; //and set the camera to the upper-left corner of the world
+                    start_MouseAway(this, null); //clear the selected button
+                    ContentHandler.PlaySong("menu", true); //play menu music if target is menu
+
+                    break;
+                case GameState.Upgrade:
+
+                    switch (Player.ActiveSlot)
+	                {
+                        case Slots.Slot1:
+                            UpgradeUI["slot1"].Color = Color.Red;
+                            break;
+                        case Slots.Slot2:
+                            UpgradeUI["slot2"].Color = Color.Red;
+                            break;
+                        default:
+                            break;
+	                }
+
+                    continue_MouseAway(this, null);
+
+                    break;
+                default:
+                    break;
             }
+        }
+
+        //On level complete
+        void Player_LevelCompleteEvent(object sender, EventArgs e)
+        {
+            StarField.Generate(TEMP_STARS_TO_GEN);
+            SwitchGameState(GameState.Upgrade);
+            Player.Reset();
         }
 
         //On player death
@@ -464,6 +595,7 @@ namespace AsteroidsInc
     public enum GameState
     {
         Game,
-        Menu
+        Menu,
+        Upgrade
     }
 }

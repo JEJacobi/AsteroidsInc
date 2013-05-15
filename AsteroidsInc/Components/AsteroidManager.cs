@@ -10,7 +10,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
-
 namespace AsteroidsInc.Components
 {
     public static class AsteroidManager
@@ -22,11 +21,7 @@ namespace AsteroidsInc.Components
         public static bool RegenerateAsteroids { get; set; } //regen asteroids?
         public static int AsteroidsToGenerate; //initally spawning asteroids
 
-        public static List<Particle> OreDrops;
-
         public static List<Texture2D> AsteroidTextures;
-        public static List<Texture2D> OreTextures;
-        public static List<Texture2D> OreEffectTextures;
         public static List<Texture2D> ExplosionParticleTextures;
 
         static List<ParticleEmitter> emitters; //list of particle emitters, used for effects
@@ -43,15 +38,8 @@ namespace AsteroidsInc.Components
         public const float MAXVELOCITY = 100f;
         public const float MINROTATIONALVELOCITY = 1f; //in degrees
         public const float MAXROTATIONALVELOCITY = 2f; //in degrees
-
-        //Ore drop/effect config
         const int ORE_MIN_DROP = 2;
         const int ORE_MAX_DROP = 5;
-        const float ORE_FRAME_DELAY = 300f;
-        const int ORE_DROP_FTL = 5000;
-        const int ORE_EFFECT_FTL = 70;
-        const int ORE_EFFECT_PARTICLES = 10;
-        const float ORE_EFFECT_EJECTION_SPEED = 50f;
 
         //Draw depths
         const float EFFECT_DRAW_DEPTH = 0.8f;
@@ -77,19 +65,17 @@ namespace AsteroidsInc.Components
         public const string SMALL_ASTEROID = "smallAsteroid";
         public const string LARGE_ASTEROID = "largeAsteroid";
         public const string ORE_ASTEROID = "oreAsteroid";
-        public const string ORE_KEY = "ore";
 
         //Effect colors
         static readonly Color[] SCRAPE_COLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
         static readonly Color[] EXPLOSION_COLORS = { Color.LawnGreen, Color.White, Color.LightSlateGray, Color.LightGray };
-        static readonly Color[] ORE_PICKUP_COLORS = { Color.Pink, Color.Yellow, Color.White };
 
         public const int LARGE_ASTEROID_DAMAGE_THRESHOLD = 25;
 
         #endregion
 
         public static void Initialize(int asteroidsToGenerate, List<Texture2D> asteroidTextures,
-            List<Texture2D> oreTextures, List<Texture2D> particleTextures, List<Texture2D> oreParticleTextures, bool regenAsteroids)
+            List<Texture2D> particleTextures, bool regenAsteroids)
         {
             rnd = new Random(); //randomize the randomizer
 
@@ -97,15 +83,12 @@ namespace AsteroidsInc.Components
             AsteroidsToGenerate += rnd.Next(-genRandomization, genRandomization); //add a bit of randomization
 
             AsteroidTextures = asteroidTextures;
-            OreTextures = oreTextures;
-            OreEffectTextures = oreParticleTextures;
             ExplosionParticleTextures = particleTextures;
             RegenerateAsteroids = regenAsteroids;
 
             //init the collections
             Asteroids = new List<GameObject>();
             emitters = new List<ParticleEmitter>();
-            OreDrops = new List<Particle>();
 
             for (int i = 0; i < AsteroidsToGenerate; i++)
                 AddRandomAsteroid(); //initial placement of asteroids
@@ -115,30 +98,6 @@ namespace AsteroidsInc.Components
         {
             for (int i = 0; i < Asteroids.Count; i++)
                 Asteroids[i].Update(gameTime); //update the asteroids themselves
-
-            for (int i = 0; i < OreDrops.Count; i++)
-            {
-                if(Player.Ship.IsCircleColliding(OreDrops[i]))
-                {
-                    Player.CurrentOre++; //increase the ore counter
-                    addOrePickupEffect(OreDrops[i]); //add an effect
-                    if (Player.CurrentOre >= Player.OreWinCondition >> 1)
-                        ContentHandler.PlaySFX("pickup2"); //play the second variaton
-                    else
-                        ContentHandler.PlaySFX("pickup"); //play a pickup sound
-                    Player.TriggerShield(50, false);
-                    OreDrops.RemoveAt(i); //and remove the drop
-                    continue;
-                }
-
-                if (OreDrops[i].TTL <= 0)
-                {
-                    OreDrops.RemoveAt(i); //trim any inactive particles
-                    continue;
-                }
-
-                OreDrops[i].Update(gameTime);
-            }
 
             for (int i = 0; i < emitters.Count; i++)
             {
@@ -237,9 +196,6 @@ namespace AsteroidsInc.Components
                 //    Color.White);
             }
 
-            for (int i = 0; i < OreDrops.Count; i++)
-                OreDrops[i].Draw(spriteBatch);
-
             for (int i = 0; i < emitters.Count; i++)
                 emitters[i].Draw(spriteBatch);
         }
@@ -255,7 +211,7 @@ namespace AsteroidsInc.Components
             if (asteroid.Texture == ContentHandler.Textures[ORE_ASTEROID])
             {
                 for (int i = 0; i < rnd.Next(ORE_MIN_DROP, ORE_MAX_DROP); i++)
-                    AddOreDrop(asteroid); //if it is an ore asteroid, add drop(s) on destroy
+                    OreManager.AddOreDrop(asteroid); //if it is an ore asteroid, add drop(s) on destroy
             }
 
             if(effect) //add a particle effect if flag is true
@@ -315,28 +271,28 @@ namespace AsteroidsInc.Components
                     switch (side)
                     {
                         case SpawnSide.Up:
-                            vel = getVelocity(MathHelper.ToRadians((float)rnd.Next(140, 230))); //get a velocity pointing between 140/230 degrees
+                            vel = GetVelocity(MathHelper.ToRadians((float)rnd.Next(140, 230))); //get a velocity pointing between 140/230 degrees
 
                             worldPos = new Vector2( //and add a velocity which will knock it into the world borders next tick
                                 rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
                                 Camera.WorldRectangle.Y - text.Height);
                             break;
                         case SpawnSide.Left:
-                            vel = getVelocity(MathHelper.ToRadians((float)rnd.Next(50, 130))); //between 50/130 degrees
+                            vel = GetVelocity(MathHelper.ToRadians((float)rnd.Next(50, 130))); //between 50/130 degrees
 
                             worldPos = new Vector2(
                                 Camera.WorldRectangle.X - text.Width,
                                 rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
                             break;
                         case SpawnSide.Right:
-                            vel = getVelocity(MathHelper.ToRadians((float)rnd.Next(230, 310))); //between 230/310 degrees
+                            vel = GetVelocity(MathHelper.ToRadians((float)rnd.Next(230, 310))); //between 230/310 degrees
 
                             worldPos = new Vector2(
                                 Camera.WorldRectangle.Width + text.Width,
                                 rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
                             break;
                         case SpawnSide.Down:
-                            vel = getVelocity(
+                            vel = GetVelocity(
                                 MathHelper.ToRadians(rnd.Next(320, 410) % 360)); //between 320/(360 + 50) degrees
 
                             worldPos = new Vector2(
@@ -349,7 +305,7 @@ namespace AsteroidsInc.Components
                 }
                 else //if the asteroid does not need to be generated offscreen...
                 {
-                    vel = getVelocity(rot); //get a random velocity according to the rotation
+                    vel = GetVelocity(rot); //get a random velocity according to the rotation
 
                     worldPos = new Vector2( //and simply get a random position in the world to place it...
                         rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
@@ -381,24 +337,11 @@ namespace AsteroidsInc.Components
             }
         }
 
-        public static void AddOreDrop(GameObject origin) //add an ore drop using a gameobject's positional/velocity properties
+        public static Vector2 GetVelocity(float rot) //get a random velocity
         {
-             Particle temp = new Particle( //generate the ore drop
-                ContentHandler.Textures[ORE_KEY],
-                origin.WorldCenter,
-                origin.Velocity + 
-                Vector2.Multiply(getVelocity(origin.Rotation + MathHelper.ToRadians(rnd.Next(-90, 90))), 0.5f),
-                Color.White,
-                ORE_DROP_FTL,
-                true,
-                origin.Rotation,
-                (float)rnd.NextDouble(-0.1f, 0.1f),
-                1f, 1f, SpriteEffects.None,
-                ContentHandler.Textures[ORE_KEY].GetMeanRadius(8),
-                0, 0, 8, 1, 8, 0, false, ORE_FRAME_DELAY);
-            temp.Animating = true;
-
-            OreDrops.Add(temp);
+            return Vector2.Multiply(
+                rot.RotationToVector(),
+                (float)rnd.NextDouble(MINVELOCITY, MAXVELOCITY));
         }
 
         #region Local Methods
@@ -409,7 +352,7 @@ namespace AsteroidsInc.Components
             GameObject split = new GameObject(
                 ContentHandler.Textures[SMALL_ASTEROID],
                 asteroidToSplit.WorldCenter,
-                getVelocity(asteroidToSplit.RotationDegrees + rnd.Next(90, 270)), //get a random new velocity
+                GetVelocity(asteroidToSplit.RotationDegrees + rnd.Next(90, 270)), //get a random new velocity
                 asteroidToSplit.TintColor,
                 false, //nothing to animate
                 asteroidToSplit.Rotation,
@@ -420,25 +363,6 @@ namespace AsteroidsInc.Components
                 ContentHandler.Textures[SMALL_ASTEROID].GetMeanRadius()); //get rounded radius
 
             Asteroids.Add(split);
-        }
-
-        static void addOrePickupEffect(Particle ore)
-        {
-            ParticleEmitter temp = new ParticleEmitter(
-                ORE_EFFECT_PARTICLES,
-                ore.WorldCenter,
-                OreEffectTextures,
-                ORE_PICKUP_COLORS.ToList<Color>(),
-                ORE_EFFECT_FTL,
-                true,
-                true,
-                PARTICLE_TIME_TO_EMIT,
-                ORE_EFFECT_PARTICLES,
-                ORE_EFFECT_EJECTION_SPEED,
-                PARTICLERANDOMIZATION,
-                0f, ParticleEmitter.EXPLOSIONSPRAY);
-
-            emitters.Add(temp);
         }
 
         static void addExplosion(Vector2 point) //add an omni-directional particle burst at specified point
@@ -510,13 +434,6 @@ namespace AsteroidsInc.Components
 
             emitters.Add(temp1);
             emitters.Add(temp2);
-        }
-
-        static Vector2 getVelocity(float rot) //get a random velocity
-        {
-            return Vector2.Multiply(
-                rot.RotationToVector(),
-                (float)rnd.NextDouble(MINVELOCITY, MAXVELOCITY));
         }
 
         #endregion

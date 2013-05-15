@@ -27,8 +27,8 @@ namespace AsteroidsInc.Components
         }
         Texture2D text;
 
-        public Vector2 Origin { get; set; } //where to rotate from
-        public Color TintColor { get; set; } //what to tint the texture with
+        public Vector2 Origin; //where to rotate from
+        public Color TintColor; //what to tint the texture with
 
         public float Rotation
         {
@@ -49,20 +49,20 @@ namespace AsteroidsInc.Components
         }
         float rotationalVelocity;
 
-        public float Scale { get; set; } //draw scale
-        public float Depth { get; set; } //draw depth
-        public bool Active { get; set; } //if active; draw and update. if not, don't do anything
-        public SpriteEffects Effects { get; set; } //any sprite effects
+        public float Scale = 1f; //draw scale
+        public float Depth = 0f; //draw depth
+        public bool Active = true; //if active; draw and update. if not, don't do anything
+        public SpriteEffects Effects = SpriteEffects.None; //any sprite effects
 
-        public Vector2 WorldLocation { get; set; } //the world position
-        public Vector2 Velocity { get; set; } //velocity of the object, measured with a vector
+        public Vector2 WorldLocation; //the world position
+        public Vector2 Velocity; //velocity of the object, measured with a vector
 
-        public int CollisionRadius { get; set; } //Radius for bounding circle collision
-        public int BoundingXPadding { get; set; }
-        public int BoundingYPadding { get; set; } //Padding for bounding box collision
+        public int CollisionRadius = 0; //Radius for bounding circle collision
+        public int BoundingXPadding = 0;
+        public int BoundingYPadding = 0; //Padding for bounding box collision
 
         //if true, omit looping if it goes off the edge, don't do minor functions, general optimization...
-        public bool LiteMode;
+        public bool LiteMode = false;
 
         public int TotalFrames
         {
@@ -102,7 +102,7 @@ namespace AsteroidsInc.Components
         }
         private int currentFrame;
 
-        public float FrameDelay { get; set; }
+        public float FrameDelay = 0.16f;
         float delayCounter = 0f;
 
         public int Rows { get; set; } //rows in the sprite sheet, 1 is default
@@ -126,8 +126,8 @@ namespace AsteroidsInc.Components
 
         #region Properties
 
-        public int GetWidth { get; set; } //Width of a frame
-        public int GetHeight { get; set; } //Height of a frame
+        public int GetWidth; //Width of a frame
+        public int GetHeight; //Height of a frame
         public int GetRow { get { return (int)((float)CurrentFrame / (float)Columns); } } //Current row
         public int GetColumn { get { return CurrentFrame % Columns; } } //Current column
         public Vector2 SpriteCenter { get; set; } //Get this Sprite's center
@@ -197,7 +197,7 @@ namespace AsteroidsInc.Components
             float frameDelay = 0)
 
         {
-            if (texture == null) { throw new NullReferenceException("Null texture reference."); }
+            if (texture == null) { throw new ArgumentNullException("Null texture reference."); }
             //assign parameters
             TintColor = tintColor; 
             Rotation = rotation;

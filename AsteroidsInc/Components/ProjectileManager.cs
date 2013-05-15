@@ -81,7 +81,7 @@ namespace AsteroidsInc.Components
         {
             foreach (Projectile shot in Projectiles) //loop through each shot to check if hit
             {
-                if (shot.Identification != alignment) //check if friendly
+                if (shot.Identification != alignment && shot.IsDummyProjectile == false) //check if friendly & not a dummy
                 {
                     if (obj.IsCircleColliding(shot)) //check if colliding
                     {
@@ -121,6 +121,17 @@ namespace AsteroidsInc.Components
             Vector2 inheritVelocity,
             FoF_Ident senderIdent)
         {
+            bool everyOtherDummy = false;
+            int dummyDivisor = 2;
+
+            if (shotData.ShotsPerLaunch > 10 || shotData.RefireDelay < 5)
+                everyOtherDummy = true;
+            //if launching a lot of shots, cut back on collision detection
+            //by making every other shot a dummy projectile, and also 
+            //double the damage to account for decreased DPS...
+
+            int lastDummy = 0;
+
             for (int i = 0; i < shotData.ShotsPerLaunch; i++) //fire however many shots
             {
                 Vector2 shotVel = Vector2.Multiply(rotation.RotationToVector(), shotData.Speed) + inheritVelocity;
@@ -135,7 +146,7 @@ namespace AsteroidsInc.Components
                     shotVel.Y += tempY;
                 }
 
-                Projectiles.Add(new Projectile( //and generate a new projectile according to shotData
+                  Projectiles.Add(new Projectile( //and generate a new projectile according to shotData
                     shotData.Texture,
                     initialLocation,
                     shotVel,
@@ -143,10 +154,14 @@ namespace AsteroidsInc.Components
                     shotData.HitSoundIndex,
                     senderIdent,
                     shotData.MaxRange,
-                    shotData.Damage,
+                    (everyOtherDummy ? shotData.Damage * dummyDivisor : shotData.Damage),
                     shotData.DetonateEffect,
                     shotData.TrackVelocity,
+                    (everyOtherDummy ? (++lastDummy % dummyDivisor == 0) : false),
                     shotData.CollisionRadius));    
+                //EveryOtherDummy is incremented every generation,
+                //and if it is enabled and not a clean divisor of two,
+                //the projectile is a dummmy
             }
             
             if(shotData.LaunchSoundIndex != "" || shotData.LaunchSoundIndex != null)

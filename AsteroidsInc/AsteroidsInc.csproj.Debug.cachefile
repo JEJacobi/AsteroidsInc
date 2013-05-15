@@ -16,6 +16,8 @@ Content\Textures\star2.xnb
 Content\Textures\star3.xnb
 Content\Textures\star4.xnb
 Content\Textures\shield.xnb
+Content\Textures\ore.xnb
+Content\Textures\shell.xnb
 Content\Sound\collision.xnb
 Content\Sound\engine.xnb
 Content\Sound\missile.xnb
@@ -23,12 +25,14 @@ Content\Sound\switch.xnb
 Content\Sound\laser.xnb
 Content\Sound\death.xnb
 Content\Sound\shield.xnb
-Content\Music\menu.xnb
-Content\Textures\ore.xnb
 Content\Sound\click.xnb
 Content\Sound\pickup.xnb
 Content\Sound\pickup2.xnb
 Content\Sound\win.xnb
-Content\Textures\shell.xnb
 Content\Sound\shell.xnb
+Content\Music\menu.xnb
+Content\Textures\sliver.xnb
+Content\Sound\sliver.xnb
+Content\Sound\quickimpact.xnb
+Content\Textures\smallOre.xnb
 Content\Music\menu.wma
