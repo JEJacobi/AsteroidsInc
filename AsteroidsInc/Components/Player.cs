@@ -52,6 +52,7 @@ namespace AsteroidsInc.Components
         public const string MISSILE_KEY = "missile";
         public const string LASER_KEY = "laser";
         public const string CANNON_KEY = "cannon";
+        public const string SHELL_KEY = "shell";
 
         public const string ENGINE_SFX = "engine"; //sfx indexes
         public const string COLLISION_SFX = "collision";
@@ -90,23 +91,33 @@ namespace AsteroidsInc.Components
 
         public const int STARTING_ORE = 0;
 
+        public const int LASER_SHOTS_PER_TICK = 1;
+        public const int MISSILE_SHOTS_PER_TICK = 1;
+        public const int SHELL_SHOTS_PER_TICK = 35;
+
         public const int MISSILE_FIRE_DELAY = 50;
         public const int LASER_FIRE_DELAY = 5;
+        public const int SHELL_FIRE_DELAY = 35;
 
         public const float MISSILE_VELOCITY = 300;
         public const float LASER_VELOCITY = 750;
+        public const float SHELL_VELOCITY = 1000;
 
         public const int MISSILE_MAX_RANGE = 2000;
-        public const int LASER_MAX_RANGE = 400;
+        public const int LASER_MAX_RANGE = 450;
+        public const int SHELL_MAX_RANGE = 225;
 
         public const int MISSILE_DAMAGE = 50;
-        public const int LASER_DAMAGE = 5;
+        public const int LASER_DAMAGE = 10;
+        public const int SHELL_DAMAGE = 5;
 
         public const float MISSILE_RANDOM = 0f;
         public const float LASER_RANDOM = 150f;
+        public const float SHELL_RANDOM = 350f;
 
         public const int MISSILE_COL_RADIUS = 20;
         public const int LASER_COL_RADIUS = 8;
+        public const int SHELL_COL_RADIUS = 3;
 
         public const float SHIP_DEPTH = 0.5f; //draw depth
 
@@ -126,7 +137,7 @@ namespace AsteroidsInc.Components
         {
             #region Equipment Definitions
 
-            Slot1 = MISSILE_KEY; //set initial equipment
+            Slot1 = SHELL_KEY; //set initial equipment
             Slot2 = LASER_KEY;
             EquipmentDictionary = new Dictionary<string, EquipmentData>(); //initialize the dictionary
 
@@ -141,7 +152,8 @@ namespace AsteroidsInc.Components
                 MISSILE_DAMAGE,
                 MISSILE_COL_RADIUS,
                 MISSILE_FIRE_DELAY,
-                true));
+                MISSILE_SHOTS_PER_TICK,
+                true, true));
 
             //add lasers
             EquipmentDictionary.Add(LASER_KEY, new EquipmentData(
@@ -153,7 +165,21 @@ namespace AsteroidsInc.Components
                 LASER_MAX_RANGE,
                 LASER_DAMAGE,
                 LASER_COL_RADIUS,
-                LASER_FIRE_DELAY));
+                LASER_FIRE_DELAY,
+                LASER_SHOTS_PER_TICK));
+
+            //add shell
+            EquipmentDictionary.Add(SHELL_KEY, new EquipmentData(
+                ContentHandler.Textures[SHELL_KEY],
+                SHELL_VELOCITY,
+                SHELL_RANDOM,
+                SHELL_KEY,
+                COLLISION_SFX,
+                SHELL_MAX_RANGE,
+                SHELL_DAMAGE,
+                SHELL_COL_RADIUS,
+                SHELL_FIRE_DELAY,
+                SHELL_SHOTS_PER_TICK));
 
             #endregion
             
@@ -505,7 +531,9 @@ namespace AsteroidsInc.Components
         public int Damage { get; set; }
         public int CollisionRadius { get; set; }
         public int RefireDelay { get; set; }
+        public int ShotsPerLaunch { get; set; }
         public bool DetonateEffect { get; set; }
+        public bool TrackVelocity { get; set; }
 
         public EquipmentData(
             Texture2D texture,
@@ -517,7 +545,9 @@ namespace AsteroidsInc.Components
             int damage,
             int cRadius,
             int refireDelay,
-            bool detonateEffect = false)
+            int shotsPerLaunch,
+            bool detonateEffect = false,
+            bool trackVelocity = false)
         {
             Texture = texture;
             Speed = speed;
@@ -528,7 +558,9 @@ namespace AsteroidsInc.Components
             Damage = damage;
             CollisionRadius = cRadius;
             RefireDelay = refireDelay;
+            ShotsPerLaunch = shotsPerLaunch;
             DetonateEffect = detonateEffect;
+            TrackVelocity = trackVelocity;
         }
     }
 

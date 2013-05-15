@@ -121,29 +121,33 @@ namespace AsteroidsInc.Components
             Vector2 inheritVelocity,
             FoF_Ident senderIdent)
         {
-            Vector2 shotVel = Vector2.Multiply(rotation.RotationToVector(), shotData.Speed) + inheritVelocity;
-            //get the scaled and inherited shot velocity
-
-            if (shotData.Randomization != 0) //randomize the velocity by the provided factor
+            for (int i = 0; i < shotData.ShotsPerLaunch; i++) //fire however many shots
             {
-                float tempX = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
-                float tempY = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
+                Vector2 shotVel = Vector2.Multiply(rotation.RotationToVector(), shotData.Speed) + inheritVelocity;
+                //get the scaled and inherited shot velocity
 
-                shotVel.X += tempX;
-                shotVel.Y += tempY;
+                if (shotData.Randomization != 0) //randomize the velocity by the provided factor
+                {
+                    float tempX = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
+                    float tempY = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
+
+                    shotVel.X += tempX;
+                    shotVel.Y += tempY;
+                }
+
+                Projectiles.Add(new Projectile( //and generate a new projectile according to shotData
+                    shotData.Texture,
+                    initialLocation,
+                    shotVel,
+                    rotation,
+                    shotData.HitSoundIndex,
+                    senderIdent,
+                    shotData.MaxRange,
+                    shotData.Damage,
+                    shotData.DetonateEffect,
+                    shotData.TrackVelocity,
+                    shotData.CollisionRadius));    
             }
-
-            Projectiles.Add(new Projectile( //and generate a new projectile according to shotData
-                shotData.Texture,
-                initialLocation,
-                shotVel,
-                rotation,
-                shotData.HitSoundIndex,
-                senderIdent,
-                shotData.MaxRange,
-                shotData.Damage,
-                shotData.DetonateEffect,
-                shotData.CollisionRadius));
             
             if(shotData.LaunchSoundIndex != "" || shotData.LaunchSoundIndex != null)
                 ContentHandler.PlaySFX(shotData.LaunchSoundIndex); //play the launch sound

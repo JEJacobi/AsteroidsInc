@@ -20,6 +20,7 @@ namespace AsteroidsInc.Components
         public string HitSound { get; set; }
         public float DistanceTravelled { get; private set; }
         public bool DetonateEffect { get; set; }
+        public bool TrackVelocity { get; set; }
 
         public readonly int Damage;
         public readonly float MaxRange;
@@ -44,6 +45,7 @@ namespace AsteroidsInc.Components
             int range,
             int dmg,
             bool detEffect,
+            bool trackVelocity,
             int collisionRadius = 1)
             : base(texture, initialLocation, velocity, Color.White, false, rotation, 0f, 1f, PROJECTILE_DEPTH, false, collisionRadius)
         {
@@ -52,6 +54,7 @@ namespace AsteroidsInc.Components
             MaxRange = range;
             HitSound = hitSound;
             DetonateEffect = detEffect;
+            TrackVelocity = trackVelocity;
 
             DistanceTravelled = 0f;
             lastLoc = initialLocation;
@@ -62,8 +65,8 @@ namespace AsteroidsInc.Components
             lastLoc = WorldCenter;
             //update the last location
 
-            VectorTrack(Velocity);
-            //rotate to the velocity vector
+            if (TrackVelocity) //rotate to the velocity vector
+                VectorTrack(Velocity);
 
             base.Update(gameTime);
             //GameObject update
