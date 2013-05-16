@@ -153,6 +153,7 @@ namespace AsteroidsInc
             ContentHandler.SFX.Add("click", Content.Load<SoundEffect>(SOUND_DIR + "click"));
             ContentHandler.SFX.Add("pickup", Content.Load<SoundEffect>(SOUND_DIR + "pickup"));
             ContentHandler.SFX.Add("pickup2", Content.Load<SoundEffect>(SOUND_DIR + "pickup2"));
+            ContentHandler.SFX.Add("error", Content.Load<SoundEffect>(SOUND_DIR + "error"));
 
             //Instances:
             ContentHandler.InstanceSFX.Add(Player.ENGINE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.ENGINE_SFX).CreateInstance());
@@ -209,8 +210,8 @@ namespace AsteroidsInc
             UpgradeUI.Add("ship", new UISprite(ContentHandler.Textures["staticship"], new Vector2(0.5f, 0.45f), Color.White, true));
             UpgradeUI.Add("title", new UIString<string>("Equipment:", new Vector2(0.5f, 0.18f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("description", new UIString<string>("", new Vector2(0.5f, 0.25f), ContentHandler.Fonts["lcd"], Color.White, true));
-            UpgradeUI.Add("projectile1", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.37f), Color.White, true, 1f));
-            UpgradeUI.Add("projectile2", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.32f), Color.White, true, 1f));
+            UpgradeUI.Add("projectile1", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.38f), Color.White, true, 1f));
+            UpgradeUI.Add("projectile2", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.315f), Color.White, true, 1f));
             UpgradeUI.Add("continue", new UIString<string>("Continue", new Vector2(0.5f, 0.8f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("exitToMenu", new UIString<string>("Exit to Menu", new Vector2(0.5f, 0.96f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("buy", new UIString<string>("Buy", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
@@ -218,6 +219,13 @@ namespace AsteroidsInc
             UpgradeUI.Add("back", new UIString<string>("Back", new Vector2(0.333f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("slot1", new UIString<string>("Slot 1", new Vector2(0.333f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("slot2", new UIString<string>("Slot 2", new Vector2(0.666f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("cost", new UIString<string>("Cost: 0", new Vector2(0.5f, 0.52f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("damage", new UIString<string>("Damage: ", new Vector2(0.333f, 0.5f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("range", new UIString<string>("Range: ", new Vector2(0.666f, 0.5f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("currentOre", new UIString<string>("Ore: ", new Vector2(0.5f, 0.67f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("rof", new UIString<string>("Refire: ", new Vector2(0.333f, 0.4f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("speed", new UIString<string>("Speed: ", new Vector2(0.666f, 0.4f), ContentHandler.Fonts["lcd"], Color.White, true));
+
 
             //UI Events
             MenuUI["start"].OnClick += new UIBase.MouseClickHandler(start_OnClick);
@@ -474,7 +482,6 @@ namespace AsteroidsInc
 
                     Camera.CenterPosition = Player.Ship.WorldCenter; //recenter the camera
                     StarField.Scrolling = false; //cancel the scrolling
-                    ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
 
                     last = GameState.Game;
 
@@ -488,6 +495,8 @@ namespace AsteroidsInc
 
                     break;
                 case GameState.Upgrade:
+
+                    ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
 
                     switch (Player.ActiveSlot)
                     {
@@ -504,6 +513,7 @@ namespace AsteroidsInc
                     last = GameState.Upgrade;
 
                     continue_MouseAway(this, null);
+                    exitToMenu_MouseAway(this, null);
                     slot1_OnClick(null, null);
                     slot2_MouseAway(this, null);
 
@@ -562,6 +572,13 @@ namespace AsteroidsInc
             ((UIString<string>)UpgradeUI["description"]).Value = temp[selectedUpgrade].Value.Description;
             ((UISprite)UpgradeUI["projectile1"]).Texture = temp[selectedUpgrade].Value.Texture;
             ((UISprite)UpgradeUI["projectile2"]).Texture = temp[selectedUpgrade].Value.Texture;
+            ((UIString<string>)UpgradeUI["cost"]).Value = "Cost: " + temp[selectedUpgrade].Value.OreCost.ToString();
+            ((UIString<string>)UpgradeUI["damage"]).Value = "Damage: " + temp[selectedUpgrade].Value.Damage.ToString();
+            ((UIString<string>)UpgradeUI["range"]).Value = "Range: " + temp[selectedUpgrade].Value.MaxRange.ToString();
+            ((UIString<string>)UpgradeUI["currentOre"]).Value = "Current Ore: " + Player.StoredOre.ToString();
+            ((UIString<string>)UpgradeUI["speed"]).Value = "Speed: " + temp[selectedUpgrade].Value.Speed.ToString();
+            ((UIString<string>)UpgradeUI["rof"]).Value = "Refire: " +
+                temp[selectedUpgrade].Value.RefireDelay / temp[selectedUpgrade].Value.ShotsPerLaunch;
 
             if (temp[selectedUpgrade].Key == (Player.ActiveSlot == Slots.Slot1 ? Player.Slot1 : Player.Slot2))
             {
@@ -571,8 +588,13 @@ namespace AsteroidsInc
             else
             {
                 UpgradeUI["description"].Color = NORMAL_COLOR;
-                UpgradeUI["buy"].Active = false;
+                UpgradeUI["buy"].Active = true;
             }
+
+            if (temp[selectedUpgrade].Value.OreCost > Player.StoredOre)
+                UpgradeUI["cost"].Color = Color.Red;
+            else
+                UpgradeUI["cost"].Color = Color.White;
         }
 
         //MENU UI - START
@@ -591,7 +613,6 @@ namespace AsteroidsInc
         void start_OnClick(UIBase sender, MouseClickArgs e)
         {
             ContentHandler.StopAll();
-            ContentHandler.PlaySFX("click");
 
             SwitchGameState(last);
         }
@@ -625,6 +646,8 @@ namespace AsteroidsInc
         {
             Player.ActiveSlot = Slots.Slot1;
 
+            ContentHandler.PlaySFX("switch");
+
             SwitchGameState(GameState.Game);
         }
 
@@ -645,15 +668,23 @@ namespace AsteroidsInc
         void slot2_OnClick(UIBase sender, MouseClickArgs e)
         {
             UpgradeUI["slot2"].Color = Color.Red;
+            UpgradeUI["slot2"].Scale = HIGHLIGHT_SCALE;
             Player.ActiveSlot = Slots.Slot2;
             UpgradeUI["slot1"].Color = NORMAL_COLOR;
+            UpgradeUI["slot1"].Scale = NORMAL_SCALE;
+
+            ContentHandler.PlaySFX("switch");
         }
 
         void slot1_OnClick(UIBase sender, MouseClickArgs e)
         {
             UpgradeUI["slot1"].Color = Color.Red;
+            UpgradeUI["slot1"].Scale = HIGHLIGHT_SCALE;
             Player.ActiveSlot = Slots.Slot1;
             UpgradeUI["slot2"].Color = NORMAL_COLOR;
+            UpgradeUI["slot2"].Scale = NORMAL_SCALE;
+
+            ContentHandler.PlaySFX("switch");
         }
 
         void slot2_MouseOver(object sender, EventArgs e)
@@ -697,6 +728,8 @@ namespace AsteroidsInc
 
         void exitToMenu_OnClick(UIBase sender, MouseClickArgs e)
         {
+            ContentHandler.PlaySFX("switch");
+
             SwitchGameState(GameState.Menu);
         }
 
@@ -742,6 +775,8 @@ namespace AsteroidsInc
             selectedUpgrade++;
             selectedUpgrade %= getEquipmentList().Count;
             updateSelected();
+
+            ContentHandler.PlaySFX("switch");
         }
 
         void back_OnClick(UIBase sender, MouseClickArgs e)
@@ -750,11 +785,36 @@ namespace AsteroidsInc
             if (selectedUpgrade < 0)
                 selectedUpgrade = getEquipmentList().Count - 1;
             updateSelected();
+
+            ContentHandler.PlaySFX("switch");
         }
 
         void buy_OnClick(UIBase sender, MouseClickArgs e)
         {
-            throw new NotImplementedException();
+            var temp = getEquipmentList();
+
+            if (Player.StoredOre >= temp[selectedUpgrade].Value.OreCost)
+            {
+                switch (Player.ActiveSlot)
+                {
+                    case Slots.Slot1:
+                        Player.Slot1 = temp[selectedUpgrade].Key;
+                        Player.CurrentOre -= temp[selectedUpgrade].Value.OreCost;
+                        updateSlots(sender, EventArgs.Empty);
+                        break;
+                    case Slots.Slot2:
+                        Player.Slot2 = temp[selectedUpgrade].Key;
+                        Player.CurrentOre -= temp[selectedUpgrade].Value.OreCost;
+                        updateSlots(sender, EventArgs.Empty);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                ContentHandler.PlaySFX("switch");
+            }
+            else
+                ContentHandler.PlaySFX("error");
         }
 
         #endregion
