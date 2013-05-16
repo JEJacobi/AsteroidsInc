@@ -130,6 +130,9 @@
   <ItemGroup>
     <Content Include="Game.ico" />
     <Content Include="GameThumbnail.png" />
+    <None Include="README.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AsteroidsIncContent\AsteroidsIncContent.contentproj">

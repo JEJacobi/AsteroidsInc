@@ -52,6 +52,9 @@ namespace AsteroidsInc
         const float HIGHLIGHT_SCALE = 1.1f;
         const float NORMAL_SCALE = 1f;
 
+        int selectedUpgrade = 0;
+        GameState last = GameState.Upgrade;
+
 	    #endregion
 
         #region Events
@@ -130,6 +133,7 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add("star4", Content.Load<Texture2D>(TEXTURE_DIR + "star4"));
 
             ContentHandler.Textures.Add("smallOre", Content.Load<Texture2D>(TEXTURE_DIR + "smallOre"));
+            ContentHandler.Textures.Add("staticship", Content.Load<Texture2D>(TEXTURE_DIR + "staticship"));
 
             ContentHandler.Textures.Add("particle", //General generated particle texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -199,9 +203,11 @@ namespace AsteroidsInc
             MenuUI["exit"].XPadding = -10;
 
             //UPGRADE UI
-            UpgradeUI.Add("descriptionTitle", new UIString<string>("Description:", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("ship", new UISprite(ContentHandler.Textures["staticship"], new Vector2(0.5f, 0.45f), Color.White, true));
+            UpgradeUI.Add("title", new UIString<string>("Equipment:", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("description", new UIString<string>("", new Vector2(0.5f, 0.3f), ContentHandler.Fonts["lcd"], Color.White, true));
-            UpgradeUI.Add("continue", new UIString<string>("Continue", new Vector2(0.5f, 0.9f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("continue", new UIString<string>("Continue", new Vector2(0.5f, 0.8f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("exitToMenu", new UIString<string>("Exit to Menu", new Vector2(0.5f, 0.96f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("select", new UIString<string>("Select", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("next", new UIString<string>("Next", new Vector2(0.666f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("back", new UIString<string>("Back", new Vector2(0.333f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
@@ -223,7 +229,10 @@ namespace AsteroidsInc
             UpgradeUI["slot2"].OnClick += new UIBase.MouseClickHandler(slot2_OnClick);
             UpgradeUI["continue"].MouseAway += new EventHandler(continue_MouseAway);
             UpgradeUI["continue"].MouseOver += new EventHandler(continue_MouseOver);
-            UpgradeUI["continue"].OnClick += new UIBase.MouseClickHandler(continue_OnClick);   
+            UpgradeUI["continue"].OnClick += new UIBase.MouseClickHandler(continue_OnClick);
+            UpgradeUI["exitToMenu"].MouseOver += new EventHandler(exitToMenu_MouseOver);
+            UpgradeUI["exitToMenu"].MouseAway += new EventHandler(exitToMenu_MouseAway);
+            UpgradeUI["exitToMenu"].OnClick += new UIBase.MouseClickHandler(exitToMenu_OnClick);
 
             //AsteroidManager
             List<Texture2D> particle = new List<Texture2D>(); //particle list
@@ -248,8 +257,9 @@ namespace AsteroidsInc
             //END COMPONENT INIT
             #endregion
 
-            SwitchGameState(GameState.Upgrade);
             spriteBatch.End();
+
+            SwitchGameState(GameState.Menu);
         }
 
         protected override void UnloadContent()
@@ -433,7 +443,8 @@ namespace AsteroidsInc
         {
             ContentHandler.StopAll();
             ContentHandler.PlaySFX("click");
-            SwitchGameState(GameState.Game);
+
+            SwitchGameState(last);
         }
 
         //MENU UI - EXIT
@@ -463,17 +474,20 @@ namespace AsteroidsInc
         void continue_OnClick(UIBase sender, MouseClickArgs e)
         {
             Player.ActiveSlot = Slots.Slot1;
+
             SwitchGameState(GameState.Game);
         }
 
         void continue_MouseAway(object sender, EventArgs e)
         {
             UpgradeUI["continue"].Color = NORMAL_COLOR;
+            UpgradeUI["continue"].Scale = NORMAL_SCALE;
         }
 
         void continue_MouseOver(object sender, EventArgs e)
         {
             UpgradeUI["continue"].Color = HIGHLIGHT_COLOR;
+            UpgradeUI["continue"].Scale = HIGHLIGHT_SCALE;
         }
 
         void slot2_OnClick(UIBase sender, MouseClickArgs e)
@@ -516,6 +530,23 @@ namespace AsteroidsInc
                 UpgradeUI["slot2"].Color = NORMAL_COLOR;
         }
 
+        void exitToMenu_MouseAway(object sender, EventArgs e)
+        {
+            UpgradeUI["exitToMenu"].Color = NORMAL_COLOR;
+            UpgradeUI["exitToMenu"].Scale = NORMAL_SCALE;
+        }
+
+        void exitToMenu_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["exitToMenu"].Color = HIGHLIGHT_COLOR;
+            UpgradeUI["exitToMenu"].Scale = 1.2f;
+        }
+
+        void exitToMenu_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            SwitchGameState(GameState.Menu);
+        }
+
         //Game state switch logic
         void handleSwitching(object sender, StateArgs e)
         {
@@ -528,6 +559,8 @@ namespace AsteroidsInc
                     Camera.CenterPosition = Player.Ship.WorldCenter; //recenter the camera
                     StarField.Scrolling = false; //cancel the scrolling
                     ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
+
+                    last = GameState.Game;
 
                     break;
                 case GameState.Menu:
@@ -552,7 +585,11 @@ namespace AsteroidsInc
                             break;
 	                }
 
+                    last = GameState.Upgrade;
+
                     continue_MouseAway(this, null);
+                    slot1_OnClick(null, null);
+                    slot2_MouseAway(this, null);
 
                     break;
                 default:
@@ -565,6 +602,7 @@ namespace AsteroidsInc
         {
             StarField.Generate(TEMP_STARS_TO_GEN);
             SwitchGameState(GameState.Upgrade);
+            Player.OreWinCondition *= 2;
             Player.Reset();
         }
 

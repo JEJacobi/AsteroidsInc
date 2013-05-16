@@ -19,6 +19,7 @@ namespace AsteroidsInc.Components
         public static GameObject Ship { get; set; } //main player sprite
         public static int Health { get; set; }
         public static int CurrentOre { get; set; }
+        public static int StoredOre { get; set; }
         public static int OreWinCondition { get; set; }
         public static bool StabilizeRotation { get; set; } //slowly bring rotational velocity to zero?
 
@@ -127,6 +128,7 @@ namespace AsteroidsInc.Components
                 20,
                 50,
                 1,
+                0,
                 true, true));
 
             //add lasers
@@ -140,7 +142,8 @@ namespace AsteroidsInc.Components
                 10,
                 6,
                 5,
-                1));
+                1,
+                0));
 
             //add shell
             EquipmentDictionary.Add(SHELL_KEY, new EquipmentData(
@@ -154,6 +157,7 @@ namespace AsteroidsInc.Components
                 3,
                 35,
                 35,
+                20,
                 false, true));
 
             //add rapid-fire sliver
@@ -167,7 +171,8 @@ namespace AsteroidsInc.Components
                 1,
                 5,
                 1,
-                2));
+                2,
+                45));
 
             #endregion
             
@@ -444,6 +449,8 @@ namespace AsteroidsInc.Components
 
         public static void Reset() //reset the player, location, equipment and explosion emitter
         {
+            StoredOre += CurrentOre;
+
             //reset the ship object
             Ship.Animating = false;
             Ship.CurrentFrame = 0;
@@ -466,6 +473,9 @@ namespace AsteroidsInc.Components
 
             //Ore Manager's stuff
             OreManager.OreDrops = new List<Particle>();
+
+            //Projectile Manager
+            ProjectileManager.Projectiles = new List<Projectile>();
 
             //and the on-death particle emitter
             ExplosionEmitter = new ParticleEmitter(
@@ -521,6 +531,7 @@ namespace AsteroidsInc.Components
         public bool DetonateEffect { get; set; }
         public bool TrackVelocity { get; set; }
         public string Description { get; set; }
+        public int OreCost { get; set; }
 
         public EquipmentData(
             Texture2D texture,
@@ -533,6 +544,7 @@ namespace AsteroidsInc.Components
             int cRadius,
             int refireDelay,
             int shotsPerLaunch,
+            int oreCost,
             bool detonateEffect = false,
             bool trackVelocity = false,
             string description = "")
@@ -550,6 +562,7 @@ namespace AsteroidsInc.Components
             DetonateEffect = detonateEffect;
             TrackVelocity = trackVelocity;
             Description = description;
+            OreCost = oreCost;
         }
     }
 
