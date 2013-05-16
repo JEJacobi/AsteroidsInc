@@ -68,7 +68,7 @@ namespace AsteroidsInc.Components
 
         public static bool IsLeftClicking()
         {
-            if (MouseState.LeftButton == ButtonState.Pressed)
+            if (LastMouseState.LeftButton == ButtonState.Pressed && MouseState.LeftButton == ButtonState.Released)
                 return true;
             else
                 return false;
@@ -76,7 +76,7 @@ namespace AsteroidsInc.Components
 
         public static bool IsRightClicking()
         {
-            if (MouseState.RightButton == ButtonState.Pressed)
+            if (MouseState.RightButton == ButtonState.Pressed && MouseState.RightButton == ButtonState.Released)
                 return true;
             else
                 return false;
@@ -84,7 +84,7 @@ namespace AsteroidsInc.Components
 
         public static bool IsMiddleClicking()
         {
-            if (MouseState.MiddleButton == ButtonState.Pressed)
+            if (MouseState.MiddleButton == ButtonState.Pressed && MouseState.MiddleButton == ButtonState.Released)
                 return true;
             else
                 return false;
@@ -103,15 +103,15 @@ namespace AsteroidsInc.Components
             switch (button)
             {
                 case MouseButtons.LeftMouseButton:
-                    if (IsMouseOverObject(obj) && MouseState.LeftButton == ButtonState.Pressed)
+                    if (IsMouseOverObject(obj) && IsLeftClicking())
                         return true;
                     return false;
                 case MouseButtons.MiddleMouseButton:
-                    if (IsMouseOverObject(obj) && MouseState.MiddleButton == ButtonState.Pressed)
+                    if (IsMouseOverObject(obj) && IsMiddleClicking())
                         return true;
                     return false;
                 case MouseButtons.RightMouseButton:
-                    if (IsMouseOverObject(obj) && MouseState.RightButton == ButtonState.Pressed)
+                    if (IsMouseOverObject(obj) && IsRightClicking())
                         return true;
                     return false;
                 default:

@@ -32,7 +32,7 @@ namespace AsteroidsInc.Components
 
         public float Rotation
         {
-            get { return rotation % MathHelper.TwoPi; } //mod by 2pi in case of direction overflow
+            get { return rotation; } //mod by 2pi in case of direction overflow
             set
             {
                 rotation = value % MathHelper.TwoPi;
@@ -105,9 +105,9 @@ namespace AsteroidsInc.Components
         public float FrameDelay = 0.16f;
         float delayCounter = 0f;
 
-        public int Rows { get; set; } //rows in the sprite sheet, 1 is default
-        public int Columns { get; set; } //columns in the sprite sheet, 1 is also default
-        public bool Animating { get; set; }
+        public int Rows = 1; //rows in the sprite sheet, 1 is default
+        public int Columns = 1; //columns in the sprite sheet, 1 is also default
+        public bool Animating = false;
 
         public float RotationDegrees
         {

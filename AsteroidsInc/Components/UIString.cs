@@ -63,7 +63,7 @@ namespace AsteroidsInc.Components
         public override Vector2 GetOrigin()
         {
             if (IsCenterOrigin)
-                return new Vector2(StringLength.X / 2, StringLength.Y / 2);
+                return new Vector2((int)Math.Round(StringLength.X / 2, 0), (int)Math.Round(StringLength.Y / 2, 0));
             else
                 return Vector2.Zero;
         }

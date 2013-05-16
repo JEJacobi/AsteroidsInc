@@ -33,10 +33,21 @@ namespace AsteroidsInc.Components
 
         public static string Slot1 { get; set; } //keys for equipment dictionary
         public static string Slot2 { get; set; }
-        public static Slots ActiveSlot { get; set; } //which key is being used
+        public static Slots ActiveSlot
+        {
+            get { return aSlot; }
+            set
+            {
+                aSlot = value;
+                if (ActiveSlotChanged != null)
+                    ActiveSlotChanged(Ship, EventArgs.Empty);
+            }
+        } //which key is being used
+        static Slots aSlot;
 
         public static event EventHandler DeadEvent;
         public static event EventHandler LevelCompleteEvent;
+        public static event EventHandler ActiveSlotChanged;
 
         static List<Texture2D> explosionParticles = new List<Texture2D>();
         static int shotDelay = 0; //counter variable
@@ -112,8 +123,8 @@ namespace AsteroidsInc.Components
         {
             #region Equipment Definitions
 
-            Slot1 = SHELL_KEY; //set initial equipment
-            Slot2 = SLIVER_KEY;
+            Slot1 = LASER_KEY; //set initial equipment
+            Slot2 = MISSILE_KEY;
             EquipmentDictionary = new Dictionary<string, EquipmentData>(); //initialize the dictionary
 
             //add missiles
@@ -129,6 +140,7 @@ namespace AsteroidsInc.Components
                 50,
                 1,
                 0,
+                "Torpedo Launcher",
                 true, true));
 
             //add lasers
@@ -143,7 +155,8 @@ namespace AsteroidsInc.Components
                 6,
                 5,
                 1,
-                0));
+                0,
+                "Pulse Laser"));
 
             //add shell
             EquipmentDictionary.Add(SHELL_KEY, new EquipmentData(
@@ -158,6 +171,7 @@ namespace AsteroidsInc.Components
                 35,
                 35,
                 20,
+                "Scatter-Fire",
                 false, true));
 
             //add rapid-fire sliver
@@ -172,7 +186,8 @@ namespace AsteroidsInc.Components
                 5,
                 1,
                 2,
-                45));
+                45,
+                "Shrapnel Projector"));
 
             #endregion
             
@@ -189,11 +204,11 @@ namespace AsteroidsInc.Components
             //init the ship
             Ship = new GameObject(
                 ContentHandler.Textures[SHIP_TEXTURE],
-                Camera.CENTER_OF_WORLD,
-                Vector2.Zero,
+                new Vector2(Camera.WorldRectangle.Width / 2, 0),
+                new Vector2(0, 50),
                 Color.White,
                 false,
-                0f,
+                MathHelper.ToRadians(180),
                 0f,
                 1f,
                 SHIP_DEPTH,
@@ -545,9 +560,9 @@ namespace AsteroidsInc.Components
             int refireDelay,
             int shotsPerLaunch,
             int oreCost,
+            string description = "",
             bool detonateEffect = false,
-            bool trackVelocity = false,
-            string description = "")
+            bool trackVelocity = false)
         {
             Texture = texture;
             Speed = speed;

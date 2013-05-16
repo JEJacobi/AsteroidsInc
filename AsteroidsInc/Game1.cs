@@ -157,8 +157,9 @@ namespace AsteroidsInc
             //Instances:
             ContentHandler.InstanceSFX.Add(Player.ENGINE_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.ENGINE_SFX).CreateInstance());
             ContentHandler.InstanceSFX[Player.ENGINE_SFX].IsLooped = true; //init and add engine sound
-
             ContentHandler.InstanceSFX.Add(Player.DEATH_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.DEATH_SFX).CreateInstance());
+            ContentHandler.InstanceSFX.Add("alarm", Content.Load<SoundEffect>(SOUND_DIR + "alarm").CreateInstance());
+            ContentHandler.InstanceSFX["alarm"].IsLooped = true;
 
             //MUSIC
             ContentHandler.Songs.Add("menu", Content.Load<Song>(MUSIC_DIR + "menu"));
@@ -173,6 +174,7 @@ namespace AsteroidsInc
             Player.Initialize();
             Player.DeadEvent += new EventHandler(Player_DeadEvent);
             Player.LevelCompleteEvent += new EventHandler(Player_LevelCompleteEvent);
+            Player.ActiveSlotChanged += new EventHandler(updateSlots);
 
             //StarField
             List<Texture2D> stars = new List<Texture2D>();
@@ -187,10 +189,11 @@ namespace AsteroidsInc
 
             //GAME UI
             GameUI.Add("oreCount", new UIString<int>(0 , new Vector2(0.057f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
-            GameUI.Add("health", new UIString<string>("Health: 100", new Vector2(0f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            GameUI.Add("health", new UIString<string>("Hull Integrity: 100", new Vector2(0.005f, 0.95f), ContentHandler.Fonts["lcd"], Color.Green, true, 1f, 0f, false));
             GameUI.Add("loc", new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("oreSprite", new UISprite(ContentHandler.Textures["smallOre"], new Vector2(0.01f, 0.01f), Color.White, true, 1f, 0f, false));
             GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.Red));
 
             //MENU UI
             MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));
@@ -204,11 +207,13 @@ namespace AsteroidsInc
 
             //UPGRADE UI
             UpgradeUI.Add("ship", new UISprite(ContentHandler.Textures["staticship"], new Vector2(0.5f, 0.45f), Color.White, true));
-            UpgradeUI.Add("title", new UIString<string>("Equipment:", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.White, true));
-            UpgradeUI.Add("description", new UIString<string>("", new Vector2(0.5f, 0.3f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("title", new UIString<string>("Equipment:", new Vector2(0.5f, 0.18f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("description", new UIString<string>("", new Vector2(0.5f, 0.25f), ContentHandler.Fonts["lcd"], Color.White, true));
+            UpgradeUI.Add("projectile1", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.37f), Color.White, true, 1f));
+            UpgradeUI.Add("projectile2", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.32f), Color.White, true, 1f));
             UpgradeUI.Add("continue", new UIString<string>("Continue", new Vector2(0.5f, 0.8f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("exitToMenu", new UIString<string>("Exit to Menu", new Vector2(0.5f, 0.96f), ContentHandler.Fonts["menu"], Color.White, true));
-            UpgradeUI.Add("select", new UIString<string>("Select", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("buy", new UIString<string>("Buy", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("next", new UIString<string>("Next", new Vector2(0.666f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("back", new UIString<string>("Back", new Vector2(0.333f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
             UpgradeUI.Add("slot1", new UIString<string>("Slot 1", new Vector2(0.333f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true));
@@ -233,6 +238,15 @@ namespace AsteroidsInc
             UpgradeUI["exitToMenu"].MouseOver += new EventHandler(exitToMenu_MouseOver);
             UpgradeUI["exitToMenu"].MouseAway += new EventHandler(exitToMenu_MouseAway);
             UpgradeUI["exitToMenu"].OnClick += new UIBase.MouseClickHandler(exitToMenu_OnClick);
+            UpgradeUI["next"].MouseOver += new EventHandler(next_MouseOver);
+            UpgradeUI["next"].MouseAway += new EventHandler(next_MouseAway);
+            UpgradeUI["back"].MouseOver += new EventHandler(back_MouseOver);
+            UpgradeUI["back"].MouseAway += new EventHandler(back_MouseAway);
+            UpgradeUI["buy"].MouseOver += new EventHandler(buy_MouseOver);
+            UpgradeUI["buy"].MouseAway += new EventHandler(buy_MouseAway);
+            UpgradeUI["next"].OnClick += new UIBase.MouseClickHandler(next_OnClick);
+            UpgradeUI["back"].OnClick += new UIBase.MouseClickHandler(back_OnClick);
+            UpgradeUI["buy"].OnClick += new UIBase.MouseClickHandler(buy_OnClick);
 
             //AsteroidManager
             List<Texture2D> particle = new List<Texture2D>(); //particle list
@@ -277,15 +291,7 @@ namespace AsteroidsInc
                 case GameState.Game:
                     //GAME UPDATE BEGIN
 
-                    //UI Stuff:
-                    ((UIString<string>)GameUI["health"]).Value = "Health: " + Player.Health.ToString();
-                    //get health
-                    ((UIString<string>)GameUI["loc"]).Value = Camera.Position.ToString();
-                    //get loc value
-                    ((UIString<int>)GameUI["oreCount"]).Value = Player.OreWinCondition - Player.CurrentOre;
-                    //get ore count
-                    foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
-                        elementPair.Value.Update(gameTime);
+                    updateGameUI(gameTime);
 
                     StarField.Update(gameTime);
                     ProjectileManager.Update(gameTime);
@@ -381,6 +387,11 @@ namespace AsteroidsInc
             gameState = state; //switch the state
         }
 
+        List<KeyValuePair<string, EquipmentData>> getEquipmentList()
+        {
+            return Player.EquipmentDictionary.ToList<KeyValuePair<string, EquipmentData>>();
+        }
+
         private void handleGlobalInputs() //handle things like fullscreen/windowed switching, toggling music on/off, etc
         {
             if (InputHandler.IsNewKeyPress(Keys.F10)) //handle fullscreen switching
@@ -422,9 +433,147 @@ namespace AsteroidsInc
                 ContentHandler.TogglePlayMusic(); //toggle play music
         }
 
+        private void updateGameUI(GameTime gameTime)
+        {
+            ((UIString<string>)GameUI["health"]).Value = "Hull Integrity: " + Player.Health.ToString();
+            if (Player.Health > 66)
+                GameUI["health"].Color = Color.Green;
+            else if (Player.Health > 33 && Player.Health <= 66)
+                GameUI["health"].Color = Color.Yellow;
+            else
+            {
+                GameUI["health"].Color = Color.Red;
+                GameUI["warning"].Active = true;
+
+                if (Player.Health <= 10)
+                    ContentHandler.PlaySFX("alarm");
+                else
+                    ContentHandler.StopInstancedSFX("alarm");
+            }
+            //get health / set color
+            ((UIString<string>)GameUI["loc"]).Value = Camera.Position.ToString();
+            //get loc value
+            ((UIString<int>)GameUI["oreCount"]).Value = Player.OreWinCondition - Player.CurrentOre;
+            //get ore count
+            foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
+                elementPair.Value.Update(gameTime);
+        }
+
         #endregion
 
         #region Event Handlers
+
+        //Game state switch logic
+        void handleSwitching(object sender, StateArgs e)
+        {
+            ContentHandler.StopAll(); //stop the sound
+
+            switch (e.TargetState)
+            {
+                case GameState.Game:
+
+                    Camera.CenterPosition = Player.Ship.WorldCenter; //recenter the camera
+                    StarField.Scrolling = false; //cancel the scrolling
+                    ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
+
+                    last = GameState.Game;
+
+                    break;
+                case GameState.Menu:
+
+                    StarField.Scrolling = true; //set the starfield to scroll for a decorative effect
+                    Camera.Position = Camera.UL_CORNER; //and set the camera to the upper-left corner of the world
+                    start_MouseAway(this, null); //clear the selected button
+                    ContentHandler.PlaySong("menu", true); //play menu music if target is menu
+
+                    break;
+                case GameState.Upgrade:
+
+                    switch (Player.ActiveSlot)
+                    {
+                        case Slots.Slot1:
+                            UpgradeUI["slot1"].Color = Color.Red;
+                            break;
+                        case Slots.Slot2:
+                            UpgradeUI["slot2"].Color = Color.Red;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    last = GameState.Upgrade;
+
+                    continue_MouseAway(this, null);
+                    slot1_OnClick(null, null);
+                    slot2_MouseAway(this, null);
+
+                    updateSlots(this, EventArgs.Empty);
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //On level complete
+        void Player_LevelCompleteEvent(object sender, EventArgs e)
+        {
+            StarField.Generate(TEMP_STARS_TO_GEN);
+            SwitchGameState(GameState.Upgrade);
+            Player.OreWinCondition *= 2;
+            Player.Reset();
+        }
+
+        //On player death
+        void Player_DeadEvent(object sender, EventArgs e)
+        {
+            StarField.Generate(TEMP_STARS_TO_GEN); //regenerate the starfield
+            SwitchGameState(GameState.Menu); //switch the state
+            ((UIString<string>)MenuUI["start"]).Value = "Start"; //player has died, reset the resume button
+            Player.Reset(); //reset the player
+        }
+
+        void updateSlots(object sender, EventArgs e) //update Upgrade UI's slots
+        {
+            var temp = getEquipmentList();
+            switch (Player.ActiveSlot)
+            {
+                case Slots.Slot1:
+                    selectedUpgrade =
+                        temp.IndexOf(new KeyValuePair<string, EquipmentData>(
+                        Player.Slot1, Player.EquipmentDictionary[Player.Slot1]));
+                    break;
+                case Slots.Slot2:
+                    selectedUpgrade =
+                        temp.IndexOf(new KeyValuePair<string, EquipmentData>(
+                            Player.Slot2, Player.EquipmentDictionary[Player.Slot2]));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            updateSelected();
+        }
+
+        void updateSelected()
+        {
+            var temp = getEquipmentList();
+
+            ((UIString<string>)UpgradeUI["description"]).Value = temp[selectedUpgrade].Value.Description;
+            ((UISprite)UpgradeUI["projectile1"]).Texture = temp[selectedUpgrade].Value.Texture;
+            ((UISprite)UpgradeUI["projectile2"]).Texture = temp[selectedUpgrade].Value.Texture;
+
+            if (temp[selectedUpgrade].Key == (Player.ActiveSlot == Slots.Slot1 ? Player.Slot1 : Player.Slot2))
+            {
+                UpgradeUI["description"].Color = HIGHLIGHT_COLOR;
+                UpgradeUI["buy"].Active = false;
+            }
+            else
+            {
+                UpgradeUI["description"].Color = NORMAL_COLOR;
+                UpgradeUI["buy"].Active = false;
+            }
+        }
 
         //MENU UI - START
         void start_MouseAway(object sender, EventArgs e)
@@ -471,6 +620,7 @@ namespace AsteroidsInc
             this.Exit(); //then exit
         }
 
+        //UPGRADE UI - CONTINUE
         void continue_OnClick(UIBase sender, MouseClickArgs e)
         {
             Player.ActiveSlot = Slots.Slot1;
@@ -490,6 +640,8 @@ namespace AsteroidsInc
             UpgradeUI["continue"].Scale = HIGHLIGHT_SCALE;
         }
 
+
+        //UPGRADE UI - SLOTS
         void slot2_OnClick(UIBase sender, MouseClickArgs e)
         {
             UpgradeUI["slot2"].Color = Color.Red;
@@ -530,6 +682,7 @@ namespace AsteroidsInc
                 UpgradeUI["slot2"].Color = NORMAL_COLOR;
         }
 
+        //UPGRADE UI - EXIT TO MENU
         void exitToMenu_MouseAway(object sender, EventArgs e)
         {
             UpgradeUI["exitToMenu"].Color = NORMAL_COLOR;
@@ -547,72 +700,61 @@ namespace AsteroidsInc
             SwitchGameState(GameState.Menu);
         }
 
-        //Game state switch logic
-        void handleSwitching(object sender, StateArgs e)
+        //UPGRADE UI - NEXT / BACK / BUY
+        void next_MouseAway(object sender, EventArgs e)
         {
-            ContentHandler.StopAll(); //stop the sound
-
-            switch (e.TargetState)
-            {
-                case GameState.Game:
-
-                    Camera.CenterPosition = Player.Ship.WorldCenter; //recenter the camera
-                    StarField.Scrolling = false; //cancel the scrolling
-                    ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
-
-                    last = GameState.Game;
-
-                    break;
-                case GameState.Menu:
-
-                    StarField.Scrolling = true; //set the starfield to scroll for a decorative effect
-                    Camera.Position = Camera.UL_CORNER; //and set the camera to the upper-left corner of the world
-                    start_MouseAway(this, null); //clear the selected button
-                    ContentHandler.PlaySong("menu", true); //play menu music if target is menu
-
-                    break;
-                case GameState.Upgrade:
-
-                    switch (Player.ActiveSlot)
-	                {
-                        case Slots.Slot1:
-                            UpgradeUI["slot1"].Color = Color.Red;
-                            break;
-                        case Slots.Slot2:
-                            UpgradeUI["slot2"].Color = Color.Red;
-                            break;
-                        default:
-                            break;
-	                }
-
-                    last = GameState.Upgrade;
-
-                    continue_MouseAway(this, null);
-                    slot1_OnClick(null, null);
-                    slot2_MouseAway(this, null);
-
-                    break;
-                default:
-                    break;
-            }
+            UpgradeUI["next"].Color = NORMAL_COLOR;
+            UpgradeUI["next"].Scale = NORMAL_SCALE;
         }
 
-        //On level complete
-        void Player_LevelCompleteEvent(object sender, EventArgs e)
+        void next_MouseOver(object sender, EventArgs e)
         {
-            StarField.Generate(TEMP_STARS_TO_GEN);
-            SwitchGameState(GameState.Upgrade);
-            Player.OreWinCondition *= 2;
-            Player.Reset();
+            UpgradeUI["next"].Color = HIGHLIGHT_COLOR;
+            UpgradeUI["next"].Scale = HIGHLIGHT_SCALE;
         }
 
-        //On player death
-        void Player_DeadEvent(object sender, EventArgs e)
+        void back_MouseAway(object sender, EventArgs e)
         {
-            StarField.Generate(TEMP_STARS_TO_GEN); //regenerate the starfield
-            SwitchGameState(GameState.Menu); //switch the state
-            ((UIString<string>)MenuUI["start"]).Value = "Start"; //player has died, reset the resume button
-            Player.Reset(); //reset the player
+            UpgradeUI["back"].Color = NORMAL_COLOR;
+            UpgradeUI["back"].Scale = NORMAL_SCALE;
+        }
+
+        void back_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["back"].Color = HIGHLIGHT_COLOR;
+            UpgradeUI["back"].Scale = HIGHLIGHT_SCALE;
+        }
+
+        void buy_MouseAway(object sender, EventArgs e)
+        {
+            UpgradeUI["buy"].Color = NORMAL_COLOR;
+            UpgradeUI["buy"].Scale = NORMAL_SCALE;
+        }
+
+        void buy_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["buy"].Color = HIGHLIGHT_COLOR;
+            UpgradeUI["buy"].Scale = HIGHLIGHT_SCALE;
+        }
+
+        void next_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            selectedUpgrade++;
+            selectedUpgrade %= getEquipmentList().Count;
+            updateSelected();
+        }
+
+        void back_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            selectedUpgrade--;
+            if (selectedUpgrade < 0)
+                selectedUpgrade = getEquipmentList().Count - 1;
+            updateSelected();
+        }
+
+        void buy_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

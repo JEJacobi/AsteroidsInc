@@ -87,27 +87,30 @@ namespace AsteroidsInc.Components
         public abstract void Draw(SpriteBatch spriteBatch); //Main draw method
         public virtual void Update(GameTime gameTime)
         {
-            if (MouseOver != null && InputHandler.IsMouseOverObject(this.GetBoundingBox())) //if mouse is in the bounding box
-                MouseOver(this, new EventArgs());
-
-            if (MouseAway != null && InputHandler.HasLeftObject(this.GetBoundingBox())) //if mouse WAS in the bounding box
-                MouseAway(this, new EventArgs());
-
-            if (OnClick != null) //determine mouse button clicked and invoke event
+            if (Active)
             {
-                MouseClickArgs e = new MouseClickArgs();
+                if (MouseOver != null && InputHandler.IsMouseOverObject(this.GetBoundingBox())) //if mouse is in the bounding box
+                    MouseOver(this, new EventArgs());
 
-                if (InputHandler.IsClickingObject(this.GetBoundingBox(), MouseButtons.LeftMouseButton))
-                    e.Button = MouseButtons.LeftMouseButton;
+                if (MouseAway != null && InputHandler.HasLeftObject(this.GetBoundingBox())) //if mouse WAS in the bounding box
+                    MouseAway(this, new EventArgs());
 
-                if (InputHandler.IsClickingObject(this.GetBoundingBox(), MouseButtons.RightMouseButton))
-                    e.Button = MouseButtons.RightMouseButton;
+                if (OnClick != null) //determine mouse button clicked and invoke event
+                {
+                    MouseClickArgs e = new MouseClickArgs();
 
-                if (InputHandler.IsClickingObject(this.GetBoundingBox(), MouseButtons.MiddleMouseButton))
-                    e.Button = MouseButtons.MiddleMouseButton;
+                    if (InputHandler.IsClickingObject(this.GetBoundingBox(), MouseButtons.LeftMouseButton))
+                        e.Button = MouseButtons.LeftMouseButton;
 
-                if (e.Button != MouseButtons.None)
-                    OnClick(this, e);
+                    if (InputHandler.IsClickingObject(this.GetBoundingBox(), MouseButtons.RightMouseButton))
+                        e.Button = MouseButtons.RightMouseButton;
+
+                    if (InputHandler.IsClickingObject(this.GetBoundingBox(), MouseButtons.MiddleMouseButton))
+                        e.Button = MouseButtons.MiddleMouseButton;
+
+                    if (e.Button != MouseButtons.None)
+                        OnClick(this, e);
+                }
             }
         }
         public abstract Vector2 GetOrigin();
