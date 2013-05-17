@@ -70,7 +70,7 @@ namespace AsteroidsInc.Components
         static readonly Color[] SCRAPE_COLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
         static readonly Color[] EXPLOSION_COLORS = { Color.LawnGreen, Color.White, Color.LightSlateGray, Color.LightGray };
 
-        public const int LARGE_ASTEROID_DAMAGE_THRESHOLD = 20;
+        public const int LARGE_ASTEROID_DAMAGE_THRESHOLD = 10;
 
         #endregion
 
@@ -86,12 +86,19 @@ namespace AsteroidsInc.Components
             ExplosionParticleTextures = particleTextures;
             RegenerateAsteroids = regenAsteroids;
 
-            //init the collections
+            Regenerate(asteroidsToGenerate);
+        }
+
+        public static void Regenerate(int asteroids)
+        {
+            AsteroidsToGenerate = asteroids;
             Asteroids = new List<GameObject>();
             emitters = new List<ParticleEmitter>();
 
-            for (int i = 0; i < AsteroidsToGenerate; i++)
+            for (int i = 0; i < asteroids; i++)
+            {
                 AddRandomAsteroid(); //initial placement of asteroids
+            }
         }
 
         public static void Update(GameTime gameTime)

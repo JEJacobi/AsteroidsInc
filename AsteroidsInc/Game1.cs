@@ -53,6 +53,7 @@ namespace AsteroidsInc
         const float NORMAL_SCALE = 1f;
 
         int selectedUpgrade = 0;
+        bool played = false;
         GameState last = GameState.Upgrade;
 
 	    #endregion
@@ -80,7 +81,8 @@ namespace AsteroidsInc
             Camera.Initialize( //initialize the camera
                 DEFAULT_WINDOWED_WIDTH,
                 DEFAULT_WINDOWED_HEIGHT,
-                WORLD_SIZE, WORLD_SIZE);
+                LevelManager.Levels[0].WorldSizeX,
+                LevelManager.Levels[0].WorldSizeY);
 
             Camera.Position = Vector2.Zero;
 
@@ -187,16 +189,17 @@ namespace AsteroidsInc
             stars.Add(ContentHandler.Textures["star4"]);
             stars.Add(ContentHandler.Textures["particle"]);
             StarField.Textures = stars;
-            StarField.Generate(TEMP_STARS_TO_GEN);
             StarField.Scrolling = true;
+            StarField.Generate(LevelManager.Levels[0].Stars);
 
             //GAME UI
             GameUI.Add("oreCount", new UIString<int>(0 , new Vector2(0.057f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("health", new UIString<string>("Hull Integrity: 100", new Vector2(0.005f, 0.95f), ContentHandler.Fonts["lcd"], Color.Green, true, 1f, 0f, false));
-            GameUI.Add("loc", new UIString<string>("", new Vector2(0, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("oreSprite", new UISprite(ContentHandler.Textures["smallOre"], new Vector2(0.01f, 0.01f), Color.White, true, 1f, 0f, false));
             GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.Red));
+            GameUI.Add("sector", new UIString<string>("Sector: 1", new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
+            GameUI.Add("levelcomplete", new UIString<string>("Sector Clear - Press Escape to Exit", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["lcd"], Color.White));
 
             //MENU UI
             MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));
@@ -268,7 +271,7 @@ namespace AsteroidsInc
             asteroid.Add(ContentHandler.Textures[AsteroidManager.LARGE_ASTEROID]);
             asteroid.Add(ContentHandler.Textures[AsteroidManager.ORE_ASTEROID]);
             AsteroidManager.Initialize(
-                TEMP_ASTEROIDS_TO_GEN,
+                LevelManager.Levels[0].Asteroids,
                 asteroid,
                 particle,
                 true);
@@ -461,10 +464,10 @@ namespace AsteroidsInc
                     ContentHandler.StopInstancedSFX("alarm");
             }
             //get health / set color
-            ((UIString<string>)GameUI["loc"]).Value = Camera.Position.ToString();
-            //get loc value
             ((UIString<int>)GameUI["oreCount"]).Value = Player.OreWinCondition - Player.CurrentOre;
             //get ore count
+            ((UIString<string>)GameUI["sector"]).Value = "Sector: " + (LevelManager.Counter + 1).ToString();
+
             foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
                 elementPair.Value.Update(gameTime);
         }
@@ -498,6 +501,8 @@ namespace AsteroidsInc
                     break;
                 case GameState.Upgrade:
 
+                    StarField.Scrolling = true;
+
                     ((UIString<string>)MenuUI["start"]).Value = "Resume"; //turn the start button into a resume one
 
                     switch (Player.ActiveSlot)
@@ -530,10 +535,22 @@ namespace AsteroidsInc
         //On level complete
         void Player_LevelCompleteEvent(object sender, EventArgs e)
         {
-            StarField.Generate(TEMP_STARS_TO_GEN);
-            SwitchGameState(GameState.Upgrade);
-            Player.OreWinCondition *= 2;
-            Player.Reset();
+            AsteroidManager.RegenerateAsteroids = false;
+            if (!played)
+            {
+                ContentHandler.PlaySFX(Player.WIN_SFX);
+                played = true;
+            }
+            GameUI["levelcomplete"].Active = true;
+
+            if (InputHandler.IsKeyDown(Keys.Escape))
+            {
+                played = false;
+                AsteroidManager.RegenerateAsteroids = true;
+                GameUI["levelcomplete"].Active = false;
+                LevelManager.NextLevel();
+                SwitchGameState(GameState.Upgrade);
+            }
         }
 
         //On player death
@@ -547,7 +564,7 @@ namespace AsteroidsInc
 
         void updateSlots(object sender, EventArgs e) //update Upgrade UI's slots
         {
-            var temp = getEquipmentList();
+            var temp = Player.GetEquipmentList;
             switch (Player.ActiveSlot)
             {
                 case Slots.Slot1:
@@ -569,7 +586,7 @@ namespace AsteroidsInc
 
         void updateSelected() //update the Upgrade UI
         {
-            var temp = getEquipmentList();
+            var temp = Player.GetEquipmentList;
 
             ((UIString<string>)UpgradeUI["description"]).Value = temp[selectedUpgrade].Value.Description;
             ((UISprite)UpgradeUI["projectile1"]).Texture = temp[selectedUpgrade].Value.Texture;

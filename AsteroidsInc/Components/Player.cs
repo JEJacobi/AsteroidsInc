@@ -30,6 +30,13 @@ namespace AsteroidsInc.Components
 
         public static Dictionary<string, EquipmentData> EquipmentDictionary { get; set; }
         //dictionary to hold all equipment data
+        public static List<KeyValuePair<string, EquipmentData>> GetEquipmentList
+        {
+            get
+            {
+                return EquipmentDictionary.ToList<KeyValuePair<string, EquipmentData>>();
+            }
+        }
 
         public static string Slot1 { get; set; } //keys for equipment dictionary
         public static string Slot2 { get; set; }
@@ -213,7 +220,7 @@ namespace AsteroidsInc.Components
             Health = STARTING_HEALTH;
             CurrentOre = STARTING_ORE;
 
-            OreWinCondition = 20; //TEMP
+            OreWinCondition = LevelManager.Levels[0].Quota;
 
             ActiveSlot = INITIAL_ACTIVE_SLOT;
             StabilizeRotation = true;
@@ -223,11 +230,11 @@ namespace AsteroidsInc.Components
             //init the ship
             Ship = new GameObject(
                 ContentHandler.Textures[SHIP_TEXTURE],
-                new Vector2(Camera.WorldRectangle.Width / 2, 0),
-                new Vector2(0, 50),
+                new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height),
+                new Vector2(0, -50),
                 Color.White,
                 false,
-                MathHelper.ToRadians(180),
+                0f,
                 0f,
                 1f,
                 SHIP_DEPTH,
@@ -431,20 +438,11 @@ namespace AsteroidsInc.Components
                 Ship.Update(gameTime); //update the sprite itself, make sure to do this last
             }
 
+            //TODO: Take dead enemies into account
             if (CurrentOre >= OreWinCondition) //if level complete
             {
                 if (LevelCompleteEvent != null) //trigger the level complete event
                     LevelCompleteEvent(Ship, EventArgs.Empty);
-
-                if (ContentHandler.ShouldPlaySFX)
-                {
-                    SoundEffectInstance temp = ContentHandler.SFX[WIN_SFX].CreateInstance();
-                    temp.Play(); //play level win sound
-
-                    while (temp.State == SoundState.Playing) ; //wait until done playing
-                }
-
-                Reset(); //reset
             }
 
             if (Health <= MIN_HEALTH)
@@ -490,10 +488,10 @@ namespace AsteroidsInc.Components
             //reset the ship object
             Ship.Animating = false;
             Ship.CurrentFrame = 0;
-            Ship.WorldCenter = Camera.CENTER_OF_WORLD;
+            Ship.WorldCenter = new Vector2(Camera.WorldRectangle.Width / 2, Camera.WorldRectangle.Height);
             Ship.RotationalVelocity = 0f;
             Ship.Rotation = 0f;
-            Ship.Velocity = Vector2.Zero;
+            Ship.Velocity = new Vector2(0, -50);
 
             //the engine trails
             LeftEngineTrail.Emitting = false;
@@ -506,12 +504,6 @@ namespace AsteroidsInc.Components
             dead = false;
             StabilizeRotation = true;
             Ship.Active = true;
-
-            //Ore Manager's stuff
-            OreManager.OreDrops = new List<Particle>();
-
-            //Projectile Manager
-            ProjectileManager.Projectiles = new List<Projectile>();
 
             //and the on-death particle emitter
             ExplosionEmitter = new ParticleEmitter(

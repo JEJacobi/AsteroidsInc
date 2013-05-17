@@ -109,6 +109,8 @@
   <ItemGroup>
     <Compile Include="Components\AsteroidManager.cs" />
     <Compile Include="Components\Camera.cs" />
+    <Compile Include="Components\Level.cs" />
+    <Compile Include="Components\LevelManager.cs" />
     <Compile Include="Components\OreManager.cs" />
     <Compile Include="Components\Player.cs" />
     <Compile Include="Components\Projectile.cs" />
@@ -130,6 +132,9 @@
   <ItemGroup>
     <Content Include="Game.ico" />
     <Content Include="GameThumbnail.png" />
+    <None Include="LEVELS.DAT">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="README.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
