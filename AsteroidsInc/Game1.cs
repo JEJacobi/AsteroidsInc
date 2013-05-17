@@ -230,7 +230,9 @@ namespace AsteroidsInc
             UpgradeUI.Add("currentOre", new UIString<string>("Ore: ", new Vector2(0.5f, 0.67f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("rof", new UIString<string>("Refire: ", new Vector2(0.333f, 0.4f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("speed", new UIString<string>("Speed: ", new Vector2(0.666f, 0.4f), ContentHandler.Fonts["lcd"], Color.White, true));
-
+            UpgradeUI.Add("health", new UIString<string>("Hull Status: 100", new Vector2(0.01f, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            UpgradeUI.Add("repaircost", new UIString<string>("Repair Cost: 0", new Vector2(0.01f, 0.85f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            UpgradeUI.Add("repair", new UIString<string>("Repair", new Vector2(0.01f, 0.9f), ContentHandler.Fonts["menu"], Color.White, true, 1f, 0f, false));
 
             //UI Events
             MenuUI["start"].OnClick += new UIBase.MouseClickHandler(start_OnClick);
@@ -260,6 +262,9 @@ namespace AsteroidsInc
             UpgradeUI["next"].OnClick += new UIBase.MouseClickHandler(next_OnClick);
             UpgradeUI["back"].OnClick += new UIBase.MouseClickHandler(back_OnClick);
             UpgradeUI["buy"].OnClick += new UIBase.MouseClickHandler(buy_OnClick);
+            UpgradeUI["repair"].OnClick += new UIBase.MouseClickHandler(repair_OnClick);
+            UpgradeUI["repair"].MouseOver += new EventHandler(repair_MouseOver);
+            UpgradeUI["repair"].MouseAway += new EventHandler(repair_MouseAway);
 
             //AsteroidManager
             List<Texture2D> particle = new List<Texture2D>(); //particle list
@@ -287,6 +292,32 @@ namespace AsteroidsInc
             spriteBatch.End();
 
             SwitchGameState(GameState.Menu);
+        }
+
+        void repair_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["repair"].Color = HIGHLIGHT_COLOR;
+            UpgradeUI["repair"].Scale = HIGHLIGHT_SCALE;
+        }
+
+        void repair_MouseAway(object sender, EventArgs e)
+        {
+            UpgradeUI["repair"].Color = NORMAL_COLOR;
+            UpgradeUI["repair"].Scale = NORMAL_SCALE;
+        }
+
+        void repair_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            if (Player.RepairCost <= Player.StoredOre)
+            {
+                Player.StoredOre -= Player.RepairCost;
+                Player.Health = Player.STARTING_HEALTH;
+                ContentHandler.PlaySFX("click");
+            }
+            else
+                ContentHandler.PlaySFX("error");
+
+            updateSelected();
         }
 
         protected override void UnloadContent()
@@ -398,11 +429,6 @@ namespace AsteroidsInc
             if (OnStateChange != null) //trigger the event with state data
                 OnStateChange(this, new StateArgs(gameState, state));
             gameState = state; //switch the state
-        }
-
-        List<KeyValuePair<string, EquipmentData>> getEquipmentList()
-        {
-            return Player.EquipmentDictionary.ToList<KeyValuePair<string, EquipmentData>>();
         }
 
         private void handleGlobalInputs() //handle things like fullscreen/windowed switching, toggling music on/off, etc
@@ -598,6 +624,13 @@ namespace AsteroidsInc
             ((UIString<string>)UpgradeUI["speed"]).Value = "Speed: " + temp[selectedUpgrade].Value.Speed.ToString();
             ((UIString<string>)UpgradeUI["rof"]).Value = "Refire: " +
                 temp[selectedUpgrade].Value.RefireDelay / temp[selectedUpgrade].Value.ShotsPerLaunch;
+            ((UIString<string>)UpgradeUI["health"]).Value = "Hull Status: " + Player.Health.ToString();
+            ((UIString<string>)UpgradeUI["repaircost"]).Value = "Repair Cost: " + Player.RepairCost;
+
+            if (Player.RepairCost <= Player.StoredOre && Player.Health != Player.STARTING_HEALTH)
+                UpgradeUI["repair"].Active = true;
+            else
+                UpgradeUI["repair"].Active = false;
 
             if (temp[selectedUpgrade].Key == (Player.ActiveSlot == Slots.Slot1 ? Player.Slot1 : Player.Slot2))
             {
@@ -614,6 +647,7 @@ namespace AsteroidsInc
                 UpgradeUI["cost"].Color = Color.Red;
             else
                 UpgradeUI["cost"].Color = Color.White;
+
         }
 
         //MENU UI - START
@@ -792,7 +826,7 @@ namespace AsteroidsInc
         void next_OnClick(UIBase sender, MouseClickArgs e)
         {
             selectedUpgrade++;
-            selectedUpgrade %= getEquipmentList().Count;
+            selectedUpgrade %= Player.GetEquipmentList.Count;
             updateSelected();
 
             ContentHandler.PlaySFX("switch");
@@ -802,7 +836,7 @@ namespace AsteroidsInc
         {
             selectedUpgrade--;
             if (selectedUpgrade < 0)
-                selectedUpgrade = getEquipmentList().Count - 1;
+                selectedUpgrade = Player.GetEquipmentList.Count - 1;
             updateSelected();
 
             ContentHandler.PlaySFX("switch");
@@ -810,7 +844,7 @@ namespace AsteroidsInc
 
         void buy_OnClick(UIBase sender, MouseClickArgs e)
         {
-            var temp = getEquipmentList();
+            var temp = Player.GetEquipmentList;
 
             if (Player.StoredOre >= temp[selectedUpgrade].Value.OreCost)
             {

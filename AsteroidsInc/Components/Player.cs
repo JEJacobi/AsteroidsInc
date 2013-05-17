@@ -52,6 +52,16 @@ namespace AsteroidsInc.Components
         } //which key is being used
         static Slots aSlot;
 
+        public static int RepairCost
+        {
+            get
+            {
+                float temp = STARTING_HEALTH - Health;
+                temp *= UNIT_REPAIR_COST;
+                return (int)Math.Round(temp, 0);
+            }
+        }
+
         public static event EventHandler DeadEvent;
         public static event EventHandler LevelCompleteEvent;
         public static event EventHandler ActiveSlotChanged;
@@ -91,6 +101,7 @@ namespace AsteroidsInc.Components
         public const float ROT_VEL_CHANGE = 0.6f;
         public const float VEL_CHANGE_FACTOR = 4f;
         public const float SHIP_FRAME_DELAY = 0.7f;
+        public const float UNIT_REPAIR_COST = 0.2f;
 
         public static readonly Color[] TRAIL_COLORS = { Color.Orange, Color.OrangeRed, Color.MediumVioletRed };
         public static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.Orange, Color.LightGray }; //effect colors
@@ -499,7 +510,6 @@ namespace AsteroidsInc.Components
 
             //equipment and flags
             ActiveSlot = INITIAL_ACTIVE_SLOT;
-            Health = STARTING_HEALTH;
             CurrentOre = STARTING_ORE;
             dead = false;
             StabilizeRotation = true;
