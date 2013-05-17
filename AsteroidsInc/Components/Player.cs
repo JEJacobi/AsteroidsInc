@@ -61,11 +61,12 @@ namespace AsteroidsInc.Components
 
         public const string SHIP_TEXTURE = "ship"; //texture indexes
         public const string SHIELD_KEY = "shield";
-        public const string MISSILE_KEY = "missile";
+        public const string TORPEDO_KEY = "torpedo";
         public const string LASER_KEY = "laser";
         public const string CANNON_KEY = "cannon";
         public const string SHELL_KEY = "shell";
         public const string SLIVER_KEY = "sliver";
+        public const string MISSILE_KEY = "missile";
 
         public const string ENGINE_SFX = "engine"; //sfx indexes
         public const string COLLISION_SFX = "collision";
@@ -124,18 +125,18 @@ namespace AsteroidsInc.Components
             #region Equipment Definitions
 
             Slot1 = LASER_KEY; //set initial equipment
-            Slot2 = MISSILE_KEY;
+            Slot2 = TORPEDO_KEY;
             EquipmentDictionary = new Dictionary<string, EquipmentData>(); //initialize the dictionary
 
-            //add missiles
-            EquipmentDictionary.Add(MISSILE_KEY, new EquipmentData(
-                ContentHandler.Textures[MISSILE_KEY],
+            //add torpedoes
+            EquipmentDictionary.Add(TORPEDO_KEY, new EquipmentData(
+                ContentHandler.Textures[TORPEDO_KEY],
                 300,
                 0f,
-                MISSILE_KEY,
+                TORPEDO_KEY,
                 COLLISION_SFX,
                 2000,
-                50,
+                30,
                 20,
                 50,
                 1,
@@ -165,12 +166,12 @@ namespace AsteroidsInc.Components
                 300,
                 SHELL_KEY,
                 COLLISION_SFX,
-                225,
+                175,
                 10,
                 3,
+                50,
                 35,
-                35,
-                20,
+                30,
                 "Scatter-Fire",
                 false, true));
 
@@ -188,6 +189,24 @@ namespace AsteroidsInc.Components
                 2,
                 45,
                 "Shrapnel Projector"));
+
+            //add missiles
+            EquipmentDictionary.Add(MISSILE_KEY, new EquipmentData(
+                ContentHandler.Textures[MISSILE_KEY],
+                1000,
+                0,
+                MISSILE_KEY,
+                COLLISION_SFX,
+                500,
+                20,
+                10,
+                30,
+                1,
+                40,
+                "Rapid-Missile Launcher",
+                true,
+                true));
+
 
             #endregion
             
@@ -275,6 +294,8 @@ namespace AsteroidsInc.Components
                 0f, 180f);
 
             #endregion
+
+            StoredOre = 100; //TEMP
         }
 
         public static void Update(GameTime gameTime)

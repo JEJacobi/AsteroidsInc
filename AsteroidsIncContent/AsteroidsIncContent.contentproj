@@ -112,8 +112,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Sound\missile.wav">
-      <Name>missile</Name>
+    <Compile Include="Sound\torpedo.wav">
+      <Name>torpedo</Name>
       <Importer>WavImporter</Importer>
       <Processor>SoundEffectProcessor</Processor>
     </Compile>
@@ -306,6 +306,20 @@
   <ItemGroup>
     <Compile Include="Sound\error.wav">
       <Name>error</Name>
+      <Importer>WavImporter</Importer>
+      <Processor>SoundEffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Textures\torpedo.png">
+      <Name>torpedo</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Sound\missile.wav">
+      <Name>missile</Name>
       <Importer>WavImporter</Importer>
       <Processor>SoundEffectProcessor</Processor>
     </Compile>

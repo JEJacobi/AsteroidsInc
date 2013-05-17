@@ -9,7 +9,6 @@ Content\Textures\smalljunk01.xnb
 Content\Textures\smalljunk02.xnb
 Content\Textures\smalljunk03.xnb
 Content\Textures\ship.xnb
-Content\Textures\missile.xnb
 Content\Textures\laser.xnb
 Content\Textures\star1.xnb
 Content\Textures\star2.xnb
@@ -20,7 +19,6 @@ Content\Textures\ore.xnb
 Content\Textures\shell.xnb
 Content\Sound\collision.xnb
 Content\Sound\engine.xnb
-Content\Sound\missile.xnb
 Content\Sound\switch.xnb
 Content\Sound\laser.xnb
 Content\Sound\death.xnb
@@ -39,5 +37,9 @@ Content\Textures\staticship.xnb
 Content\Textures\mine.xnb
 Content\Sound\alarm.xnb
 Content\Sound\error.xnb
+Content\Textures\torpedo.xnb
+Content\Sound\torpedo.xnb
+Content\Textures\missile.xnb
+Content\Sound\missile.xnb
 Content\Music\menu.wma
 README.txt

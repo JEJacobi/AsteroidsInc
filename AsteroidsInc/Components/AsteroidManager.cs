@@ -70,7 +70,7 @@ namespace AsteroidsInc.Components
         static readonly Color[] SCRAPE_COLORS = { Color.Gray, Color.DimGray, Color.LightSlateGray, Color.SandyBrown, Color.RosyBrown };
         static readonly Color[] EXPLOSION_COLORS = { Color.LawnGreen, Color.White, Color.LightSlateGray, Color.LightGray };
 
-        public const int LARGE_ASTEROID_DAMAGE_THRESHOLD = 25;
+        public const int LARGE_ASTEROID_DAMAGE_THRESHOLD = 20;
 
         #endregion
 
