@@ -199,7 +199,7 @@ namespace AsteroidsInc
             GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.Red));
             GameUI.Add("sector", new UIString<string>("Sector: 1", new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
-            GameUI.Add("levelcomplete", new UIString<string>("Sector Clear - Press Escape to Exit", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["lcd"], Color.White));
+            GameUI.Add("levelcomplete", new UIString<string>("Sector Clear - Press Escape to Exit", new Vector2(0.5f, 0.4f), ContentHandler.Fonts["lcd"], Color.White));
 
             //MENU UI
             MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));
@@ -490,7 +490,7 @@ namespace AsteroidsInc
                     ContentHandler.StopInstancedSFX("alarm");
             }
             //get health / set color
-            ((UIString<int>)GameUI["oreCount"]).Value = Player.OreWinCondition - Player.CurrentOre;
+            ((UIString<int>)GameUI["oreCount"]).Value = (int)MathHelper.Clamp(Player.OreWinCondition - Player.CurrentOre, 0, Int32.MaxValue);
             //get ore count
             ((UIString<string>)GameUI["sector"]).Value = "Sector: " + (LevelManager.Counter + 1).ToString();
 
@@ -573,6 +573,7 @@ namespace AsteroidsInc
             {
                 played = false;
                 AsteroidManager.RegenerateAsteroids = true;
+                GameUI["warning"].Active = false;
                 GameUI["levelcomplete"].Active = false;
                 LevelManager.NextLevel();
                 SwitchGameState(GameState.Upgrade);
