@@ -1,4 +1,4 @@
-﻿Asteroids Inc v0.3
+﻿Asteroids Inc v0.4
 (c) Munellium Games - 2013
 
 Controls:
@@ -16,7 +16,7 @@ Exit to Menu: Esc
 
 The entirety of http://opengameart.org/ including:
 | qubodup
-| Michel Baradari
+| Michel Baradari - Music
 | HaelDB
 | Skorpio
 | wuhu
@@ -24,4 +24,7 @@ The entirety of http://opengameart.org/ including:
 | ObsydianX
 | Dravenx
 
-As well as Clearside and DST (http://www.nosoapradio.us) for music.
+As well as:
+| codeman38 - Menu Font
+| Clearside - Music
+| DST (Deceased Superior Technician) - Music

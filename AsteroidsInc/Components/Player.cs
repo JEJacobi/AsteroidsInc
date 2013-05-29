@@ -488,6 +488,11 @@ namespace AsteroidsInc.Components
                 RightEngineTrail.Draw(spriteBatch);
                 Shield.Draw(spriteBatch);
                 Ship.Draw(spriteBatch);
+
+                //spriteBatch.Draw( //DEBUG METHOD
+                //    ContentHandler.Textures["particle"],
+                //    Camera.GetLocalCoords(Ship.BoundingBox),
+                //    Color.White);
             }
             ExplosionEmitter.Draw(spriteBatch); //out of if dead check since activated on death
         }

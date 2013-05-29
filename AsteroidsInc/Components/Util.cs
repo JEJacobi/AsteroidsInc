@@ -54,6 +54,13 @@ namespace AsteroidsInc.Components
             return temp / 2;
         }
 
+        public static Vector2 RoundVector2(this Vector2 vector) //return a rounded Vector2
+        {
+            return new Vector2(
+                (float)Math.Round(vector.X, 0),
+                (float)Math.Round(vector.Y, 0));
+        }
+
         public static Vector2 RotationToVector(this float rotationRadians) //get a normalized vector from a rotation in radians
         {
             return new Vector2(

@@ -26,6 +26,7 @@ namespace AsteroidsInc
         Dictionary<string, UIBase> GameUI;
         Dictionary<string, UIBase> MenuUI;
         Dictionary<string, UIBase> UpgradeUI;
+        Dictionary<string, UIBase> HelpUI;
 
         #endregion
 
@@ -49,7 +50,7 @@ namespace AsteroidsInc
         //UI constants
         readonly Color HIGHLIGHT_COLOR = Color.Yellow;
         readonly Color NORMAL_COLOR = Color.White;
-        const float HIGHLIGHT_SCALE = 1.1f;
+        const float HIGHLIGHT_SCALE = 1f;
         const float NORMAL_SCALE = 1f;
 
         int selectedUpgrade = 0;
@@ -70,6 +71,7 @@ namespace AsteroidsInc
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferHeight = DEFAULT_WINDOWED_HEIGHT;
             graphics.PreferredBackBufferWidth = DEFAULT_WINDOWED_WIDTH; //set the window size to defaults
+            graphics.PreferMultiSampling = true; //turn on multisampling
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true; //mouse should be visible
         }
@@ -89,6 +91,7 @@ namespace AsteroidsInc
             GameUI = new Dictionary<string, UIBase>();
             MenuUI = new Dictionary<string, UIBase>();
             UpgradeUI = new Dictionary<string, UIBase>();
+            HelpUI = new Dictionary<string, UIBase>();
 
             OnStateChange += new StateChangeHandler(handleSwitching);
 
@@ -193,10 +196,10 @@ namespace AsteroidsInc
             StarField.Generate(LevelManager.Levels[0].Stars);
 
             //GAME UI
-            GameUI.Add("oreCount", new UIString<int>(0 , new Vector2(0.057f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            GameUI.Add("oreCount", new UIString<int>(0 , new Vector2(0.057f, 0.02f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("health", new UIString<string>("Hull Integrity: 100", new Vector2(0.005f, 0.95f), ContentHandler.Fonts["lcd"], Color.Green, true, 1f, 0f, false));
             GameUI.Add("oreSprite", new UISprite(ContentHandler.Textures["smallOre"], new Vector2(0.01f, 0.01f), Color.White, true, 1f, 0f, false));
-            GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.01f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.02f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.Red));
             GameUI.Add("sector", new UIString<string>("Sector: 1", new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
             GameUI.Add("levelcomplete", new UIString<string>("Sector Clear - Press Escape to Exit", new Vector2(0.5f, 0.4f), ContentHandler.Fonts["lcd"], Color.White));
@@ -204,12 +207,29 @@ namespace AsteroidsInc
             //MENU UI
             MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));
             MenuUI.Add("title2", new UIString<string>("INC", new Vector2(0.5f, 0.29f), ContentHandler.Fonts["title2"], Color.White, true));
-            MenuUI.Add("start", new UIString<string>("Start", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["menu"], Color.White, true));
-            MenuUI.Add("exit", new UIString<string>("Exit", new Vector2(0.5f, 0.65f), ContentHandler.Fonts["menu"], Color.White, true));
-            MenuUI.Add("sound", new UIString<string>("F11 - Toggle SFX", new Vector2(0.01f, 0.87f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI.Add("start", new UIString<string>("Start", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
+            MenuUI.Add("exit", new UIString<string>("Exit", new Vector2(0.5f, 0.65f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
+            MenuUI.Add("sound", new UIString<string>("F11 - Toggle SFX", new Vector2(0.01f, 0.90f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             MenuUI.Add("music", new UIString<string>("F12 - Toggle Music", new Vector2(0.01f, 0.93f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
-            MenuUI.Add("fullscreen", new UIString<string>("F10 - Toggle Fullscreen", new Vector2(0.01f, 0.81f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI.Add("fullscreen", new UIString<string>("F10 - Toggle Fullscreen", new Vector2(0.01f, 0.96f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             MenuUI["exit"].XPadding = -10;
+            MenuUI.Add("help", new UIString<string>("Controls / About", new Vector2(0.85f, 0.95f), ContentHandler.Fonts["lcd"], Color.White, true));
+
+            //HELP UI
+            HelpUI.Add("return", new UIString<string>("Return to Menu", new Vector2(0.5f, 0.97f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
+            HelpUI.Add("controls", new UIString<string>("Controls:", new Vector2(0.5f, 0.1f), ContentHandler.Fonts["title2"], Color.White, true));
+            HelpUI.Add("keys", new UIString<string>("Arrow Keys - Rotate/Thrust", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("keys2", new UIString<string>("Spacebar - Fire", new Vector2(0.5f, 0.25f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("keys3", new UIString<string>("F - Switch Weapon", new Vector2(0.5f, 0.3f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("keys4", new UIString<string>("Shift - Boost", new Vector2(0.5f, 0.35f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("thanks", new UIString<string>("Thanks To:", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["title2"], Color.White, true));
+            HelpUI.Add("credit", new UIString<string>("Everyone from OpenGameArt.org including:", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit2", new UIString<string>("qubodup", new Vector2(0.5f, 0.65f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit3", new UIString<string>("HaelDB", new Vector2(0.5f, 0.7f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit4", new UIString<string>("wuhu", new Vector2(0.5f, 0.75f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit5", new UIString<string>("GameArtForge", new Vector2(0.5f, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit6", new UIString<string>("Skorpio", new Vector2(0.5f, 0.85f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit8", new UIString<string>("DST, Clearside, and Michel Baradari - Music", new Vector2(0.5f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true));
 
             //UPGRADE UI
             UpgradeUI.Add("ship", new UISprite(ContentHandler.Textures["staticship"], new Vector2(0.5f, 0.45f), Color.White, true));
@@ -217,13 +237,13 @@ namespace AsteroidsInc
             UpgradeUI.Add("description", new UIString<string>("", new Vector2(0.5f, 0.25f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("projectile1", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.38f), Color.White, true, 1f));
             UpgradeUI.Add("projectile2", new UISprite(ContentHandler.Textures["laser"], new Vector2(0.5f, 0.315f), Color.White, true, 1f));
-            UpgradeUI.Add("continue", new UIString<string>("Continue", new Vector2(0.5f, 0.8f), ContentHandler.Fonts["menu"], Color.White, true));
-            UpgradeUI.Add("exitToMenu", new UIString<string>("Exit to Menu", new Vector2(0.5f, 0.96f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("continue", new UIString<string>("Continue", new Vector2(0.5f, 0.8f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
+            UpgradeUI.Add("exitToMenu", new UIString<string>("Exit to Menu", new Vector2(0.5f, 0.96f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
             UpgradeUI.Add("buy", new UIString<string>("Buy", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
-            UpgradeUI.Add("next", new UIString<string>("Next", new Vector2(0.666f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
-            UpgradeUI.Add("back", new UIString<string>("Back", new Vector2(0.333f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true));
-            UpgradeUI.Add("slot1", new UIString<string>("Slot 1", new Vector2(0.333f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true));
-            UpgradeUI.Add("slot2", new UIString<string>("Slot 2", new Vector2(0.666f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true));
+            UpgradeUI.Add("next", new UIString<string>("Next", new Vector2(0.666f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
+            UpgradeUI.Add("back", new UIString<string>("Back", new Vector2(0.333f, 0.6f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
+            UpgradeUI.Add("slot1", new UIString<string>("Slot 1", new Vector2(0.333f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
+            UpgradeUI.Add("slot2", new UIString<string>("Slot 2", new Vector2(0.666f, 0.1f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
             UpgradeUI.Add("cost", new UIString<string>("Cost: 0", new Vector2(0.5f, 0.52f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("damage", new UIString<string>("Damage: ", new Vector2(0.333f, 0.5f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("range", new UIString<string>("Range: ", new Vector2(0.666f, 0.5f), ContentHandler.Fonts["lcd"], Color.White, true));
@@ -232,7 +252,7 @@ namespace AsteroidsInc
             UpgradeUI.Add("speed", new UIString<string>("Speed: ", new Vector2(0.666f, 0.4f), ContentHandler.Fonts["lcd"], Color.White, true));
             UpgradeUI.Add("health", new UIString<string>("Hull Status: 100", new Vector2(0.01f, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             UpgradeUI.Add("repaircost", new UIString<string>("Repair Cost: 0", new Vector2(0.01f, 0.85f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
-            UpgradeUI.Add("repair", new UIString<string>("Repair", new Vector2(0.01f, 0.9f), ContentHandler.Fonts["menu"], Color.White, true, 1f, 0f, false));
+            UpgradeUI.Add("repair", new UIString<string>("Repair", new Vector2(0.01f, 0.9f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE, 0f, false));
 
             //UI Events
             MenuUI["start"].OnClick += new UIBase.MouseClickHandler(start_OnClick);
@@ -241,6 +261,12 @@ namespace AsteroidsInc
             MenuUI["exit"].OnClick += new UIBase.MouseClickHandler(exit_OnClick);
             MenuUI["exit"].MouseOver += new EventHandler(exit_MouseOver);
             MenuUI["exit"].MouseAway += new EventHandler(exit_MouseAway);
+            MenuUI["help"].MouseOver += new EventHandler(help_MouseOver);
+            MenuUI["help"].MouseAway += new EventHandler(help_MouseAway);
+            MenuUI["help"].OnClick += new UIBase.MouseClickHandler(help_OnClick);
+            HelpUI["return"].MouseOver += new EventHandler(return_MouseOver);
+            HelpUI["return"].MouseAway += new EventHandler(return_MouseAway);
+            HelpUI["return"].OnClick += new UIBase.MouseClickHandler(return_OnClick);
             UpgradeUI["slot1"].MouseOver += new EventHandler(slot1_MouseOver);
             UpgradeUI["slot2"].MouseOver += new EventHandler(slot2_MouseOver);
             UpgradeUI["slot1"].MouseAway += new EventHandler(slot1_MouseAway);
@@ -294,32 +320,6 @@ namespace AsteroidsInc
             SwitchGameState(GameState.Menu);
         }
 
-        void repair_MouseOver(object sender, EventArgs e)
-        {
-            UpgradeUI["repair"].Color = HIGHLIGHT_COLOR;
-            UpgradeUI["repair"].Scale = HIGHLIGHT_SCALE;
-        }
-
-        void repair_MouseAway(object sender, EventArgs e)
-        {
-            UpgradeUI["repair"].Color = NORMAL_COLOR;
-            UpgradeUI["repair"].Scale = NORMAL_SCALE;
-        }
-
-        void repair_OnClick(UIBase sender, MouseClickArgs e)
-        {
-            if (Player.RepairCost <= Player.StoredOre)
-            {
-                Player.StoredOre -= Player.RepairCost;
-                Player.Health = Player.STARTING_HEALTH;
-                ContentHandler.PlaySFX("click");
-            }
-            else
-                ContentHandler.PlaySFX("error");
-
-            updateSelected();
-        }
-
         protected override void UnloadContent()
         {
             //Nothing yet...
@@ -351,6 +351,7 @@ namespace AsteroidsInc
                     //GAME UPDATE END
                     break;
                 case GameState.Menu:
+                    //MENU UPDATE BEGIN
 
                     foreach (KeyValuePair<string, UIBase> elementPair in MenuUI)
                         elementPair.Value.Update(gameTime); //update each UI element
@@ -360,17 +361,30 @@ namespace AsteroidsInc
                     if (InputHandler.IsKeyDown(Keys.Escape))
                         this.Exit(); //if in menu and esc is pressed, exit
 
+                    //MENU UPDATE END
                     break;
                 case GameState.Upgrade:
+                    //UPGRADE UPDATE BEGIN
 
                     foreach (KeyValuePair<string, UIBase> elementPair in UpgradeUI)
                         elementPair.Value.Update(gameTime);
 
                     StarField.Update(gameTime);
 
+                    //UPGRADE UPDATE END
+                    break;
+                case GameState.Help:
+                    //HELP UPGRADE BEGIN
+
+                    foreach (KeyValuePair<string, UIBase> elementPair in HelpUI)
+                        elementPair.Value.Update(gameTime);
+
+                    StarField.Update(gameTime);
+
+                    //HELP UPGRADE END
                     break;
                 default:
-                    throw new ArgumentException();
+                    break;
             }
         }
 
@@ -414,8 +428,23 @@ namespace AsteroidsInc
 
                     //END UPGRADE DRAW
                     break;
+                case GameState.Help:
+                    //BEGIN HELP DRAW
+
+                    StarField.Draw(spriteBatch);
+
+                    foreach (KeyValuePair<string, UIBase> elementPair in HelpUI)
+                        elementPair.Value.Draw(spriteBatch);
+
+                    //END HELP DRAW
+                    break;
                 default:
-                    throw new ArgumentException();
+                    spriteBatch.DrawString(
+                        ContentHandler.Fonts["lcd"],
+                        "INVALID GAME STATE",
+                        Camera.ScreenSize / 2,
+                        Color.Red);
+                    break;
             }
 
             base.Draw(gameTime);
@@ -661,7 +690,7 @@ namespace AsteroidsInc
         void start_MouseOver(object sender, EventArgs e)
         {
             MenuUI["start"].Color = HIGHLIGHT_COLOR;
-            MenuUI["start"].Scale = 1.2f;
+            MenuUI["start"].Scale = HIGHLIGHT_SCALE;
         }
 
         void start_OnClick(UIBase sender, MouseClickArgs e)
@@ -871,6 +900,71 @@ namespace AsteroidsInc
                 ContentHandler.PlaySFX("error");
         }
 
+        void help_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            help_MouseAway(null, EventArgs.Empty);
+            ContentHandler.PlaySFX("switch");
+            SwitchGameState(GameState.Help);
+        }
+
+        void help_MouseOver(object sender, EventArgs e)
+        {
+            MenuUI["help"].Color = HIGHLIGHT_COLOR;
+            MenuUI["help"].Scale = HIGHLIGHT_SCALE;
+        }
+
+        void help_MouseAway(object sender, EventArgs e)
+        {
+            MenuUI["help"].Color = NORMAL_COLOR;
+            MenuUI["help"].Scale = NORMAL_SCALE;
+        }
+
+
+        void return_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            ContentHandler.PlaySFX("switch");
+            return_MouseAway(null, EventArgs.Empty);
+            SwitchGameState(GameState.Menu);
+        }
+
+        void return_MouseOver(object sender, EventArgs e)
+        {
+            HelpUI["return"].Color = HIGHLIGHT_COLOR;
+            HelpUI["return"].Scale = HIGHLIGHT_SCALE;
+        }
+
+        void return_MouseAway(object sender, EventArgs e)
+        {
+            HelpUI["return"].Color = NORMAL_COLOR;
+            HelpUI["return"].Scale = NORMAL_SCALE;
+        }
+
+        void repair_MouseOver(object sender, EventArgs e)
+        {
+            UpgradeUI["repair"].Color = HIGHLIGHT_COLOR;
+            UpgradeUI["repair"].Scale = HIGHLIGHT_SCALE;
+        }
+
+        void repair_MouseAway(object sender, EventArgs e)
+        {
+            UpgradeUI["repair"].Color = NORMAL_COLOR;
+            UpgradeUI["repair"].Scale = NORMAL_SCALE;
+        }
+
+        void repair_OnClick(UIBase sender, MouseClickArgs e)
+        {
+            if (Player.RepairCost <= Player.StoredOre)
+            {
+                Player.StoredOre -= Player.RepairCost;
+                Player.Health = Player.STARTING_HEALTH;
+                ContentHandler.PlaySFX("click");
+            }
+            else
+                ContentHandler.PlaySFX("error");
+
+            updateSelected();
+        }
+
         #endregion
     }
 
@@ -890,6 +984,7 @@ namespace AsteroidsInc
     {
         Game,
         Menu,
-        Upgrade
+        Upgrade,
+        Help
     }
 }

@@ -197,9 +197,14 @@ namespace AsteroidsInc.Components
             {
                 Asteroids[i].Draw(spriteBatch);
 
-                //spriteBatch.DrawString(ContentHandler.Fonts["lcd"],
+                //spriteBatch.DrawString(ContentHandler.Fonts["lcd"], //DEBUG METHOD
                 //    i.ToString(),
                 //    Camera.GetLocalCoords(Asteroids[i].WorldLocation),
+                //    Color.White);
+
+                //spriteBatch.Draw( //YET ANOTHER DEBUG METHOD
+                //    ContentHandler.Textures["particle"],
+                //    Camera.GetLocalCoords(Asteroids[i].BoundingBox),
                 //    Color.White);
             }
 

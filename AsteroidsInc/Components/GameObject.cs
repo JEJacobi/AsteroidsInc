@@ -170,6 +170,9 @@ namespace AsteroidsInc.Components
             set { WorldLocation = value - SpriteCenter; }
         } //gets/sets the center of the sprite in world coords
 
+        public Vector2 DrawCoordinates
+        { get { return ScreenCenter; } }
+
         public Vector2 ScreenCenter
         { get { return Camera.GetLocalCoords(WorldLocation + SpriteCenter); } } //returns the center in screen coords
 
@@ -277,35 +280,26 @@ namespace AsteroidsInc.Components
             {
                 if (Camera.IsObjectVisible(WorldRectangle))
 	            {
-                    if (TotalFrames > 1) //if multi-frame animation & object is visible
-                    {
-                        Rectangle sourceRectangle = new Rectangle(GetWidth * GetColumn,
-                            GetHeight * GetRow, GetWidth, GetHeight); //get source rectangle to use
+                    Rectangle? sourceRectangle;
 
-                        spriteBatch.Draw( //draw it
-                            Texture,
-                            ScreenCenter,
-                            sourceRectangle, //use generated source rectangle
-                            TintColor,
-                            Rotation,
-                            Origin,
-                            Scale,
-                            Effects,
-                            Depth);
-                    }
-                    else //if single frame sprite
-                    {
-                        spriteBatch.Draw(
-                            Texture,
-                            ScreenCenter, //center of the sprite in local coords
-                            null, //full sprite
-                            TintColor,
-                            Rotation,
-                            Origin,
-                            Scale,
-                            Effects, //spriteeffects
-                            Depth); //layerdepth
-                    }
+                    if (TotalFrames > 1) //if multi-frame animation & object is visible
+                        sourceRectangle = new Rectangle
+                            (GetWidth * GetColumn,
+                            GetHeight * GetRow,
+                            GetWidth, GetHeight); //get source rectangle to use
+                    else
+                        sourceRectangle = null; //assign null if not animated
+
+                    spriteBatch.Draw( //draw it
+                        Texture,
+                        DrawCoordinates,
+                        sourceRectangle, //use generated source rectangle
+                        TintColor,
+                        Rotation,
+                        Origin,
+                        Scale,
+                        Effects,
+                        Depth);
 	            }
             }
 
