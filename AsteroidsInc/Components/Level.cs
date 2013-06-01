@@ -9,7 +9,7 @@ namespace AsteroidsInc.Components
     {
         public int WorldSizeX, WorldSizeY;
         public int Stars;
-        public int Quota;
+        public int CollectableOre;
         public int Asteroids;
         public int Mines;
         public int Drones;
@@ -30,7 +30,7 @@ namespace AsteroidsInc.Components
             WorldSizeX = worldX;
             WorldSizeY = worldY;
             Stars = stars;
-            Quota = quota;
+            CollectableOre = quota;
             Asteroids = asteroids;
             Mines = mines;
             Drones = drones;

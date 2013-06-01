@@ -346,7 +346,7 @@ namespace AsteroidsInc.Components
             Rotation = point.RotateTo();
         }
 
-        public void VectorTrack(Vector2 targetVector, float velTrackSpeed = 0.8f, float stabilization = 0.3f) //rotates the GameObject to a vector target
+        public void VectorTrack(Vector2 targetVector, float velTrackSpeed = 0.8f, float stabilization = 0.3f) //tracks the rotation to a vector target
         {
             float target = Vector2.Normalize(targetVector).RotateTo(); //get the target angle from this projectile's velocity
             target = MathHelper.ToDegrees(target);

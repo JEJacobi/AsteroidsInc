@@ -20,7 +20,7 @@ namespace AsteroidsInc.Components
         public static int Health { get; set; }
         public static int CurrentOre { get; set; }
         public static int StoredOre { get; set; }
-        public static int OreWinCondition { get; set; }
+        public static int CollectableOre { get; set; }
         public static bool StabilizeRotation { get; set; } //slowly bring rotational velocity to zero?
 
         public static GameObject Shield { get; set; } //overlaid shield sprite
@@ -50,6 +50,7 @@ namespace AsteroidsInc.Components
                     ActiveSlotChanged(Ship, EventArgs.Empty);
             }
         } //which key is being used
+        static Projectile outprojectile;
         static Slots aSlot;
 
         public static int RepairCost
@@ -231,7 +232,7 @@ namespace AsteroidsInc.Components
             Health = STARTING_HEALTH;
             CurrentOre = STARTING_ORE;
 
-            OreWinCondition = LevelManager.Levels[0].Quota;
+            CollectableOre = LevelManager.Levels[0].CollectableOre;
 
             ActiveSlot = INITIAL_ACTIVE_SLOT;
             StabilizeRotation = true;
@@ -347,7 +348,7 @@ namespace AsteroidsInc.Components
                 #region Input
 
                 //Handle firing
-                if (shotDelay == 0 && InputHandler.IsKeyDown(Keys.Space))
+                if (InputHandler.IsKeyDown(Keys.Space) && shotDelay == 0)
                 {
                     ProjectileManager.AddShot(
                         EquipmentDictionary[getActiveSlot()],
@@ -442,6 +443,11 @@ namespace AsteroidsInc.Components
                     Ship.RotationVelocityDegrees = newRotVel; //and assign
                 }
 
+                if (ProjectileManager.IsHit(Ship, out outprojectile, FoF_Ident.Friendly))
+                {
+                    Health -= outprojectile.Damage;
+                }
+
                 Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER); //center the camera
                 LeftEngineTrail.Update(gameTime); //update the trails
                 RightEngineTrail.Update(gameTime);
@@ -449,8 +455,7 @@ namespace AsteroidsInc.Components
                 Ship.Update(gameTime); //update the sprite itself, make sure to do this last
             }
 
-            //TODO: Take dead enemies into account
-            if (CurrentOre >= OreWinCondition) //if level complete
+            if (NPCManager.NPCs.Count == 0) //if level complete
             {
                 if (LevelCompleteEvent != null) //trigger the level complete event
                     LevelCompleteEvent(Ship, EventArgs.Empty);

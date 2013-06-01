@@ -50,7 +50,7 @@ namespace AsteroidsInc.Components
                 {
                     Player.CurrentOre++; //increase the ore counter
                     addOrePickupEffect(OreDrops[i]); //add an effect
-                    if (Player.CurrentOre >= Player.OreWinCondition >> 1)
+                    if (Player.CurrentOre >= Player.CollectableOre >> 1)
                         ContentHandler.PlaySFX("pickup2"); //play the second variaton
                     else
                         ContentHandler.PlaySFX("pickup"); //play a pickup sound

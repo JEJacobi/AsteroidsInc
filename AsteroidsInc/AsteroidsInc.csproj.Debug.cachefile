@@ -41,6 +41,9 @@ Content\Textures\torpedo.xnb
 Content\Sound\torpedo.xnb
 Content\Textures\missile.xnb
 Content\Sound\missile.xnb
+Content\Textures\bomber.xnb
+Content\Textures\drone.xnb
+Content\Textures\fighter.xnb
 Content\Music\menu.wma
 LEVELS.DAT
 README.txt

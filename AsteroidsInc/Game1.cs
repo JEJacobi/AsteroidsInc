@@ -133,6 +133,11 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add(Player.SLIVER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.SLIVER_KEY));
             ContentHandler.Textures.Add(Player.MISSILE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + Player.MISSILE_KEY));
 
+            ContentHandler.Textures.Add(NPCManager.MINE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.MINE_KEY));
+            ContentHandler.Textures.Add(NPCManager.DRONE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.DRONE_KEY));
+            ContentHandler.Textures.Add(NPCManager.FIGHTER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.FIGHTER_KEY));
+            ContentHandler.Textures.Add(NPCManager.BOMBER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.BOMBER_KEY));
+
             ContentHandler.Textures.Add("star1", Content.Load<Texture2D>(TEXTURE_DIR + "star1"));
             ContentHandler.Textures.Add("star2", Content.Load<Texture2D>(TEXTURE_DIR + "star2"));
             ContentHandler.Textures.Add("star3", Content.Load<Texture2D>(TEXTURE_DIR + "star3"));
@@ -194,6 +199,12 @@ namespace AsteroidsInc
             StarField.Textures = stars;
             StarField.Scrolling = true;
             StarField.Generate(LevelManager.Levels[0].Stars);
+
+            //NPCManager
+            NPCManager.EXPLOSION_TEXTURES.Add(ContentHandler.Textures["junk1"]);
+            NPCManager.EXPLOSION_TEXTURES.Add(ContentHandler.Textures["junk2"]);
+            NPCManager.EXPLOSION_TEXTURES.Add(ContentHandler.Textures["junk3"]);
+            NPCManager.Generate(LevelManager.Levels[0]);
 
             //GAME UI
             GameUI.Add("oreCount", new UIString<int>(0 , new Vector2(0.057f, 0.02f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
@@ -341,6 +352,7 @@ namespace AsteroidsInc
                     ProjectileManager.Update(gameTime);
                     AsteroidManager.Update(gameTime);
                     OreManager.Update(gameTime);
+                    NPCManager.Update(gameTime);
                     Player.Update(gameTime);
 
                     if (InputHandler.WasKeyDown(Keys.Escape))
@@ -401,6 +413,7 @@ namespace AsteroidsInc
                     ProjectileManager.Draw(spriteBatch);
                     OreManager.Draw(spriteBatch);
                     AsteroidManager.Draw(spriteBatch); //And then the rest of the game components
+                    NPCManager.Draw(spriteBatch);
                     Player.Draw(spriteBatch); //Player next
 
                     foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
@@ -519,7 +532,7 @@ namespace AsteroidsInc
                     ContentHandler.StopInstancedSFX("alarm");
             }
             //get health / set color
-            ((UIString<int>)GameUI["oreCount"]).Value = (int)MathHelper.Clamp(Player.OreWinCondition - Player.CurrentOre, 0, Int32.MaxValue);
+            ((UIString<int>)GameUI["oreCount"]).Value = Player.CurrentOre;
             //get ore count
             ((UIString<string>)GameUI["sector"]).Value = "Sector: " + (LevelManager.Counter + 1).ToString();
 

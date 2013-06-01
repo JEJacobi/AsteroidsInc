@@ -63,9 +63,9 @@ namespace AsteroidsInc.Components
                 GameComplete(Levels, EventArgs.Empty); //if max levels reached, trigger game over event
 
             AsteroidManager.Regenerate(Levels[Counter].Asteroids);
-            Player.OreWinCondition = Levels[Counter].Quota;
+            Player.CollectableOre = Levels[Counter].CollectableOre;
             Player.Reset();
-            StarField.Generate(Levels[Counter].Quota);
+            StarField.Generate(Levels[Counter].CollectableOre);
             //TODO: Rest of the things.
 
             //Ore Manager's stuff

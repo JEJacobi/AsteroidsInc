@@ -111,6 +111,8 @@
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Components\Level.cs" />
     <Compile Include="Components\LevelManager.cs" />
+    <Compile Include="Components\NPC.cs" />
+    <Compile Include="Components\NPCManager.cs" />
     <Compile Include="Components\OreManager.cs" />
     <Compile Include="Components\Player.cs" />
     <Compile Include="Components\Projectile.cs" />
