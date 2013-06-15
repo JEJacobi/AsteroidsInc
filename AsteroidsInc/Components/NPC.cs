@@ -136,6 +136,10 @@ namespace AsteroidsInc.Components
             if (accelerating) 
             {
                 Velocity += Rotation.RotationToVector() * AccelerationSpeed; //accelerate the ship
+                Velocity = Vector2.Clamp( //clamp the velocity to the maxiumum speed
+                    Velocity,
+                    new Vector2(-MaxSpeed),
+                    new Vector2(MaxSpeed));
                 trail.Emitting = true; //activate the engine trail
             }
             else

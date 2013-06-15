@@ -144,6 +144,7 @@ namespace AsteroidsInc.Components
                 {
                     addExplosion(NPCs[i].WorldCenter);
                     NPCs.RemoveAt(i);
+                    break;
                 }
 
                 if (NPCs[i].Activated == true)
