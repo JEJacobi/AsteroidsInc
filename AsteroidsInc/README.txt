@@ -28,3 +28,4 @@ As well as:
 | codeman38 - Menu Font
 | Clearside - Music
 | DST (Deceased Superior Technician) - Music
+| FoxSynergy - Music

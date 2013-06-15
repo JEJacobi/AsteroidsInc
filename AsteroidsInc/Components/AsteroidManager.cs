@@ -25,7 +25,6 @@ namespace AsteroidsInc.Components
         public static List<Texture2D> ExplosionParticleTextures;
 
         static List<ParticleEmitter> emitters; //list of particle emitters, used for effects
-        static Random rnd; //general random number generator
 
         #endregion
 
@@ -77,10 +76,8 @@ namespace AsteroidsInc.Components
         public static void Initialize(int asteroidsToGenerate, List<Texture2D> asteroidTextures,
             List<Texture2D> particleTextures, bool regenAsteroids)
         {
-            rnd = new Random(); //randomize the randomizer
-
             AsteroidsToGenerate = asteroidsToGenerate;
-            AsteroidsToGenerate += rnd.Next(-genRandomization, genRandomization); //add a bit of randomization
+            AsteroidsToGenerate += Util.rnd.Next(-genRandomization, genRandomization); //add a bit of randomization
 
             AsteroidTextures = asteroidTextures;
             ExplosionParticleTextures = particleTextures;
@@ -178,7 +175,7 @@ namespace AsteroidsInc.Components
                     Player.Ship = GameObject.Bounce(Player.Ship, Asteroids[x]).Object1; //bounce the ship
                     Player.TriggerShield(); //activate the shield effect
 
-                    Player.Ship.RotationVelocityDegrees = (float)rnd.NextDouble( //add randomization to the bounce
+                    Player.Ship.RotationVelocityDegrees = (float)Util.rnd.NextDouble( //add randomization to the bounce
                         -Player.ROT_VEL_BOUNCE_CHANGE, Player.ROT_VEL_BOUNCE_CHANGE);
 
                     DestroyAsteroid(Asteroids[x], true); //and blow up the asteroid
@@ -214,7 +211,7 @@ namespace AsteroidsInc.Components
 
         public static void DestroyAsteroid(GameObject asteroid, bool effect = true)
         {
-            int x = rnd.Next(50); //temp var
+            int x = Util.rnd.Next(50); //temp var
 
             //around 50% chance of splitting if asteroid is a large non-ore asteroid
             if (x > 25 && asteroid.Texture == ContentHandler.Textures[LARGE_ASTEROID])
@@ -222,7 +219,7 @@ namespace AsteroidsInc.Components
 
             if (asteroid.Texture == ContentHandler.Textures[ORE_ASTEROID])
             {
-                for (int i = 0; i < rnd.Next(ORE_MIN_DROP, ORE_MAX_DROP); i++)
+                for (int i = 0; i < Util.rnd.Next(ORE_MIN_DROP, ORE_MAX_DROP); i++)
                     OreManager.AddOreDrop(asteroid); //if it is an ore asteroid, add drop(s) on destroy
             }
 
@@ -235,7 +232,7 @@ namespace AsteroidsInc.Components
         public static void AddRandomAsteroid(bool offScreen = false) //add a random asteroid, param for offscreen generation
         {
             AsteroidType temp = AsteroidType.Small; //temporary variables
-            int x = rnd.Next(100); //get a random number between 0 and 100
+            int x = Util.rnd.Next(100); //get a random number between 0 and 100
 
             if (x >= 0 && x < 33) //if 0-32, asteroid is small
                 temp = AsteroidType.Small;
@@ -267,10 +264,10 @@ namespace AsteroidsInc.Components
 
             do //Do-While to ensure that the asteroid gets generated at least once
             {
-                float rot = MathHelper.ToRadians((float)rnd.NextDouble(0f, 359f)); //random rotation
+                float rot = MathHelper.ToRadians((float)Util.rnd.NextDouble(0f, 359f)); //random rotation
 
                 //random rotational velocity; within constants
-                float rotVel = MathHelper.ToRadians((float)rnd.NextDouble(MINROTATIONALVELOCITY, MAXROTATIONALVELOCITY));
+                float rotVel = MathHelper.ToRadians((float)Util.rnd.NextDouble(MINROTATIONALVELOCITY, MAXROTATIONALVELOCITY));
 
                 float colRadius = text.GetMeanRadius();
 
@@ -283,32 +280,32 @@ namespace AsteroidsInc.Components
                     switch (side)
                     {
                         case SpawnSide.Up:
-                            vel = GetVelocity(MathHelper.ToRadians((float)rnd.Next(140, 230))); //get a velocity pointing between 140/230 degrees
+                            vel = GetVelocity(MathHelper.ToRadians((float)Util.rnd.Next(140, 230))); //get a velocity pointing between 140/230 degrees
 
                             worldPos = new Vector2( //and add a velocity which will knock it into the world borders next tick
-                                rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
+                                Util.rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
                                 Camera.WorldRectangle.Y - text.Height);
                             break;
                         case SpawnSide.Left:
-                            vel = GetVelocity(MathHelper.ToRadians((float)rnd.Next(50, 130))); //between 50/130 degrees
+                            vel = GetVelocity(MathHelper.ToRadians((float)Util.rnd.Next(50, 130))); //between 50/130 degrees
 
                             worldPos = new Vector2(
                                 Camera.WorldRectangle.X - text.Width,
-                                rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                                Util.rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
                             break;
                         case SpawnSide.Right:
-                            vel = GetVelocity(MathHelper.ToRadians((float)rnd.Next(230, 310))); //between 230/310 degrees
+                            vel = GetVelocity(MathHelper.ToRadians((float)Util.rnd.Next(230, 310))); //between 230/310 degrees
 
                             worldPos = new Vector2(
                                 Camera.WorldRectangle.Width + text.Width,
-                                rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                                Util.rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
                             break;
                         case SpawnSide.Down:
                             vel = GetVelocity(
-                                MathHelper.ToRadians(rnd.Next(320, 410) % 360)); //between 320/(360 + 50) degrees
+                                MathHelper.ToRadians(Util.rnd.Next(320, 410) % 360)); //between 320/(360 + 50) degrees
 
                             worldPos = new Vector2(
-                                rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
+                                Util.rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
                                 Camera.WorldRectangle.Height + text.Height);
                             break;
                         default:
@@ -320,8 +317,8 @@ namespace AsteroidsInc.Components
                     vel = GetVelocity(rot); //get a random velocity according to the rotation
 
                     worldPos = new Vector2( //and simply get a random position in the world to place it...
-                        rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
-                        rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                        Util.rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
+                        Util.rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
                 }
 
                 tempAsteroid = new GameObject( //init a temporary asteroid to check for overlaps
@@ -353,7 +350,7 @@ namespace AsteroidsInc.Components
         {
             return Vector2.Multiply(
                 rot.RotationToVector(),
-                (float)rnd.NextDouble(MINVELOCITY, MAXVELOCITY));
+                (float)Util.rnd.NextDouble(MINVELOCITY, MAXVELOCITY));
         }
 
         #region Local Methods
@@ -364,7 +361,7 @@ namespace AsteroidsInc.Components
             GameObject split = new GameObject(
                 ContentHandler.Textures[SMALL_ASTEROID],
                 asteroidToSplit.WorldCenter,
-                GetVelocity(asteroidToSplit.RotationDegrees + rnd.Next(90, 270)), //get a random new velocity
+                GetVelocity(asteroidToSplit.RotationDegrees + Util.rnd.Next(90, 270)), //get a random new velocity
                 asteroidToSplit.TintColor,
                 false, //nothing to animate
                 asteroidToSplit.Rotation,

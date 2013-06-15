@@ -19,8 +19,6 @@ namespace AsteroidsInc.Components
         public event EventHandler ParticleExpired; //particle expired event
         public bool Fade; //fade for the last 10th of the particle's life?
 
-        Random rnd;
-
         public Particle(
             Texture2D texture,
             Vector2 worldLocation,
@@ -49,7 +47,6 @@ namespace AsteroidsInc.Components
             Fade = fade;
             InitialTTL = framesToLive;
             LiteMode = true; //set lite mode to true; particles do not need to be looped
-            rnd = new Random();
         }
 
         public override void Draw(SpriteBatch spriteBatch)

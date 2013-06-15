@@ -24,11 +24,14 @@ namespace AsteroidsInc.Components
         public readonly float TrackSpeed;
         public readonly float TrailOffset;
         public readonly float WeaponOffset;
+        public readonly int ActivationRadius;
         public bool Activated;
 
         ParticleEmitter trail;
 
         //AI data
+        Action stateLogic;
+        public FoF_Ident Identification;
         public Vector2 Target = Vector2.Zero;
         public Vector2 WorldTarget //sets the target from a world coordinate, instead of relative coordinates
         {
@@ -42,9 +45,12 @@ namespace AsteroidsInc.Components
         bool firing = false;
         readonly int firedelay;
         int firecounter;
+        int randCounter = 0;
+        int randTargetTime;
         Projectile outProjectile;
 
         const float NPC_DEPTH = 0.5f;
+        const int RAND_MAX_TIME = 1000;
 
         //Engine trail particle emitter config
         const string TRAIL_PARTICLE = "particle";
@@ -66,6 +72,7 @@ namespace AsteroidsInc.Components
             int startingHealth,
             EquipmentData equip,
             int colRadius,
+            int activationRadius,
             float trailOffset,
             float weaponOffset,
             float maxSpeed,
@@ -78,22 +85,25 @@ namespace AsteroidsInc.Components
             int columns = 1,
             int startingFrame = 0,
             float frameDelay = 0,
+            FoF_Ident ident = FoF_Ident.Enemy,
             bool activated = false)
-            : base(texture, initialPos, initialVel, tintColor, false, initialRot, initialRotVel, 1f,
+            : base(texture, initialPos, initialVel, tintColor, (totalFrames != 0 ? true : false), initialRot, initialRotVel, 1f,
                 NPC_DEPTH, false, colRadius, 0, 0, SpriteEffects.None, totalFrames, rows, columns, startingFrame, frameDelay)
         {
             CurrentState = initialState;
             LastState = initialState;
             Weapon = equip;
+            if (equip != null) { firedelay = equip.RefireDelay; }
+            ActivationRadius = activationRadius;
             Activated = activated;
             TrailOffset = trailOffset;
             WeaponOffset = weaponOffset;
             MaxSpeed = maxSpeed;
             TrackSpeed = trackSpeed;
             AccelerationSpeed = maxAccelSpeed;
-            firedelay = equip.RefireDelay;
             Target = Vector2.Normalize(initialTarget);
 
+            Identification = ident;
             StartingHealth = startingHealth;
             Health = StartingHealth;
 
@@ -111,6 +121,9 @@ namespace AsteroidsInc.Components
                 TRAIL_RANDOM_MARGIN,
                 this.RotationDegrees + 180,
                 TRAIL_SPRAYWIDTH);
+
+            //initialize to the default waiting state
+            stateLogic = new Action(state_wait);
         }
 
         public override void Update(GameTime gameTime)
@@ -134,14 +147,14 @@ namespace AsteroidsInc.Components
             if (firecounter > 0)
                 firecounter--;
 
-            if (firing && firecounter == 0)
+            if (firing && Weapon != null && firecounter == 0)
             {
                 ProjectileManager.AddShot(
                     Weapon,
                     GameObject.GetOffset(this, WeaponOffset),
                     this.Rotation,
                     this.Velocity,
-                    FoF_Ident.Enemy);
+                    Identification);
 
                 //reset the refire delay
                 firecounter = Weapon.RefireDelay;
@@ -152,14 +165,145 @@ namespace AsteroidsInc.Components
                 Health -= outProjectile.Damage;
             }
 
-            handleStateLogic();
+            stateLogic(); //logic delegate
+            checkActivation(); //check for activation
+            handleStateChange(); //handle changes in conditionals
 
             base.Update(gameTime);
         }
 
-        private void handleStateLogic() //main AI method
+        private void handleStateChange() //checks if new states have been met
         {
-            //TODO: Add logic.
+            if (Activated)
+            {
+                switchState(AIState.Ram); //temp
+            }
+            else
+            {
+                switchState(AIState.Wait); //temp
+            }
+        }
+
+        private void switchState(AIState target)
+        {
+            LastState = CurrentState;
+
+            if (CurrentState != target)
+                CurrentState = target;
+
+            switch (target)
+            {
+                case AIState.Attack:
+                    stateLogic = new Action(state_attack);
+                    break;
+                case AIState.Evade:
+                    stateLogic = new Action(state_evade);
+                    break;
+                case AIState.Random:
+                    stateLogic = new Action(state_random);
+                    break;
+                case AIState.Regroup:
+                    stateLogic = new Action(state_regroup);
+                    break;
+                case AIState.Ram:
+                    stateLogic = new Action(state_ram);
+                    break;
+                case AIState.Wait:
+                    stateLogic = new Action(state_wait);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        #region State Handlers
+
+        private void state_attack()
+        {
+            if (attacking)
+            {
+                Target = Player.Ship.WorldCenter - this.WorldCenter;
+                accelerating = true;
+                firing = true;
+            }
+            else
+            {
+                state_evade();
+                //TODO: Add evade canceling logic.
+            }
+        }
+        private void state_evade()
+        {
+            if (Player.Ship.WorldCenter.X < this.WorldCenter.X)
+                Target.X++;
+            if (Player.Ship.WorldCenter.X > this.WorldCenter.X)
+                Target.X--;
+            if (Player.Ship.WorldCenter.Y < this.WorldCenter.Y)
+                Target.Y++;
+            if (Player.Ship.WorldCenter.Y > this.WorldCenter.Y)
+                Target.Y--;
+
+            accelerating = true;
+            firing = false;
+            attacking = false;
+        }
+        private void state_random()
+        {
+            randCounter++;
+            if (randCounter >= randTargetTime)
+            {
+                randCounter = 0;
+                randTargetTime = Util.rnd.Next(RAND_MAX_TIME);
+                Target = new Vector2(
+                    (float)Util.rnd.NextDouble(-1, 1),
+                    (float)Util.rnd.NextDouble(-1, 1));
+            }
+            accelerating = true;
+            firing = false;
+            attacking = false;
+        }
+        private void state_regroup()
+        {
+            throw new NotImplementedException();
+        }
+        private void state_ram()
+        {
+            Target = Player.Ship.WorldCenter - this.WorldCenter;
+            accelerating = true;
+        }
+        private void state_wait()
+        {
+            Target = Vector2.Zero;
+            firing = false;
+            accelerating = false;
+            attacking = false;
+        }
+            
+        #endregion
+
+        private void checkActivation()
+        {
+            if (Identification == FoF_Ident.Enemy)
+            {
+                if (Circle.IsColliding( //if the activation radius touches the player's ship
+                    new Circle(this.WorldCenter, this.ActivationRadius),
+                    Player.Ship.BoundingCircle))
+                    Activated = true;
+            }
+
+            var enemies = //yay, LINQ!
+                from ship in NPCManager.NPCs //select any ship that is an enemy and not neutral
+                where ship.Identification != this.Identification && ship.Identification != FoF_Ident.Neutral
+                select ship;
+
+            foreach (NPC enemy in enemies)
+            {
+                if (Circle.IsColliding(
+                    new Circle(this.WorldCenter, this.ActivationRadius),
+                    Player.Ship.BoundingCircle))
+                    Activated = true;
+            }
+            //if there's absolutely no enemies in radius, return false
         }
     }
 
@@ -169,7 +313,7 @@ namespace AsteroidsInc.Components
         Evade,
         Random,
         Regroup,
-        Passive,
-        Ram
+        Ram,
+        Wait
     }
 }

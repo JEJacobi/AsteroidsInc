@@ -48,8 +48,6 @@ namespace AsteroidsInc.Components
             set { SprayWidth = MathHelper.ToRadians(value); }
         }
 
-        Random rnd; //random, used for particle spray, random colors, and random textures
-
         public const float EXPLOSIONSPRAY = 180f;
         public const float MINROTVEL = -0.1f;
         public const float MAXROTVEL = 0.1f;
@@ -87,7 +85,6 @@ namespace AsteroidsInc.Components
             VelocityToInherit = Vector2.Zero;
 
             Particles = new List<Particle>();
-            rnd = new Random();
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -120,15 +117,15 @@ namespace AsteroidsInc.Components
             }
 
             if (Particles.Count > MaxParticles) //if overflowing, remove random particle
-                Particles.RemoveAt(rnd.Next(Particles.Count));
+                Particles.RemoveAt(Util.rnd.Next(Particles.Count));
         }
 
         protected void EmitParticle() //emits a particle
         {
             if (Particles.Count + 1 < MaxParticles) //if not overflowing
             {
-                int rndTex = rnd.Next(Textures.Count); //get random texture from the list
-                int rndColor = rnd.Next(Colors.Count); //get a random color from the list
+                int rndTex = Util.rnd.Next(Textures.Count); //get random texture from the list
+                int rndColor = Util.rnd.Next(Colors.Count); //get a random color from the list
 
                 Particles.Add(new Particle( //Add a new particle
                     Textures[rndTex],
@@ -137,8 +134,8 @@ namespace AsteroidsInc.Components
                     Colors[rndColor],
                     FramesToLive,
                     ParticleFading,
-                    MathHelper.ToRadians(rnd.Next(0, 359)),
-                    (float)rnd.NextDouble(MINROTVEL, MAXROTVEL),
+                    MathHelper.ToRadians(Util.rnd.Next(0, 359)),
+                    (float)Util.rnd.NextDouble(MINROTVEL, MAXROTVEL),
                     1f,
                     ParticleDrawDepth));
 
@@ -147,7 +144,7 @@ namespace AsteroidsInc.Components
 
         protected Vector2 GetVelocity() //gets a random starting velocity
         {
-            float rndSpray = (float)rnd.NextDouble(-1, 1) * SprayWidth; //gets a random amount of spraywidth
+            float rndSpray = (float)Util.rnd.NextDouble(-1, 1) * SprayWidth; //gets a random amount of spraywidth
             Vector2 tempVect = (rndSpray + Direction).RotationToVector(); //gets a Vector from the result
             tempVect = Vector2.Multiply(tempVect, RandomMultiplier()); //and multiplies the X&Y by the random margin
             tempVect = Vector2.Multiply(tempVect, EjectionSpeed); //adds the ejection speed multiplier
@@ -156,7 +153,7 @@ namespace AsteroidsInc.Components
 
         protected float RandomMultiplier()
         {
-            return (float)rnd.NextDouble(1 - RandomMargin, 1 + RandomMargin);
+            return (float)Util.rnd.NextDouble(1 - RandomMargin, 1 + RandomMargin);
         }
     }
 

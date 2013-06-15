@@ -15,6 +15,7 @@ namespace AsteroidsInc.Components
         public int Drones;
         public int Fighters;
         public int Bombers;
+        public int Music;
 
         public Level(
             int worldX,
@@ -25,7 +26,8 @@ namespace AsteroidsInc.Components
             int mines,
             int drones,
             int fighters,
-            int bombers)
+            int bombers,
+            int music)
         {
             WorldSizeX = worldX;
             WorldSizeY = worldY;
@@ -36,6 +38,7 @@ namespace AsteroidsInc.Components
             Drones = drones;
             Fighters = fighters;
             Bombers = bombers;
+            Music = music;
         }
     }
 }

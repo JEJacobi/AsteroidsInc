@@ -23,6 +23,7 @@ namespace AsteroidsInc.Components
         public const string DRONE_KEY = "drone";
         public const string FIGHTER_KEY = "fighter";
         public const string BOMBER_KEY = "bomber";
+        public const string MUSIC_PREFIX = "combat";
 
         static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.LightGray, Color.White, Color.DarkSlateGray };
         const int EXPLOSION_MAX_PARTICLES = 3;
@@ -32,14 +33,18 @@ namespace AsteroidsInc.Components
         const float EXPLOSION_SPRAYWIDTH = ParticleEmitter.EXPLOSIONSPRAY;
 
         const int maxTries = 50;
-        static Random rnd = new Random();
 
         static NPCManager()
         {
             NPCs = new List<NPC>();
-            NPCEquipment = new Dictionary<string, EquipmentData>();
             Effects = new List<ParticleEmitter>();
             EXPLOSION_TEXTURES = new List<Texture2D>();
+            NPCEquipment = new Dictionary<string, EquipmentData>();
+
+            //TODO: Add actual AI weapons
+            NPCEquipment.Add(DRONE_KEY, Player.EquipmentDictionary["laser"]);
+            NPCEquipment.Add(FIGHTER_KEY, Player.EquipmentDictionary["laser"]);
+            NPCEquipment.Add(BOMBER_KEY, Player.EquipmentDictionary["laser"]);
         }
 
         public static void Generate(Level level)
@@ -50,19 +55,25 @@ namespace AsteroidsInc.Components
             for (int i = 0; i < level.Mines; i++)
                 NPCs.Add(new NPC(
                     ContentHandler.Textures[MINE_KEY],
-                    AIState.Passive,
+                    AIState.Wait,
                     getOffscreenPos(ContentHandler.Textures[MINE_KEY].Width, ContentHandler.Textures[MINE_KEY].Height),
                     Vector2.Zero,
                     Vector2.Zero,
                     Color.White,
                     10,
-                    NPCEquipment[MINE_KEY],
-                    ContentHandler.Textures[MINE_KEY].GetMeanRadius(),
+                    null,
+                    ContentHandler.Textures[MINE_KEY].GetMeanRadius(3, 1),
+                    200,
                     0, //TODO: Add attributes for all.
                     0,
-                    60,
+                    10,
+                    2,
+                    10,
+                    0f,
+                    0f,
+                    3,
                     1,
-                    10));
+                    3));
 
             for (int i = 0; i < level.Drones; i++)
                 NPCs.Add(new NPC(
@@ -75,6 +86,7 @@ namespace AsteroidsInc.Components
                     50,
                     NPCEquipment[DRONE_KEY],
                     ContentHandler.Textures[DRONE_KEY].GetMeanRadius(),
+                    500,
                     0,
                     0,
                     100,
@@ -91,6 +103,8 @@ namespace AsteroidsInc.Components
                     Color.White,
                     100,
                     NPCEquipment[FIGHTER_KEY],
+                    ContentHandler.Textures[FIGHTER_KEY].GetMeanRadius(),
+                    1000,
                     0,
                     0,
                     0,
@@ -108,6 +122,8 @@ namespace AsteroidsInc.Components
                     Color.White,
                     500,
                     NPCEquipment[BOMBER_KEY],
+                    ContentHandler.Textures[BOMBER_KEY].GetMeanRadius(),
+                    1000,
                     0,
                     0,
                     0,
@@ -118,6 +134,8 @@ namespace AsteroidsInc.Components
 
         public static void Update(GameTime gameTime)
         {
+            bool play = false;
+
             for (int i = 0; i < NPCs.Count; i++)
             {
                 NPCs[i].Update(gameTime);
@@ -127,7 +145,15 @@ namespace AsteroidsInc.Components
                     addExplosion(NPCs[i].WorldCenter);
                     NPCs.RemoveAt(i);
                 }
+
+                if (NPCs[i].Activated == true)
+                    play = true;
             }
+
+            if (play)
+                ContentHandler.PlaySong(MUSIC_PREFIX + LevelManager.CurrentLevel.Music);
+            else
+                ContentHandler.StopMusic();
 
             for (int i = 0; i < Effects.Count; i++)
             {
@@ -177,8 +203,8 @@ namespace AsteroidsInc.Components
             do
             {
                 output = new Vector2(
-                    (float)rnd.NextDouble(Camera.UL_CORNER.X, Camera.BR_CORNER.X),
-                    (float)rnd.NextDouble(Camera.UL_CORNER.Y, Camera.BR_CORNER.Y));
+                    (float)Util.rnd.NextDouble(Camera.UL_CORNER.X, Camera.BR_CORNER.X),
+                    (float)Util.rnd.NextDouble(Camera.UL_CORNER.Y, Camera.BR_CORNER.Y));
 
                 if (counter > maxTries)
                     return output;

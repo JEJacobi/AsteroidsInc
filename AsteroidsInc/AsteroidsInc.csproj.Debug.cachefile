@@ -44,6 +44,10 @@ Content\Sound\missile.xnb
 Content\Textures\bomber.xnb
 Content\Textures\drone.xnb
 Content\Textures\fighter.xnb
+Content\Music\combat1.xnb
+Content\Music\combat2.xnb
 Content\Music\menu.wma
+Content\Music\combat1.wma
+Content\Music\combat2.wma
 LEVELS.DAT
 README.txt

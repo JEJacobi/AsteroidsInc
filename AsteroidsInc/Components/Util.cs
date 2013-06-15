@@ -14,11 +14,15 @@ namespace AsteroidsInc.Components
 {
     public static class Util //Utility class, used for extensions, general functions, etc...
     {
+        public static Random rnd;
+
         static float[] sinLook = new float[360];
         static float[] cosLook = new float[360];
 
         static Util()
         {
+            rnd = new Random();
+
             for (int i = 0; i < sinLook.Length; i++) //fill the sin lookup table
                 sinLook[i] = (float)Math.Sin(MathHelper.ToRadians(i));
             for (int i = 0; i < cosLook.Length; i++) //and the cos one

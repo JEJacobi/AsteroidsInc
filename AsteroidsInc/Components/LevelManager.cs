@@ -21,6 +21,11 @@ namespace AsteroidsInc.Components
         public const int TOTAL_LEVELS = 10;
         public static event EventHandler GameComplete;
 
+        public static Level CurrentLevel
+        {
+            get { return Levels[Counter]; }
+        }
+
         static LevelManager() //parse level data from file
         {
             Levels = new Level[TOTAL_LEVELS];
@@ -49,7 +54,8 @@ namespace AsteroidsInc.Components
                     int.Parse(values[5]),
                     int.Parse(values[6]),
                     int.Parse(values[7]),
-                    int.Parse(values[8]));
+                    int.Parse(values[8]),
+                    int.Parse(values[9]));
             }
 
             reader.Close();

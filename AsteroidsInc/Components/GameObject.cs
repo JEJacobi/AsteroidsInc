@@ -57,7 +57,7 @@ namespace AsteroidsInc.Components
         public Vector2 WorldLocation; //the world position
         public Vector2 Velocity; //velocity of the object, measured with a vector
 
-        public int CollisionRadius = 0; //Radius for bounding circle collision
+        public Circle BoundingCircle;
         public int BoundingXPadding = 0;
         public int BoundingYPadding = 0; //Padding for bounding box collision
 
@@ -212,7 +212,8 @@ namespace AsteroidsInc.Components
             Animating = animating;
             Active = true;
 
-            BoundingXPadding = xPadding; BoundingYPadding = yPadding; CollisionRadius = collisionRadius; //assign collision data
+            BoundingCircle = new Circle(WorldCenter, collisionRadius);
+            BoundingXPadding = xPadding; BoundingYPadding = yPadding; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; StartFrame = startFrame; FrameDelay = frameDelay; //assign animation data
 
             Texture = texture; //texture assignment needs to be below row/column
@@ -228,8 +229,11 @@ namespace AsteroidsInc.Components
         {
             if (Active) //if object is active
             {
-                if(Velocity != Vector2.Zero)
+                if (Velocity != Vector2.Zero)
+                {
                     WorldLocation += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                    BoundingCircle.Position = WorldCenter;
+                }
                 if(RotationalVelocity != 0)
                     Rotation += RotationalVelocity;
 
@@ -324,14 +328,10 @@ namespace AsteroidsInc.Components
 
         public bool IsCircleColliding(GameObject obj) //simple bounding circle collision detection check
         {
-            //Distance squared to avoid costly sqrt
-            float distance = Vector2.DistanceSquared(this.WorldCenter, obj.WorldCenter);
-            int totalradii = CollisionRadius + obj.CollisionRadius; //get the total radii
-            totalradii *= totalradii; //and raise it by the power of two (multiplied by itself instead of Math.Pow)
-
-            if (distance < totalradii) //if the distance is smaller than the sum of the radii
-                return true; //collision!
-            return false;
+            if (BoundingCircle.IsColliding(obj.BoundingCircle))
+                return true;
+            else
+                return false;
         }
 
         public bool IsCircleAndBoxColliding(GameObject obj) //tests for both bb and bc collisions with another game object

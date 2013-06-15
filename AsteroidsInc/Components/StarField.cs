@@ -18,7 +18,6 @@ namespace AsteroidsInc.Components
         public static List<Texture2D> Textures = new List<Texture2D>();
         public static bool Scrolling = false;
 
-        static Random rnd = new Random();
         static readonly Color starColor = Color.White;
 
         const float maxAlphaScalar = 0.8f;
@@ -31,7 +30,7 @@ namespace AsteroidsInc.Components
         {
             Stars = new List<GameObject>(); //wipe the list
 
-            starsToGenerate += rnd.Next(-starAmountRandomization, starAmountRandomization); //add a bit of randomization
+            starsToGenerate += Util.rnd.Next(-starAmountRandomization, starAmountRandomization); //add a bit of randomization
 
             for (int i = 0; i < starsToGenerate; i++)
             {
@@ -39,13 +38,13 @@ namespace AsteroidsInc.Components
                 Color color = starColor;
 
                 //COLOR GENERATION
-                float aMix = (float)rnd.NextDouble(0.0, maxAlphaScalar); //get a random transparancy scalar
+                float aMix = (float)Util.rnd.NextDouble(0.0, maxAlphaScalar); //get a random transparancy scalar
                 color = Color.Lerp(Color.Transparent, color, aMix); //set the transparancy
 
                 //POSITION GENERATION
                 Vector2 pos = new Vector2(
-                    rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
-                    rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
+                    Util.rnd.Next(Camera.WorldRectangle.X, Camera.WorldRectangle.Width),
+                    Util.rnd.Next(Camera.WorldRectangle.Y, Camera.WorldRectangle.Height));
 
                 Stars.Add(new GameObject( //and add the object with generated values
                     tex,

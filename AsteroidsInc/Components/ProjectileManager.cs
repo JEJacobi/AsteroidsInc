@@ -35,13 +35,10 @@ namespace AsteroidsInc.Components
         const float DETONATE_RANDOMIZATION = 0.1f;
         const float DETONATE_SPRAY_WIDTH = ParticleEmitter.EXPLOSIONSPRAY;
 
-        static Random rnd;
-
         static ProjectileManager()
         {
             Projectiles = new List<Projectile>();
             HitEffects = new List<ParticleEmitter>();
-            rnd = new Random();
         }
 
         public static void Update(GameTime gameTime)
@@ -139,8 +136,8 @@ namespace AsteroidsInc.Components
 
                 if (shotData.Randomization != 0) //randomize the velocity by the provided factor
                 {
-                    float tempX = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
-                    float tempY = (float)rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
+                    float tempX = (float)Util.rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
+                    float tempY = (float)Util.rnd.NextDouble(-shotData.Randomization, shotData.Randomization);
 
                     shotVel.X += tempX;
                     shotVel.Y += tempY;

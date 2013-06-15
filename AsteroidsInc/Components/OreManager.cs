@@ -16,7 +16,6 @@ namespace AsteroidsInc.Components
     {
         public static List<Particle> OreDrops;
         static List<ParticleEmitter> emitters;
-        static Random rnd = new Random();
 
         public static List<Texture2D> OreTextures;
         public static List<Texture2D> OreEffectTextures;
@@ -87,12 +86,12 @@ namespace AsteroidsInc.Components
                ContentHandler.Textures[ORE_KEY],
                origin.WorldCenter,
                origin.Velocity +
-               Vector2.Multiply(AsteroidManager.GetVelocity(origin.Rotation + MathHelper.ToRadians(rnd.Next(-90, 90))), 0.5f),
+               Vector2.Multiply(AsteroidManager.GetVelocity(origin.Rotation + MathHelper.ToRadians(Util.rnd.Next(-90, 90))), 0.5f),
                Color.White,
                ORE_DROP_FTL,
                true,
                origin.Rotation,
-               (float)rnd.NextDouble(-0.1f, 0.1f),
+               (float)Util.rnd.NextDouble(-0.1f, 0.1f),
                1f, 1f, SpriteEffects.None,
                ContentHandler.Textures[ORE_KEY].GetMeanRadius(8),
                0, 0, 8, 1, 8, 0, false, ORE_FRAME_DELAY);

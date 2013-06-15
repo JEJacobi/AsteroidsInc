@@ -176,6 +176,8 @@ namespace AsteroidsInc
 
             //MUSIC
             ContentHandler.Songs.Add("menu", Content.Load<Song>(MUSIC_DIR + "menu"));
+            ContentHandler.Songs.Add("combat1", Content.Load<Song>(MUSIC_DIR + "combat1"));
+            ContentHandler.Songs.Add("combat2", Content.Load<Song>(MUSIC_DIR + "combat2"));
 
             //END CONTENT LOAD
             #endregion
