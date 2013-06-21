@@ -505,6 +505,7 @@ namespace AsteroidsInc.Components
         public static void Reset() //reset the player, location, equipment and explosion emitter
         {
             StoredOre += CurrentOre;
+            Health = STARTING_HEALTH;
 
             //reset the ship object
             Ship.Animating = false;

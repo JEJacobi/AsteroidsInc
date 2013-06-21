@@ -41,9 +41,6 @@ namespace AsteroidsInc
         //Default windowed mode's resolution
         const int DEFAULT_WINDOWED_WIDTH = 1024;
         const int DEFAULT_WINDOWED_HEIGHT = 768;
-        
-        const int TEMP_STARS_TO_GEN = 100; //TEMP
-        const int TEMP_ASTEROIDS_TO_GEN = 35;
 
         const int WORLD_SIZE = 3000;
 
@@ -137,6 +134,10 @@ namespace AsteroidsInc
             ContentHandler.Textures.Add(NPCManager.DRONE_KEY, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.DRONE_KEY));
             ContentHandler.Textures.Add(NPCManager.FIGHTER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.FIGHTER_KEY));
             ContentHandler.Textures.Add(NPCManager.BOMBER_KEY, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.BOMBER_KEY));
+            ContentHandler.Textures.Add(NPCManager.MINE_KEY + NPCManager.SHIELD_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.MINE_KEY + NPCManager.SHIELD_TEXTURE));
+            ContentHandler.Textures.Add(NPCManager.DRONE_KEY + NPCManager.SHIELD_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.DRONE_KEY + NPCManager.SHIELD_TEXTURE));
+            ContentHandler.Textures.Add(NPCManager.FIGHTER_KEY + NPCManager.SHIELD_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.FIGHTER_KEY + NPCManager.SHIELD_TEXTURE));
+            ContentHandler.Textures.Add(NPCManager.BOMBER_KEY + NPCManager.SHIELD_TEXTURE, Content.Load<Texture2D>(TEXTURE_DIR + NPCManager.BOMBER_KEY + NPCManager.SHIELD_TEXTURE));
 
             ContentHandler.Textures.Add("star1", Content.Load<Texture2D>(TEXTURE_DIR + "star1"));
             ContentHandler.Textures.Add("star2", Content.Load<Texture2D>(TEXTURE_DIR + "star2"));
@@ -161,6 +162,12 @@ namespace AsteroidsInc
             ContentHandler.SFX.Add(Player.SLIVER_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.SLIVER_KEY));
             ContentHandler.SFX.Add(Player.MISSILE_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.MISSILE_KEY));
             ContentHandler.SFX.Add(Player.WIN_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.WIN_SFX));
+
+            ContentHandler.SFX.Add(NPCManager.MINE_KEY + NPCManager.DAMAGE_POSTFIX, Content.Load<SoundEffect>(SOUND_DIR + Player.IMPACT_SFX)); //TODO: Add proper SFX
+            ContentHandler.SFX.Add(NPCManager.DRONE_KEY + NPCManager.DAMAGE_POSTFIX, Content.Load<SoundEffect>(SOUND_DIR + Player.IMPACT_SFX));
+            ContentHandler.SFX.Add(NPCManager.FIGHTER_KEY + NPCManager.DAMAGE_POSTFIX, Content.Load<SoundEffect>(SOUND_DIR + Player.IMPACT_SFX));
+            ContentHandler.SFX.Add(NPCManager.BOMBER_KEY + NPCManager.DAMAGE_POSTFIX, Content.Load<SoundEffect>(SOUND_DIR + Player.IMPACT_SFX));
+
             ContentHandler.SFX.Add("switch", Content.Load<SoundEffect>(SOUND_DIR + "switch"));
             ContentHandler.SFX.Add("click", Content.Load<SoundEffect>(SOUND_DIR + "click"));
             ContentHandler.SFX.Add("pickup", Content.Load<SoundEffect>(SOUND_DIR + "pickup"));
@@ -214,7 +221,7 @@ namespace AsteroidsInc
             GameUI.Add("oreSprite", new UISprite(ContentHandler.Textures["smallOre"], new Vector2(0.01f, 0.01f), Color.White, true, 1f, 0f, false));
             GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.02f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.Red));
-            GameUI.Add("sector", new UIString<string>("Sector: 1", new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
+            GameUI.Add("sector", new UIString<string>("Sector: 1" + LevelManager.CurrentLevel.Description, new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
             GameUI.Add("levelcomplete", new UIString<string>("Sector Clear - Press Escape to Exit", new Vector2(0.5f, 0.4f), ContentHandler.Fonts["lcd"], Color.White));
 
             //MENU UI
@@ -222,9 +229,9 @@ namespace AsteroidsInc
             MenuUI.Add("title2", new UIString<string>("INC", new Vector2(0.5f, 0.29f), ContentHandler.Fonts["title2"], Color.White, true));
             MenuUI.Add("start", new UIString<string>("Start", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
             MenuUI.Add("exit", new UIString<string>("Exit", new Vector2(0.5f, 0.65f), ContentHandler.Fonts["menu"], Color.White, true, NORMAL_SCALE));
-            MenuUI.Add("sound", new UIString<string>("F11 - Toggle SFX", new Vector2(0.01f, 0.90f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
-            MenuUI.Add("music", new UIString<string>("F12 - Toggle Music", new Vector2(0.01f, 0.93f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
-            MenuUI.Add("fullscreen", new UIString<string>("F10 - Toggle Fullscreen", new Vector2(0.01f, 0.96f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI.Add("sound", new UIString<string>("F11 - Toggle SFX", new Vector2(0.01f, 0.93f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI.Add("music", new UIString<string>("F12 - Toggle Music", new Vector2(0.01f, 0.96f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
+            MenuUI.Add("fullscreen", new UIString<string>("F10 - Toggle Fullscreen", new Vector2(0.01f, 0.90f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             MenuUI["exit"].XPadding = -10;
             MenuUI.Add("help", new UIString<string>("Controls / About", new Vector2(0.85f, 0.95f), ContentHandler.Fonts["lcd"], Color.White, true));
 
@@ -236,13 +243,16 @@ namespace AsteroidsInc
             HelpUI.Add("keys3", new UIString<string>("F - Switch Weapon", new Vector2(0.5f, 0.3f), ContentHandler.Fonts["lcd"], Color.White, true));
             HelpUI.Add("keys4", new UIString<string>("Shift - Boost", new Vector2(0.5f, 0.35f), ContentHandler.Fonts["lcd"], Color.White, true));
             HelpUI.Add("thanks", new UIString<string>("Thanks To:", new Vector2(0.5f, 0.5f), ContentHandler.Fonts["title2"], Color.White, true));
-            HelpUI.Add("credit", new UIString<string>("Everyone from OpenGameArt.org including:", new Vector2(0.5f, 0.6f), ContentHandler.Fonts["lcd"], Color.White, true));
-            HelpUI.Add("credit2", new UIString<string>("qubodup", new Vector2(0.5f, 0.65f), ContentHandler.Fonts["lcd"], Color.White, true));
-            HelpUI.Add("credit3", new UIString<string>("HaelDB", new Vector2(0.5f, 0.7f), ContentHandler.Fonts["lcd"], Color.White, true));
-            HelpUI.Add("credit4", new UIString<string>("wuhu", new Vector2(0.5f, 0.75f), ContentHandler.Fonts["lcd"], Color.White, true));
-            HelpUI.Add("credit5", new UIString<string>("GameArtForge", new Vector2(0.5f, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true));
-            HelpUI.Add("credit6", new UIString<string>("Skorpio", new Vector2(0.5f, 0.85f), ContentHandler.Fonts["lcd"], Color.White, true));
-            HelpUI.Add("credit8", new UIString<string>("DST, Clearside, and Michel Baradari - Music", new Vector2(0.5f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit2", new UIString<string>("qubodup", new Vector2(0.33f, 0.65f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit3", new UIString<string>("HaelDB", new Vector2(0.33f, 0.7f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit4", new UIString<string>("wuhu", new Vector2(0.33f, 0.75f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit5", new UIString<string>("GameArtForge", new Vector2(0.33f, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit6", new UIString<string>("Skorpio", new Vector2(0.33f, 0.85f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit7", new UIString<string>("DST", new Vector2(0.66f, 0.65f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit8", new UIString<string>("Clearside", new Vector2(0.66f, 0.7f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit9", new UIString<string>("Michel Baradari", new Vector2(0.66f, 0.75f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit10", new UIString<string>("ObsydianX", new Vector2(0.66f, 0.8f), ContentHandler.Fonts["lcd"], Color.White, true));
+            HelpUI.Add("credit11", new UIString<string>("Dravenx", new Vector2(0.66f, 0.85f), ContentHandler.Fonts["lcd"], Color.White, true));
 
             //UPGRADE UI
             UpgradeUI.Add("ship", new UISprite(ContentHandler.Textures["staticship"], new Vector2(0.5f, 0.45f), Color.White, true));
@@ -537,7 +547,8 @@ namespace AsteroidsInc
             //get health / set color
             ((UIString<int>)GameUI["oreCount"]).Value = Player.CurrentOre;
             //get ore count
-            ((UIString<string>)GameUI["sector"]).Value = "Sector: " + (LevelManager.Counter + 1).ToString();
+            ((UIString<string>)GameUI["sector"]).Value = "Sector: " + 
+                (LevelManager.Counter + 1).ToString() + " -" + LevelManager.CurrentLevel.Description;
 
             foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
                 elementPair.Value.Update(gameTime);
@@ -628,10 +639,11 @@ namespace AsteroidsInc
         //On player death
         void Player_DeadEvent(object sender, EventArgs e)
         {
-            StarField.Generate(TEMP_STARS_TO_GEN); //regenerate the starfield
+            GameUI["warning"].Active = false;
             SwitchGameState(GameState.Menu); //switch the state
             ((UIString<string>)MenuUI["start"]).Value = "Start"; //player has died, reset the resume button
-            Player.Reset(); //reset the player
+
+            LevelManager.Restart();
         }
 
         void updateSlots(object sender, EventArgs e) //update Upgrade UI's slots

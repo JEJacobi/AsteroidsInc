@@ -346,17 +346,28 @@ namespace AsteroidsInc.Components
             Rotation = point.RotateTo();
         }
 
-        public void VectorTrack(Vector2 targetVector, float velTrackSpeed = 0.8f, float stabilization = 0.3f) //tracks the rotation to a vector target
+        public void VectorTrack(Vector2 targetVector, float velTrackSpeed = 0.8f, int turnThreshold = 10, float stabilization = 0.3f) //tracks the rotation to a vector target
         {
             float target = Vector2.Normalize(targetVector).RotateTo(); //get the target angle from this projectile's velocity
             target = MathHelper.ToDegrees(target);
 
             Util.VerifyAngle(ref target);
 
-            if (target < RotationDegrees - 10)
-                RotationVelocityDegrees -= velTrackSpeed;
-            if (target > RotationDegrees + 10)
-                RotationVelocityDegrees += velTrackSpeed;
+            float theta1 = Math.Abs(target - RotationDegrees);
+            //find the angle between the target and current rotation, the normal way (rotating right with rounding to 360)
+
+            if (theta1 > 180) //if there's a possibility of a shorter way around the circle...
+            {
+                float theta2 = Math.Abs(((target + 180) % 360) - ((RotationDegrees + 180) % 360));
+                //find the inverted path by adding 180 degrees to all angles but still rounding to 360
+
+                if (theta2 < theta1) //if theta2 is quicker than theta1
+                    turninvert(target, velTrackSpeed, turnThreshold); //turn the other way
+                else //if not, just turn normally
+                    turnnormal(target, velTrackSpeed, turnThreshold);
+            }
+            else
+                turnnormal(target, velTrackSpeed, turnThreshold);
 
             //stabilize rotation; ripped from Player class
             float newRotVel = RotationVelocityDegrees;
@@ -378,6 +389,22 @@ namespace AsteroidsInc.Components
         {
             return Rotation.RotationToVector();
         } //local version of extension method
+
+        private void turnnormal(float target, float velTrackSpeed, int turnThreshold)
+        {
+            if (target < RotationDegrees - turnThreshold)
+                RotationVelocityDegrees -= velTrackSpeed;
+            if (target > RotationDegrees + 10)
+                RotationVelocityDegrees += velTrackSpeed;
+        }
+
+        private void turninvert(float target, float velTrackSpeed, int turnThreshold)
+        {
+            if (target < RotationDegrees + turnThreshold)
+                RotationVelocityDegrees += velTrackSpeed;
+            if (target > RotationDegrees - turnThreshold)
+                RotationVelocityDegrees -= velTrackSpeed;
+        }
 
         #endregion
 

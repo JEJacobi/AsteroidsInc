@@ -24,6 +24,8 @@ namespace AsteroidsInc.Components
         public const string FIGHTER_KEY = "fighter";
         public const string BOMBER_KEY = "bomber";
         public const string MUSIC_PREFIX = "combat";
+        public const string DAMAGE_POSTFIX = "dmg";
+        public const string SHIELD_TEXTURE = "shield";
 
         static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.LightGray, Color.White, Color.DarkSlateGray };
         const int EXPLOSION_MAX_PARTICLES = 3;
@@ -54,7 +56,8 @@ namespace AsteroidsInc.Components
 
             for (int i = 0; i < level.Mines; i++)
                 NPCs.Add(new NPC(
-                    ContentHandler.Textures[MINE_KEY],
+                    MINE_KEY,
+                    MINE_KEY + DAMAGE_POSTFIX,
                     AIState.Wait,
                     getOffscreenPos(ContentHandler.Textures[MINE_KEY].Width, ContentHandler.Textures[MINE_KEY].Height),
                     Vector2.Zero,
@@ -77,7 +80,8 @@ namespace AsteroidsInc.Components
 
             for (int i = 0; i < level.Drones; i++)
                 NPCs.Add(new NPC(
-                    ContentHandler.Textures[DRONE_KEY],
+                    DRONE_KEY,
+                    DRONE_KEY + DAMAGE_POSTFIX,
                     AIState.Random,
                     getOffscreenPos(ContentHandler.Textures[DRONE_KEY].Width, ContentHandler.Textures[DRONE_KEY].Height),
                     Vector2.Zero,
@@ -95,7 +99,8 @@ namespace AsteroidsInc.Components
 
             for (int i = 0; i < level.Fighters; i++)
                 NPCs.Add(new NPC(
-                    ContentHandler.Textures[FIGHTER_KEY],
+                    FIGHTER_KEY,
+                    FIGHTER_KEY + DAMAGE_POSTFIX,
                     AIState.Random,
                     getOffscreenPos(ContentHandler.Textures[FIGHTER_KEY].Width, ContentHandler.Textures[FIGHTER_KEY].Height),
                     Vector2.Zero,
@@ -114,7 +119,8 @@ namespace AsteroidsInc.Components
 
             for (int i = 0; i < level.Bombers; i++)
                 NPCs.Add(new NPC(
-                    ContentHandler.Textures[BOMBER_KEY],
+                    BOMBER_KEY,
+                    BOMBER_KEY + DAMAGE_POSTFIX,
                     AIState.Random,
                     getOffscreenPos(ContentHandler.Textures[BOMBER_KEY].Width, ContentHandler.Textures[BOMBER_KEY].Height),
                     Vector2.Zero,

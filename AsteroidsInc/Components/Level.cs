@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AsteroidsInc.Components
 {
-    public class Level
+    public struct Level
     {
         public int WorldSizeX, WorldSizeY;
         public int Stars;
@@ -16,6 +16,7 @@ namespace AsteroidsInc.Components
         public int Fighters;
         public int Bombers;
         public int Music;
+        public string Description;
 
         public Level(
             int worldX,
@@ -27,7 +28,8 @@ namespace AsteroidsInc.Components
             int drones,
             int fighters,
             int bombers,
-            int music)
+            int music,
+            string description)
         {
             WorldSizeX = worldX;
             WorldSizeY = worldY;
@@ -39,6 +41,7 @@ namespace AsteroidsInc.Components
             Fighters = fighters;
             Bombers = bombers;
             Music = music;
+            Description = description;
         }
     }
 }

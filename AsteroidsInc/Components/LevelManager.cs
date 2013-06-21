@@ -55,7 +55,8 @@ namespace AsteroidsInc.Components
                     int.Parse(values[6]),
                     int.Parse(values[7]),
                     int.Parse(values[8]),
-                    int.Parse(values[9]));
+                    int.Parse(values[9]),
+                    values[10]);
             }
 
             reader.Close();
@@ -68,10 +69,10 @@ namespace AsteroidsInc.Components
             if (Counter > TOTAL_LEVELS && GameComplete != null)
                 GameComplete(Levels, EventArgs.Empty); //if max levels reached, trigger game over event
 
-            AsteroidManager.Regenerate(Levels[Counter].Asteroids);
-            Player.CollectableOre = Levels[Counter].CollectableOre;
+            AsteroidManager.Regenerate(CurrentLevel.Asteroids);
+            Player.CollectableOre = CurrentLevel.CollectableOre;
             Player.Reset();
-            StarField.Generate(Levels[Counter].CollectableOre);
+            StarField.Generate(CurrentLevel.Stars);
             //TODO: Rest of the things.
 
             //Ore Manager's stuff
@@ -79,6 +80,15 @@ namespace AsteroidsInc.Components
 
             //Projectile Manager
             ProjectileManager.Projectiles = new List<Projectile>();
+
+            //NPCs
+            NPCManager.Generate(CurrentLevel);
+        }
+
+        public static void Restart()
+        {
+            Counter = -1;
+            NextLevel();
         }
     }
 }

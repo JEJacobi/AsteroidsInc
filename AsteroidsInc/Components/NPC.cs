@@ -15,6 +15,7 @@ namespace AsteroidsInc.Components
     public class NPC
     {
         public GameObject Ship;
+        public GameObject Shield;
         public AIState CurrentState;
         public AIState LastState;
         public int Health;
@@ -26,6 +27,7 @@ namespace AsteroidsInc.Components
         public readonly float TrailOffset;
         public readonly float WeaponOffset;
         public readonly int ActivationRadius;
+        public readonly string DamageSoundKey;
         public bool Activated;
 
         ParticleEmitter trail;
@@ -45,7 +47,8 @@ namespace AsteroidsInc.Components
         bool accelerating = false;
         bool firing = false;
         readonly int firedelay;
-        int firecounter;
+        int firecounter = 0;
+        int shieldfade = 0;
         int randCounter = 0;
         int randTargetTime;
         Projectile outProjectile;
@@ -64,7 +67,8 @@ namespace AsteroidsInc.Components
         const float TRAIL_SPRAYWIDTH = 5f;
 
         public NPC(
-            Texture2D texture,
+            string texturekey,
+            string damagekey,
             AIState initialState,
             Vector2 initialPos,
             Vector2 initialVel,
@@ -90,7 +94,7 @@ namespace AsteroidsInc.Components
             bool activated = false)
         {
             Ship = new GameObject(
-                texture,
+                ContentHandler.Textures[texturekey],
                 initialPos,
                 initialVel,
                 tintColor,
@@ -109,7 +113,19 @@ namespace AsteroidsInc.Components
                 startingFrame,
                 frameDelay);
 
+            Shield = new GameObject(
+                ContentHandler.Textures[texturekey + NPCManager.SHIELD_TEXTURE],
+                Ship.WorldCenter,
+                Ship.Velocity,
+                Color.White,
+                false,
+                Ship.Rotation,
+                Ship.RotationalVelocity,
+                Ship.Scale,
+                Ship.Depth);  
+
             CurrentState = initialState;
+            DamageSoundKey = damagekey;
             LastState = initialState;
             Weapon = equip;
             if (equip != null) { firedelay = equip.RefireDelay; }
@@ -151,6 +167,12 @@ namespace AsteroidsInc.Components
             if (Target != Vector2.Zero) 
                 Ship.VectorTrack(Target, TrackSpeed);
 
+            if (shieldfade != 0) //also ripped from Player
+            {
+                Shield.TintColor = Color.Lerp(Color.Transparent, Color.White, (float)shieldfade / 100);
+                shieldfade--;
+            }
+
             //handle accelerating
             if (accelerating) 
             {
@@ -186,6 +208,7 @@ namespace AsteroidsInc.Components
             if(ProjectileManager.IsHit(Ship, out outProjectile, FoF_Ident.Enemy))
             {
                 Health -= outProjectile.Damage;
+                TriggerShield();
             }
 
             stateLogic(); //logic delegate
@@ -199,6 +222,14 @@ namespace AsteroidsInc.Components
         {
             Ship.Draw(spriteBatch);
             //TODO: Add particle emitters/shield effects
+        }
+
+        public void TriggerShield(int fadeVal = 50, bool playSound = true)
+        {
+            if (playSound)
+                ContentHandler.PlaySFX(DamageSoundKey);
+
+            shieldfade = fadeVal;
         }
 
         private void handleStateChange() //checks if new states have been met
@@ -272,20 +303,22 @@ namespace AsteroidsInc.Components
             if (Player.Ship.WorldCenter.Y > Ship.WorldCenter.Y)
                 Target.Y--;
 
+            Target = Vector2.Normalize(Target);
+
             accelerating = true;
             firing = false;
             attacking = false;
         }
-        private void state_random()
+        private void state_random() //fly to a random location and repeat
         {
             randCounter++;
             if (randCounter >= randTargetTime)
             {
                 randCounter = 0;
                 randTargetTime = Util.rnd.Next(RAND_MAX_TIME);
-                Target = new Vector2(
+                Target = Vector2.Normalize(new Vector2( //get a new normalized v2 to fly to
                     (float)Util.rnd.NextDouble(-1, 1),
-                    (float)Util.rnd.NextDouble(-1, 1));
+                    (float)Util.rnd.NextDouble(-1, 1)));
             }
             accelerating = true;
             firing = false;
@@ -295,14 +328,16 @@ namespace AsteroidsInc.Components
         {
             throw new NotImplementedException();
         }
-        private void state_ram()
+        private void state_ram() //just ram the player
         {
             WorldTarget = Player.Ship.WorldCenter + Player.Ship.Velocity;
             accelerating = true;
+            firing = false;
+            attacking = false;
         }
-        private void state_wait()
+        private void state_wait() //wait at a specific point
         {
-            Target = Vector2.Zero;
+            Target = new Vector2(0, -1); //just rotate to 0 degrees
             firing = false;
             accelerating = false;
             attacking = false;
