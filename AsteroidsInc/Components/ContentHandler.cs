@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -23,6 +24,9 @@ namespace AsteroidsInc.Components
         public static bool ShouldPlaySFX { get; private set; } //essentially settings variables
         public static bool ShouldPlayMusic { get; private set; }
 
+        const float FADE_OUT = 0.01f;
+        static bool fading = false;
+
         static ContentHandler() //static constructor; initializes dictionaries
         {
             Textures = new Dictionary<string, Texture2D>();
@@ -38,6 +42,21 @@ namespace AsteroidsInc.Components
         }
 
         #region Methods
+
+        public static void Update(GameTime gameTime)
+        {
+            if (fading)
+            {
+                MediaPlayer.Volume -= FADE_OUT;
+                //Debug.WriteLine(MediaPlayer.Volume);
+                if (MediaPlayer.Volume <= 0)
+                {
+                    MediaPlayer.Stop();
+                    MediaPlayer.Volume = 1f;
+                    fading = false;
+                }
+            }
+        }
 
         public static void PlaySong(string key, bool loop = false)
         {
@@ -71,9 +90,15 @@ namespace AsteroidsInc.Components
             InstanceSFX[key].Pause();
         }
 
-        public static void StopMusic()
+        public static void StopMusic(bool fade = false)
         {
-            MediaPlayer.Stop();
+            if (MediaPlayer.State == MediaState.Playing)
+            {
+                if (fade)
+                    fading = true;
+                else
+                    MediaPlayer.Stop();
+            }
         }
 
         public static void StopSFX()

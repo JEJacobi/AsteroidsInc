@@ -341,6 +341,7 @@ namespace AsteroidsInc
         protected override void Update(GameTime gameTime)
         {
             InputHandler.Update(); //update InputHandler regardless of gamestate
+            ContentHandler.Update(gameTime); //same with ContentHandler
             handleGlobalInputs(); //handle any global inputs
 
             switch (gameState) //MAIN GAMESTATE SWITCH

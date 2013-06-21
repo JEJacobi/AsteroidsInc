@@ -12,8 +12,9 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AsteroidsInc.Components
 {
-    public class NPC : GameObject
+    public class NPC
     {
+        public GameObject Ship;
         public AIState CurrentState;
         public AIState LastState;
         public int Health;
@@ -37,7 +38,7 @@ namespace AsteroidsInc.Components
         {
             set
             {
-                Target = Vector2.Normalize(value - WorldCenter);
+                Target = Vector2.Normalize(value - Ship.WorldCenter);
             }
         }
         bool attacking = false;
@@ -87,9 +88,27 @@ namespace AsteroidsInc.Components
             float frameDelay = 0,
             FoF_Ident ident = FoF_Ident.Enemy,
             bool activated = false)
-            : base(texture, initialPos, initialVel, tintColor, (totalFrames != 0 ? true : false), initialRot, initialRotVel, 1f,
-                NPC_DEPTH, false, colRadius, 0, 0, SpriteEffects.None, totalFrames, rows, columns, startingFrame, frameDelay)
         {
+            Ship = new GameObject(
+                texture,
+                initialPos,
+                initialVel,
+                tintColor,
+                (totalFrames != 0 ? true : false),
+                initialRot,
+                initialRotVel,
+                1f,
+                NPC_DEPTH,
+                false,
+                colRadius,
+                0, 0,
+                SpriteEffects.None,
+                totalFrames,
+                rows,
+                columns,
+                startingFrame,
+                frameDelay);
+
             CurrentState = initialState;
             LastState = initialState;
             Weapon = equip;
@@ -109,7 +128,7 @@ namespace AsteroidsInc.Components
 
             trail = new ParticleEmitter( //initialize the engine trail particle emitter
                 TRAIL_MAX_PARTICLES,
-                GameObject.GetOffset(this, TrailOffset),
+                GameObject.GetOffset(Ship, TrailOffset),
                 ContentHandler.Textures[TRAIL_PARTICLE].ToTextureList(),
                 TRAIL_COLORS.ToList<Color>(),
                 TRAIL_FTL,
@@ -119,25 +138,25 @@ namespace AsteroidsInc.Components
                 TRAIL_PPT,
                 TRAIL_EJECTION_SPEED,
                 TRAIL_RANDOM_MARGIN,
-                this.RotationDegrees + 180,
+                Ship.RotationDegrees + 180,
                 TRAIL_SPRAYWIDTH);
 
             //initialize to the default waiting state
             stateLogic = new Action(state_wait);
         }
 
-        public override void Update(GameTime gameTime)
+        public void Update(GameTime gameTime)
         {
             //handle target tracking
             if (Target != Vector2.Zero) 
-                VectorTrack(Target, TrackSpeed);
+                Ship.VectorTrack(Target, TrackSpeed);
 
             //handle accelerating
             if (accelerating) 
             {
-                Velocity += Rotation.RotationToVector() * AccelerationSpeed; //accelerate the ship
-                Velocity = Vector2.Clamp( //clamp the velocity to the maxiumum speed
-                    Velocity,
+                Ship.Velocity += Ship.Rotation.RotationToVector() * AccelerationSpeed; //accelerate the ship
+                Ship.Velocity = Vector2.Clamp( //clamp the velocity to the maxiumum speed
+                    Ship.Velocity,
                     new Vector2(-MaxSpeed),
                     new Vector2(MaxSpeed));
                 trail.Emitting = true; //activate the engine trail
@@ -155,16 +174,16 @@ namespace AsteroidsInc.Components
             {
                 ProjectileManager.AddShot(
                     Weapon,
-                    GameObject.GetOffset(this, WeaponOffset),
-                    this.Rotation,
-                    this.Velocity,
+                    GameObject.GetOffset(Ship, WeaponOffset),
+                    Ship.Rotation,
+                    Ship.Velocity,
                     Identification);
 
                 //reset the refire delay
                 firecounter = Weapon.RefireDelay;
             }
 
-            if(ProjectileManager.IsHit(this, out outProjectile, FoF_Ident.Enemy))
+            if(ProjectileManager.IsHit(Ship, out outProjectile, FoF_Ident.Enemy))
             {
                 Health -= outProjectile.Damage;
             }
@@ -173,7 +192,13 @@ namespace AsteroidsInc.Components
             checkActivation(); //check for activation
             handleStateChange(); //handle changes in conditionals
 
-            base.Update(gameTime);
+            Ship.Update(gameTime);
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            Ship.Draw(spriteBatch);
+            //TODO: Add particle emitters/shield effects
         }
 
         private void handleStateChange() //checks if new states have been met
@@ -226,7 +251,7 @@ namespace AsteroidsInc.Components
         {
             if (attacking)
             {
-                Target = Player.Ship.WorldCenter - this.WorldCenter;
+                WorldTarget = Player.Ship.WorldCenter;
                 accelerating = true;
                 firing = true;
             }
@@ -238,13 +263,13 @@ namespace AsteroidsInc.Components
         }
         private void state_evade()
         {
-            if (Player.Ship.WorldCenter.X < this.WorldCenter.X)
+            if (Player.Ship.WorldCenter.X < Ship.WorldCenter.X)
                 Target.X++;
-            if (Player.Ship.WorldCenter.X > this.WorldCenter.X)
+            if (Player.Ship.WorldCenter.X > Ship.WorldCenter.X)
                 Target.X--;
-            if (Player.Ship.WorldCenter.Y < this.WorldCenter.Y)
+            if (Player.Ship.WorldCenter.Y < Ship.WorldCenter.Y)
                 Target.Y++;
-            if (Player.Ship.WorldCenter.Y > this.WorldCenter.Y)
+            if (Player.Ship.WorldCenter.Y > Ship.WorldCenter.Y)
                 Target.Y--;
 
             accelerating = true;
@@ -272,7 +297,7 @@ namespace AsteroidsInc.Components
         }
         private void state_ram()
         {
-            Target = Player.Ship.WorldCenter - this.WorldCenter;
+            WorldTarget = Player.Ship.WorldCenter + Player.Ship.Velocity;
             accelerating = true;
         }
         private void state_wait()
@@ -290,7 +315,7 @@ namespace AsteroidsInc.Components
             if (Identification == FoF_Ident.Enemy)
             {
                 if (Circle.IsColliding( //if the activation radius touches the player's ship
-                    new Circle(this.WorldCenter, this.ActivationRadius),
+                    new Circle(Ship.WorldCenter, this.ActivationRadius),
                     Player.Ship.BoundingCircle))
                     Activated = true;
             }
@@ -303,7 +328,7 @@ namespace AsteroidsInc.Components
             foreach (NPC enemy in enemies)
             {
                 if (Circle.IsColliding(
-                    new Circle(this.WorldCenter, this.ActivationRadius),
+                    new Circle(Ship.WorldCenter, this.ActivationRadius),
                     Player.Ship.BoundingCircle))
                     Activated = true;
             }

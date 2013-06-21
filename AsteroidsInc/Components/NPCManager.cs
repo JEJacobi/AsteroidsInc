@@ -60,13 +60,13 @@ namespace AsteroidsInc.Components
                     Vector2.Zero,
                     Vector2.Zero,
                     Color.White,
-                    10,
+                    50,
                     null,
                     ContentHandler.Textures[MINE_KEY].GetMeanRadius(3, 1),
                     200,
                     0, //TODO: Add attributes for all.
                     0,
-                    10,
+                    100,
                     2,
                     10,
                     0f,
@@ -142,7 +142,7 @@ namespace AsteroidsInc.Components
 
                 if (NPCs[i].Health <= 0)
                 {
-                    addExplosion(NPCs[i].WorldCenter);
+                    addExplosion(NPCs[i].Ship.WorldCenter);
                     NPCs.RemoveAt(i);
                     break;
                 }
@@ -154,7 +154,7 @@ namespace AsteroidsInc.Components
             if (play)
                 ContentHandler.PlaySong(MUSIC_PREFIX + LevelManager.CurrentLevel.Music);
             else
-                ContentHandler.StopMusic();
+                ContentHandler.StopMusic(true);
 
             for (int i = 0; i < Effects.Count; i++)
             {
