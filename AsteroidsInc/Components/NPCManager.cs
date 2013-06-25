@@ -18,6 +18,7 @@ namespace AsteroidsInc.Components
         public static List<ParticleEmitter> Effects;
         public static Dictionary<string, EquipmentData> NPCEquipment;
         public static List<Texture2D> EXPLOSION_TEXTURES;
+        public static int RemainingNPCs { get { return NPCs.Count; } }
 
         public const string MINE_KEY = "mine";
         public const string DRONE_KEY = "drone";
@@ -58,7 +59,7 @@ namespace AsteroidsInc.Components
                 NPCs.Add(new NPC(
                     MINE_KEY,
                     MINE_KEY + DAMAGE_POSTFIX,
-                    AIState.Wait,
+                    AIState.Mine,
                     getOffscreenPos(ContentHandler.Textures[MINE_KEY].Width, ContentHandler.Textures[MINE_KEY].Height),
                     Vector2.Zero,
                     Vector2.Zero,
@@ -200,7 +201,7 @@ namespace AsteroidsInc.Components
 
         static Vector2 getOffscreenPos(int textX, int textY)
         {
-            if (Camera.WorldRectangle.X < Camera.Viewport.X || Camera.WorldRectangle.Y < Camera.Viewport.Y)
+            if (Camera.WorldRectangle.Width < Camera.Viewport.Width || Camera.WorldRectangle.Height < Camera.Viewport.Height)
                 throw new ArgumentOutOfRangeException("WorldSize", "Cannot generate enemies, world smaller than screen.");
 
             int counter = 0;

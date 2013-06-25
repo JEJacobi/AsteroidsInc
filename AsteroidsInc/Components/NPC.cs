@@ -47,14 +47,25 @@ namespace AsteroidsInc.Components
         bool accelerating = false;
         bool firing = false;
         readonly int firedelay;
+        int dmgThreshold = 0;
+        int distanceThreshold = 0;
+        int reattackThreshold = 0;
         int firecounter = 0;
         int shieldfade = 0;
         int randCounter = 0;
         int randTargetTime;
         Projectile outProjectile;
 
+        //Misc constants
         const float NPC_DEPTH = 0.5f;
+        const int REMAINING_NPC_THRESHOLD_DEVISOR = 4;
         const int RAND_MAX_TIME = 1000;
+        const int EVADE_DMG_THRESHOLD_MIN = 20;
+        const int EVADE_DMG_THRESHOLD_MAX = 50;
+        const int DISTANCE_THRESHOLD_MIN = 15;
+        const int DISTANCE_THRESHOLD_MAX = 100;
+        const int REATTACK_THRESHOLD_MIN = 300;
+        const int REATTACK_THRESHOLD_MAX = 1000;
 
         //Engine trail particle emitter config
         const string TRAIL_PARTICLE = "particle";
@@ -125,8 +136,8 @@ namespace AsteroidsInc.Components
                 Ship.Depth);  
 
             CurrentState = initialState;
-            DamageSoundKey = damagekey;
             LastState = initialState;
+            DamageSoundKey = damagekey;
             Weapon = equip;
             if (equip != null) { firedelay = equip.RefireDelay; }
             ActivationRadius = activationRadius;
@@ -157,8 +168,23 @@ namespace AsteroidsInc.Components
                 Ship.RotationDegrees + 180,
                 TRAIL_SPRAYWIDTH);
 
-            //initialize to the default waiting state
-            stateLogic = new Action(state_wait);
+            //initialize the state logic
+            switchState(initialState);
+
+            //pick a slightly randomized evasion damage threshold
+            dmgThreshold = Util.rnd.Next(
+                EVADE_DMG_THRESHOLD_MIN,
+                EVADE_DMG_THRESHOLD_MAX);
+
+            //pick a randomized attack run termination distance
+            distanceThreshold = Util.rnd.Next(
+                DISTANCE_THRESHOLD_MIN,
+                DISTANCE_THRESHOLD_MAX);
+
+            //pick a randomized attack run repeat distance
+            reattackThreshold = Util.rnd.Next(
+                REATTACK_THRESHOLD_MIN,
+                REATTACK_THRESHOLD_MAX);
         }
 
         public void Update(GameTime gameTime)
@@ -234,13 +260,37 @@ namespace AsteroidsInc.Components
 
         private void handleStateChange() //checks if new states have been met
         {
+            if (CurrentState == AIState.Ram)
+                return; //no state changes while ramming
+
             if (Activated)
             {
-                switchState(AIState.Ram); //temp
+                if (CurrentState == AIState.Mine)
+                    switchState(AIState.Ram); //if NPC is a passive mine, switch to track/ram
+
+                if (CurrentState == AIState.Attack && distanceThresholdReached(distanceThreshold))
+                    attacking = false; //if attack run complete, evade
+
+                if (CurrentState == AIState.Attack && distanceThresholdReached(reattackThreshold))
+                    attacking = true; //if sufficient distance attained, start attack run
+                //TODO: Add non distance related ways to reattain attack state
+
+                if (Health <= dmgThreshold)
+                {
+                    switchState(AIState.Evade); //if health is under a threshold, evade player
+
+                    if (NPCManager.RemainingNPCs <= LevelManager.CurrentLevel.TotalNPCs / REMAINING_NPC_THRESHOLD_DEVISOR &&
+                        distanceThresholdReached(distanceThreshold))
+                        switchState(AIState.Ram); 
+                    //if low on health, not many NPCs left,
+                    //and under a distance threshold: ram the player
+                }
+
             }
             else
             {
-                switchState(AIState.Wait); //temp
+                if (CurrentState != AIState.Mine && CurrentState != AIState.Wait)
+                    switchState(AIState.Random); //TODO: Add something including Regroup here
             }
         }
 
@@ -271,6 +321,9 @@ namespace AsteroidsInc.Components
                 case AIState.Wait:
                     stateLogic = new Action(state_wait);
                     break;
+                case AIState.Mine: //mine is functionally identical to wait, except in the state changers
+                    stateLogic = new Action(state_wait);
+                    break;
                 default:
                     break;
             }
@@ -282,15 +335,12 @@ namespace AsteroidsInc.Components
         {
             if (attacking)
             {
-                WorldTarget = Player.Ship.WorldCenter;
+                WorldTarget = Player.Ship.WorldCenter + Player.Ship.Velocity;
                 accelerating = true;
                 firing = true;
             }
             else
-            {
                 state_evade();
-                //TODO: Add evade canceling logic.
-            }
         }
         private void state_evade()
         {
@@ -307,7 +357,6 @@ namespace AsteroidsInc.Components
 
             accelerating = true;
             firing = false;
-            attacking = false;
         }
         private void state_random() //fly to a random location and repeat
         {
@@ -349,7 +398,7 @@ namespace AsteroidsInc.Components
         {
             if (Identification == FoF_Ident.Enemy)
             {
-                if (Circle.IsColliding( //if the activation radius touches the player's ship
+                if (Circle.Intersects( //if the activation radius touches the player's ship
                     new Circle(Ship.WorldCenter, this.ActivationRadius),
                     Player.Ship.BoundingCircle))
                     Activated = true;
@@ -362,12 +411,22 @@ namespace AsteroidsInc.Components
 
             foreach (NPC enemy in enemies)
             {
-                if (Circle.IsColliding(
+                if (Circle.Intersects(
                     new Circle(Ship.WorldCenter, this.ActivationRadius),
                     Player.Ship.BoundingCircle))
                     Activated = true;
             }
             //if there's absolutely no enemies in radius, return false
+        }
+
+        private bool distanceThresholdReached(int distance)
+        {
+            Circle threshold = new Circle(Ship.WorldCenter, distance);
+
+            if (threshold.Intersects(Player.Ship.BoundingCircle))
+                return true;
+            else
+                return false;
         }
     }
 
@@ -378,6 +437,7 @@ namespace AsteroidsInc.Components
         Random,
         Regroup,
         Ram,
-        Wait
+        Wait,
+        Mine
     }
 }

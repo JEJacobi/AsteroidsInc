@@ -23,9 +23,9 @@ namespace AsteroidsInc.Components
             Radius = radius;
         }
 
-        public bool IsColliding(Circle obj)
+        public bool Intersects(Circle obj)
         {
-            return IsColliding(this, obj);
+            return Intersects(this, obj);
         }
 
         public override string ToString()
@@ -33,7 +33,7 @@ namespace AsteroidsInc.Components
             return Position.ToString() + ", " + Radius.ToString();
         } 
 
-        public static bool IsColliding(Circle circle1, Circle circle2)
+        public static bool Intersects(Circle circle1, Circle circle2)
         {
             //Distance squared to avoid costly sqrt
             float distance = Vector2.DistanceSquared(circle1.Position, circle2.Position);

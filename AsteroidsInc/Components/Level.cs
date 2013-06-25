@@ -18,6 +18,8 @@ namespace AsteroidsInc.Components
         public int Music;
         public string Description;
 
+        public int TotalNPCs { get { return Mines + Drones + Fighters + Bombers; } }
+
         public Level(
             int worldX,
             int worldY,

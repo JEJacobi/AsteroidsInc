@@ -328,7 +328,7 @@ namespace AsteroidsInc.Components
 
         public bool IsCircleColliding(GameObject obj) //simple bounding circle collision detection check
         {
-            if (BoundingCircle.IsColliding(obj.BoundingCircle))
+            if (BoundingCircle.Intersects(obj.BoundingCircle))
                 return true;
             else
                 return false;
