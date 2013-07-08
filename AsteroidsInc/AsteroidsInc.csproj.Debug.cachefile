@@ -26,6 +26,13 @@ Content\Textures\missile.xnb
 Content\Textures\bomber.xnb
 Content\Textures\drone.xnb
 Content\Textures\fighter.xnb
+Content\Music\menu.xnb
+Content\Music\combat1.xnb
+Content\Music\combat2.xnb
+Content\Textures\mineshield.xnb
+Content\Textures\droneshield.xnb
+Content\Textures\fightershield.xnb
+Content\Textures\bombershield.xnb
 Content\Sound\collision.xnb
 Content\Sound\engine.xnb
 Content\Sound\torpedo.xnb
@@ -43,13 +50,6 @@ Content\Sound\sliver.xnb
 Content\Sound\alarm.xnb
 Content\Sound\error.xnb
 Content\Sound\missile.xnb
-Content\Music\menu.xnb
-Content\Music\combat1.xnb
-Content\Music\combat2.xnb
-Content\Textures\mineshield.xnb
-Content\Textures\droneshield.xnb
-Content\Textures\fightershield.xnb
-Content\Textures\bombershield.xnb
 Content\Music\menu.wma
 Content\Music\combat1.wma
 Content\Music\combat2.wma

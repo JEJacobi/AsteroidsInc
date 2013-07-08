@@ -27,10 +27,11 @@ namespace AsteroidsInc.Components
         public const string MUSIC_PREFIX = "combat";
         public const string DAMAGE_POSTFIX = "dmg";
         public const string SHIELD_TEXTURE = "shield";
+        public const string DEATH_SFX = "death";
 
         static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.LightGray, Color.White, Color.DarkSlateGray };
-        const int EXPLOSION_MAX_PARTICLES = 3;
-        const int EXPLOSION_FTL = 20;
+        const int EXPLOSION_MAX_PARTICLES = 20;
+        const int EXPLOSION_FTL = 50;
         const float EXPLOSION_EJECTION_SPEED = 20f;
         const float EXPLOSION_RANDOM_MARGIN = 0.1f;
         const float EXPLOSION_SPRAYWIDTH = ParticleEmitter.EXPLOSIONSPRAY;
@@ -59,6 +60,7 @@ namespace AsteroidsInc.Components
                 NPCs.Add(new NPC(
                     MINE_KEY,
                     MINE_KEY + DAMAGE_POSTFIX,
+                    DEATH_SFX,
                     AIState.Mine,
                     getOffscreenPos(ContentHandler.Textures[MINE_KEY].Width, ContentHandler.Textures[MINE_KEY].Height),
                     Vector2.Zero,
@@ -83,6 +85,7 @@ namespace AsteroidsInc.Components
                 NPCs.Add(new NPC(
                     DRONE_KEY,
                     DRONE_KEY + DAMAGE_POSTFIX,
+                    DEATH_SFX,
                     AIState.Random,
                     getOffscreenPos(ContentHandler.Textures[DRONE_KEY].Width, ContentHandler.Textures[DRONE_KEY].Height),
                     Vector2.Zero,
@@ -102,6 +105,7 @@ namespace AsteroidsInc.Components
                 NPCs.Add(new NPC(
                     FIGHTER_KEY,
                     FIGHTER_KEY + DAMAGE_POSTFIX,
+                    DEATH_SFX,
                     AIState.Random,
                     getOffscreenPos(ContentHandler.Textures[FIGHTER_KEY].Width, ContentHandler.Textures[FIGHTER_KEY].Height),
                     Vector2.Zero,
@@ -122,6 +126,7 @@ namespace AsteroidsInc.Components
                 NPCs.Add(new NPC(
                     BOMBER_KEY,
                     BOMBER_KEY + DAMAGE_POSTFIX,
+                    DEATH_SFX,
                     AIState.Random,
                     getOffscreenPos(ContentHandler.Textures[BOMBER_KEY].Width, ContentHandler.Textures[BOMBER_KEY].Height),
                     Vector2.Zero,
@@ -149,7 +154,8 @@ namespace AsteroidsInc.Components
 
                 if (NPCs[i].Health <= 0)
                 {
-                    addExplosion(NPCs[i].Ship.WorldCenter);
+                    ContentHandler.PlaySFX(NPCs[i].DeathSoundKey);
+                    addExplosion(NPCs[i].Ship.WorldCenter, NPCs[i].Ship.BoundingCircle.Radius);
                     NPCs.RemoveAt(i);
                     break;
                 }
@@ -181,7 +187,7 @@ namespace AsteroidsInc.Components
                 Effects[i].Draw(spriteBatch);
         }
 
-        static void addExplosion(Vector2 pos)
+        static void addExplosion(Vector2 pos, float effectRandom)
         {
             Effects.Add(new ParticleEmitter(
                 EXPLOSION_MAX_PARTICLES,
@@ -196,7 +202,8 @@ namespace AsteroidsInc.Components
                 EXPLOSION_EJECTION_SPEED,
                 EXPLOSION_RANDOM_MARGIN,
                 0f,
-                EXPLOSION_SPRAYWIDTH));
+                EXPLOSION_SPRAYWIDTH,
+                effectRandom));
         }
 
         static Vector2 getOffscreenPos(int textX, int textY)

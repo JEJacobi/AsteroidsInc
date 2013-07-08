@@ -212,14 +212,12 @@ namespace AsteroidsInc.Components
             Animating = animating;
             Active = true;
 
-            BoundingCircle = new Circle(WorldCenter, collisionRadius);
             BoundingXPadding = xPadding; BoundingYPadding = yPadding; //assign collision data
             Rows = rows; Columns = columns; this.TotalFrames = totalFrames; StartFrame = startFrame; FrameDelay = frameDelay; //assign animation data
 
             Texture = texture; //texture assignment needs to be below row/column
-
             WorldCenter = worldLocation; //NEEDS TO BE BELOW ROW & COLUMN ASSIGNMENTS
-
+            BoundingCircle = new Circle(WorldCenter, collisionRadius); //needs to be below world center assignment
             Origin = SpriteCenter; //assign origin to the center of a frame
         }
 

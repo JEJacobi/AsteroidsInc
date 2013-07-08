@@ -28,6 +28,7 @@ namespace AsteroidsInc.Components
         public readonly float WeaponOffset;
         public readonly int ActivationRadius;
         public readonly string DamageSoundKey;
+        public readonly string DeathSoundKey;
         public bool Activated;
 
         ParticleEmitter trail;
@@ -80,6 +81,7 @@ namespace AsteroidsInc.Components
         public NPC(
             string texturekey,
             string damagekey,
+            string deathkey,
             AIState initialState,
             Vector2 initialPos,
             Vector2 initialVel,
@@ -128,7 +130,7 @@ namespace AsteroidsInc.Components
                 ContentHandler.Textures[texturekey + NPCManager.SHIELD_TEXTURE],
                 Ship.WorldCenter,
                 Ship.Velocity,
-                Color.White,
+                Color.Transparent,
                 false,
                 Ship.Rotation,
                 Ship.RotationalVelocity,
@@ -138,6 +140,7 @@ namespace AsteroidsInc.Components
             CurrentState = initialState;
             LastState = initialState;
             DamageSoundKey = damagekey;
+            DeathSoundKey = deathkey;
             Weapon = equip;
             if (equip != null) { firedelay = equip.RefireDelay; }
             ActivationRadius = activationRadius;
@@ -193,6 +196,9 @@ namespace AsteroidsInc.Components
             if (Target != Vector2.Zero) 
                 Ship.VectorTrack(Target, TrackSpeed);
 
+            Shield.WorldCenter = Ship.WorldCenter;
+            Shield.Velocity = Ship.Velocity;
+
             if (shieldfade != 0) //also ripped from Player
             {
                 Shield.TintColor = Color.Lerp(Color.Transparent, Color.White, (float)shieldfade / 100);
@@ -233,6 +239,7 @@ namespace AsteroidsInc.Components
 
             if(ProjectileManager.IsHit(Ship, out outProjectile, FoF_Ident.Enemy))
             {
+                Activated = true;
                 Health -= outProjectile.Damage;
                 TriggerShield();
             }
@@ -247,7 +254,7 @@ namespace AsteroidsInc.Components
         public void Draw(SpriteBatch spriteBatch)
         {
             Ship.Draw(spriteBatch);
-            //TODO: Add particle emitters/shield effects
+            Shield.Draw(spriteBatch);
         }
 
         public void TriggerShield(int fadeVal = 50, bool playSound = true)
@@ -416,7 +423,6 @@ namespace AsteroidsInc.Components
                     Player.Ship.BoundingCircle))
                     Activated = true;
             }
-            //if there's absolutely no enemies in radius, return false
         }
 
         private bool distanceThresholdReached(int distance)

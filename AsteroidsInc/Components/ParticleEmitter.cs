@@ -31,6 +31,7 @@ namespace AsteroidsInc.Components
         public int TimeToEmit { get; set; } //time to emit particles
         public int ParticlesPerTick { get; set; } //how many particles to emit per tick
         public bool ParticleFading { get; set; } //should they fade or vanish?
+        public float PositionRandomization { get; set; } //the amount of distance an emitted particle is randomized by
 
         public float ParticleDrawDepth = 1f;
 
@@ -67,7 +68,8 @@ namespace AsteroidsInc.Components
             float ejectionSpeed = 1f,
             float randomMargin = 0.1f,
             float initialDirectionDegrees = 0f,
-            float sprayWidthDegrees = 30f)
+            float sprayWidthDegrees = 30f,
+            float positionRandomization = 0f)
         {
             MaxParticles = maxParticles;
             WorldPosition = worldPosition;
@@ -83,6 +85,7 @@ namespace AsteroidsInc.Components
             Emitting = emitting;
             ParticleFading = particleFading;
             VelocityToInherit = Vector2.Zero;
+            PositionRandomization = positionRandomization;
 
             Particles = new List<Particle>();
         }
@@ -129,7 +132,7 @@ namespace AsteroidsInc.Components
 
                 Particles.Add(new Particle( //Add a new particle
                     Textures[rndTex],
-                    WorldPosition,
+                    RandomizedPosition(WorldPosition),
                     GetVelocity(),
                     Colors[rndColor],
                     FramesToLive,
@@ -154,6 +157,17 @@ namespace AsteroidsInc.Components
         protected float RandomMultiplier()
         {
             return (float)Util.rnd.NextDouble(1 - RandomMargin, 1 + RandomMargin);
+        }
+
+        protected Vector2 RandomizedPosition(Vector2 pos)
+        {
+            if (PositionRandomization == 0)
+                return pos; //if randomization is set to zero, return base value
+
+            //and randomize the position for both x/y axes
+            pos.X += (float)Util.rnd.NextDouble(-PositionRandomization, PositionRandomization);
+            pos.Y += (float)Util.rnd.NextDouble(-PositionRandomization, PositionRandomization);
+            return pos;
         }
     }
 
