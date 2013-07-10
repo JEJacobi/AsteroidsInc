@@ -83,6 +83,9 @@ namespace AsteroidsInc.Components
 
             //NPCs
             NPCManager.Generate(CurrentLevel);
+
+            //ContentHandler
+            ContentHandler.ClearPlayOnce();
         }
 
         public static void Restart()

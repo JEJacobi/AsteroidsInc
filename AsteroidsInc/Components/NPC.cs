@@ -111,7 +111,7 @@ namespace AsteroidsInc.Components
                 initialPos,
                 initialVel,
                 tintColor,
-                (totalFrames != 0 ? true : false),
+                false,
                 initialRot,
                 initialRotVel,
                 1f,
@@ -213,11 +213,13 @@ namespace AsteroidsInc.Components
                     Ship.Velocity,
                     new Vector2(-MaxSpeed),
                     new Vector2(MaxSpeed));
+                Ship.Animating = true; //if accelerating, turn the ship's animation on.
                 trail.Emitting = true; //activate the engine trail
             }
             else
             {
-                trail.Emitting = false;
+                Ship.Animating = false;
+                trail.Emitting = false; //and turn the effects back off
             }
 
             //handle firing
@@ -273,7 +275,10 @@ namespace AsteroidsInc.Components
             if (Activated)
             {
                 if (CurrentState == AIState.Mine)
+                {
+                    Ship.Animating = true;
                     switchState(AIState.Ram); //if NPC is a passive mine, switch to track/ram
+                }
 
                 if (CurrentState == AIState.Attack && distanceThresholdReached(distanceThreshold))
                     attacking = false; //if attack run complete, evade

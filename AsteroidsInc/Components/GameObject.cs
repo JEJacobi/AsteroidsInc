@@ -54,7 +54,7 @@ namespace AsteroidsInc.Components
         public bool Active = true; //if active; draw and update. if not, don't do anything
         public SpriteEffects Effects = SpriteEffects.None; //any sprite effects
 
-        public Vector2 WorldLocation; //the world position
+        public Vector2 WorldCenter; //gets/sets the center of the sprite in world coords
         public Vector2 Velocity; //velocity of the object, measured with a vector
 
         public Circle BoundingCircle;
@@ -131,16 +131,14 @@ namespace AsteroidsInc.Components
         public int GetRow { get { return (int)((float)CurrentFrame / (float)Columns); } } //Current row
         public int GetColumn { get { return CurrentFrame % Columns; } } //Current column
         public Vector2 SpriteCenter { get; set; } //Get this Sprite's center
-        
-        public Rectangle WorldRectangle //get rectangle in world coords with width of sprite
+
+        public Vector2 WorldLocation //the world position in UL coords
         {
             get
             {
-                return new Rectangle(
-                    (int)WorldLocation.X,
-                    (int)WorldLocation.Y,
-                    GetWidth,
-                    GetHeight);
+                return new Vector2(
+                     WorldCenter.X - (GetWidth * 0.5f),
+                     WorldCenter.Y - (GetHeight * 0.5f));
             }
         }
 
@@ -160,15 +158,6 @@ namespace AsteroidsInc.Components
 
         public Vector2 ScreenLocation
         { get { return Camera.GetLocalCoords(WorldLocation); } } //get screen coordinates
-
-        public Rectangle ScreenRectangle
-        { get { return Camera.GetLocalCoords(WorldRectangle); } } //get screen rectangle
-
-        public Vector2 WorldCenter
-        { 
-            get { return WorldLocation + SpriteCenter; }
-            set { WorldLocation = value - SpriteCenter; }
-        } //gets/sets the center of the sprite in world coords
 
         public Vector2 DrawCoordinates
         { get { return ScreenCenter; } }
@@ -229,7 +218,7 @@ namespace AsteroidsInc.Components
             {
                 if (Velocity != Vector2.Zero)
                 {
-                    WorldLocation += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                    WorldCenter += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
                     BoundingCircle.Position = WorldCenter;
                 }
                 if(RotationalVelocity != 0)
@@ -248,7 +237,7 @@ namespace AsteroidsInc.Components
                         CurrentFrame = StartFrame; //Loop animation
                 }
 
-                if (LiteMode == false && Camera.IsObjectInWorld(this.WorldRectangle) == false)
+                if (LiteMode == false && Camera.IsObjectInWorld(BoundingBox) == false)
                 {
                     if (Camera.LOOPWORLD) //if world is looping and the object is out of bounds
                     {
@@ -280,9 +269,9 @@ namespace AsteroidsInc.Components
         {
             if (Active) //if the sprite is active...
             {
-                if (Camera.IsObjectVisible(WorldRectangle))
+                if (Camera.IsObjectVisible(BoundingBox))
 	            {
-                    Rectangle? sourceRectangle;
+                    Rectangle? sourceRectangle = null;
 
                     if (TotalFrames > 1) //if multi-frame animation & object is visible
                         sourceRectangle = new Rectangle

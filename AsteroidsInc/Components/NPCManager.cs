@@ -29,6 +29,7 @@ namespace AsteroidsInc.Components
         public const string SHIELD_TEXTURE = "shield";
         public const string DEATH_SFX = "death";
 
+        const int WORLD_BORDER_GENERATION_BUFFER = 50;
         static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.LightGray, Color.White, Color.DarkSlateGray };
         const int EXPLOSION_MAX_PARTICLES = 20;
         const int EXPLOSION_FTL = 50;
@@ -218,8 +219,8 @@ namespace AsteroidsInc.Components
             do
             {
                 output = new Vector2(
-                    (float)Util.rnd.NextDouble(Camera.UL_CORNER.X, Camera.BR_CORNER.X),
-                    (float)Util.rnd.NextDouble(Camera.UL_CORNER.Y, Camera.BR_CORNER.Y));
+                    (float)Util.rnd.NextDouble(Camera.UL_CORNER.X + WORLD_BORDER_GENERATION_BUFFER, Camera.BR_CORNER.X - WORLD_BORDER_GENERATION_BUFFER),
+                    (float)Util.rnd.NextDouble(Camera.UL_CORNER.Y + WORLD_BORDER_GENERATION_BUFFER, Camera.BR_CORNER.Y - WORLD_BORDER_GENERATION_BUFFER));
 
                 if (counter > maxTries)
                     return output;

@@ -40,7 +40,7 @@ namespace AsteroidsInc
 
         //Default windowed mode's resolution
         const int DEFAULT_WINDOWED_WIDTH = 1024;
-        const int DEFAULT_WINDOWED_HEIGHT = 768;
+        const int DEFAULT_WINDOWED_HEIGHT = 720;
 
         const int WORLD_SIZE = 3000;
 
@@ -51,7 +51,6 @@ namespace AsteroidsInc
         const float NORMAL_SCALE = 1f;
 
         int selectedUpgrade = 0;
-        bool played = false;
         GameState last = GameState.Upgrade;
 
 	    #endregion
@@ -220,9 +219,10 @@ namespace AsteroidsInc
             GameUI.Add("health", new UIString<string>("Hull Integrity: 100", new Vector2(0.005f, 0.95f), ContentHandler.Fonts["lcd"], Color.Green, true, 1f, 0f, false));
             GameUI.Add("oreSprite", new UISprite(ContentHandler.Textures["smallOre"], new Vector2(0.01f, 0.01f), Color.White, true, 1f, 0f, false));
             GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.02f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
-            GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["lcd"], Color.Red));
+            GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.95f), ContentHandler.Fonts["lcd"], Color.Red));
             GameUI.Add("sector", new UIString<string>("Sector: 1" + LevelManager.CurrentLevel.Description, new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
             GameUI.Add("levelcomplete", new UIString<string>("Sector Clear - Press Escape to Exit", new Vector2(0.5f, 0.4f), ContentHandler.Fonts["lcd"], Color.White));
+            GameUI.Add("orecollected", new UIString<string>("All crystals collected!", new Vector2(0.5f, 0.08f), ContentHandler.Fonts["lcd"], Color.LimeGreen));
 
             //MENU UI
             MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));
@@ -544,6 +544,14 @@ namespace AsteroidsInc
                 else
                     ContentHandler.StopInstancedSFX("alarm");
             }
+
+            //check for all ore collected
+            if (Player.CurrentOre >= LevelManager.CurrentLevel.CollectableOre)
+            {
+                GameUI["orecollected"].Active = true;
+                ContentHandler.PlayOnceSFX("win"); //play a win sfx
+            }
+
             //get health / set color
             ((UIString<int>)GameUI["oreCount"]).Value = Player.CurrentOre;
             //get ore count
@@ -617,20 +625,17 @@ namespace AsteroidsInc
         //On level complete
         void Player_LevelCompleteEvent(object sender, EventArgs e)
         {
-            AsteroidManager.RegenerateAsteroids = false;
-            if (!played)
-            {
-                ContentHandler.PlaySFX(Player.WIN_SFX);
-                played = true;
-            }
+            AsteroidManager.RegenerateAsteroids = false; //don't regenerate asteroids for this level
+            ContentHandler.PlayOnceSFX(Player.WIN_SFX);
             GameUI["levelcomplete"].Active = true;
 
             if (InputHandler.IsKeyDown(Keys.Escape))
             {
-                played = false;
+                //reset timing flags and GameUI elements to previous state
                 AsteroidManager.RegenerateAsteroids = true;
                 GameUI["warning"].Active = false;
                 GameUI["levelcomplete"].Active = false;
+                GameUI["orecollected"].Active = false;
                 LevelManager.NextLevel();
                 SwitchGameState(GameState.Upgrade);
             }

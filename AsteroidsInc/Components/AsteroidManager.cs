@@ -113,6 +113,15 @@ namespace AsteroidsInc.Components
             if (Asteroids.Count < AsteroidsToGenerate && RegenerateAsteroids)
                 AddRandomAsteroid(true); //regenerate asteroid offscreen
 
+            if (RegenerateAsteroids == false)
+            {
+                for (int i = 0; i < Asteroids.Count; i++)
+                    if (Asteroids[i].Texture == ContentHandler.Textures[ORE_ASTEROID] &&
+                        Camera.IsObjectVisible(Asteroids[i].BoundingBox) == false)
+                        Asteroids.RemoveAt(i); 
+                //if asteroid contains ore, is offscreen, and the level is over, silently remove it
+            }
+
             for (int x = 0; x < Asteroids.Count; x++) //Pretty much brute-forcing the collision detection
             {
                 for (int y = x + 1; y < Asteroids.Count; y++) //eck n^2

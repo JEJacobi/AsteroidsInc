@@ -25,6 +25,7 @@ namespace AsteroidsInc.Components
         public static bool ShouldPlayMusic { get; private set; }
 
         const float FADE_OUT = 0.01f;
+        static List<string> alreadyPlayed = new List<string>();
         static bool fading = false;
 
         static ContentHandler() //static constructor; initializes dictionaries
@@ -78,6 +79,20 @@ namespace AsteroidsInc.Components
                     InstanceSFX[key].Play(); //if not, try accessing the instanced dictionary
                 }
             }
+        }
+
+        public static void PlayOnceSFX(string key)
+        {
+            if (alreadyPlayed.Contains(key) == false)
+            {
+                alreadyPlayed.Add(key);
+                PlaySFX(key);
+            }
+        }
+
+        public static void ClearPlayOnce()
+        {
+            alreadyPlayed = new List<string>();
         }
 
         public static void StopInstancedSFX(string key)

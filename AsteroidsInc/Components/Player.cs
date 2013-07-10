@@ -461,6 +461,9 @@ namespace AsteroidsInc.Components
                     LevelCompleteEvent(Ship, EventArgs.Empty);
             }
 
+            if (CurrentOre >= LevelManager.CurrentLevel.CollectableOre)
+                AsteroidManager.RegenerateAsteroids = false;
+
             if (Health <= MIN_HEALTH)
             {
                 dead = true;
@@ -505,7 +508,7 @@ namespace AsteroidsInc.Components
         public static void Reset() //reset the player, location, equipment and explosion emitter
         {
             StoredOre += CurrentOre;
-            Health = STARTING_HEALTH;
+            //Health = STARTING_HEALTH;
 
             //reset the ship object
             Ship.Animating = false;
