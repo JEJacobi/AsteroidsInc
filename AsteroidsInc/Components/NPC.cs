@@ -71,12 +71,12 @@ namespace AsteroidsInc.Components
         //Engine trail particle emitter config
         const string TRAIL_PARTICLE = "particle";
         static readonly Color[] TRAIL_COLORS = { Color.Blue, Color.DarkBlue, Color.LightSteelBlue, Color.White };
-        const int TRAIL_MAX_PARTICLES = Int32.MaxValue;
+        const int TRAIL_MAX_PARTICLES = 20;
         const int TRAIL_FTL = 20;
         const int TRAIL_PPT = 1;
         const float TRAIL_EJECTION_SPEED = 300f;
         const float TRAIL_RANDOM_MARGIN = 0.1f;
-        const float TRAIL_SPRAYWIDTH = 5f;
+        const float TRAIL_SPRAYWIDTH = 1f;
 
         public NPC(
             string texturekey,
@@ -198,6 +198,8 @@ namespace AsteroidsInc.Components
 
             Shield.WorldCenter = Ship.WorldCenter;
             Shield.Velocity = Ship.Velocity;
+            trail.WorldPosition = Ship.WorldCenter;
+            trail.DirectionInDegrees = Ship.RotationDegrees + 180;
 
             if (shieldfade != 0) //also ripped from Player
             {
@@ -250,11 +252,14 @@ namespace AsteroidsInc.Components
             checkActivation(); //check for activation
             handleStateChange(); //handle changes in conditionals
 
+            trail.Update(gameTime);
             Ship.Update(gameTime);
+            Shield.Update(gameTime);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            trail.Draw(spriteBatch); //draw the trail first, so there's no weird overlaps
             Ship.Draw(spriteBatch);
             Shield.Draw(spriteBatch);
         }

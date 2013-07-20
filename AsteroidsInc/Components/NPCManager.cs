@@ -30,6 +30,7 @@ namespace AsteroidsInc.Components
         public const string DEATH_SFX = "death";
 
         const int WORLD_BORDER_GENERATION_BUFFER = 50;
+        const int COLLISION_DAMAGE = 25;
         static readonly Color[] EXPLOSION_COLORS = { Color.Gray, Color.LightGray, Color.White, Color.DarkSlateGray };
         const int EXPLOSION_MAX_PARTICLES = 20;
         const int EXPLOSION_FTL = 50;
@@ -87,7 +88,7 @@ namespace AsteroidsInc.Components
                     DRONE_KEY,
                     DRONE_KEY + DAMAGE_POSTFIX,
                     DEATH_SFX,
-                    AIState.Random,
+                    AIState.Attack,
                     getOffscreenPos(ContentHandler.Textures[DRONE_KEY].Width, ContentHandler.Textures[DRONE_KEY].Height),
                     Vector2.Zero,
                     Vector2.Zero,
@@ -153,11 +154,17 @@ namespace AsteroidsInc.Components
             {
                 NPCs[i].Update(gameTime);
 
+                if (NPCs[i].Ship.BoundingCircle.Intersects(Player.Ship.BoundingCircle))
+                {
+                    Player.Health -= COLLISION_DAMAGE;
+                    Player.TriggerShield();
+                    DestroyNPC(i);
+                    break;
+                }
+
                 if (NPCs[i].Health <= 0)
                 {
-                    ContentHandler.PlaySFX(NPCs[i].DeathSoundKey);
-                    addExplosion(NPCs[i].Ship.WorldCenter, NPCs[i].Ship.BoundingCircle.Radius);
-                    NPCs.RemoveAt(i);
+                    DestroyNPC(i);
                     break;
                 }
 
@@ -186,6 +193,16 @@ namespace AsteroidsInc.Components
 
             for (int i = 0; i < Effects.Count; i++)
                 Effects[i].Draw(spriteBatch);
+        }
+
+        public static void DestroyNPC(int npcIndex)
+        {
+            if (npcIndex < 0 || npcIndex > NPCs.Count)
+                throw new ArgumentOutOfRangeException();
+
+            ContentHandler.PlaySFX(NPCs[npcIndex].DeathSoundKey);
+            addExplosion(NPCs[npcIndex].Ship.WorldCenter, NPCs[npcIndex].Ship.BoundingCircle.Radius);
+            NPCs.RemoveAt(npcIndex);
         }
 
         static void addExplosion(Vector2 pos, float effectRandom)

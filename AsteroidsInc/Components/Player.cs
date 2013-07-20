@@ -92,6 +92,9 @@ namespace AsteroidsInc.Components
         public const string DEATH_SFX = "death";
         public const string WIN_SFX = "win";
 
+        public const string SLOT_1_INITIAL = LASER_KEY;
+        public const string SLOT_2_INITIAL = TORPEDO_KEY;
+
         public const float VELOCITY_MAX = 500f; //max velocity
         public static Vector2 VECTOR_VELOCITY_MAX //max velocity to a Vector
         {
@@ -505,7 +508,7 @@ namespace AsteroidsInc.Components
             ExplosionEmitter.Draw(spriteBatch); //out of if dead check since activated on death
         }
 
-        public static void Reset() //reset the player, location, equipment and explosion emitter
+        public static void Reset() //reset the player, location, and explosion emitter
         {
             StoredOre += CurrentOre;
             //Health = STARTING_HEALTH;

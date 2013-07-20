@@ -92,6 +92,9 @@ namespace AsteroidsInc.Components
         {
             Counter = -1;
             NextLevel();
+            Player.Health = Player.STARTING_HEALTH; //reset player health on death
+            Player.Slot1 = Player.SLOT_1_INITIAL;
+            Player.Slot2 = Player.SLOT_2_INITIAL; //as well as equipment
         }
     }
 }

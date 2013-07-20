@@ -128,6 +128,7 @@
     <Compile Include="Components\UIBase.cs" />
     <Compile Include="Components\UISprite.cs" />
     <Compile Include="Components\UIString.cs" />
+    <Compile Include="GameUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Game1.cs" />
