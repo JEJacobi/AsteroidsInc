@@ -58,6 +58,10 @@ namespace AsteroidsInc.Components
             NPCs = new List<NPC>();
             Effects = new List<ParticleEmitter>();
 
+            //TODO: CHANGE
+            EquipmentData temp = NPCEquipment[DRONE_KEY];
+            temp.RefireDelay *= 10;
+
             for (int i = 0; i < level.Mines; i++)
                 NPCs.Add(new NPC(
                     MINE_KEY,
@@ -94,7 +98,7 @@ namespace AsteroidsInc.Components
                     Vector2.Zero,
                     Color.White,
                     50,
-                    NPCEquipment[DRONE_KEY],
+                    temp,
                     ContentHandler.Textures[DRONE_KEY].GetMeanRadius(),
                     500,
                     0,
