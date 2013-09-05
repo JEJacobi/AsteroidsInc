@@ -48,9 +48,20 @@ namespace AsteroidsInc.Components
             NPCEquipment = new Dictionary<string, EquipmentData>();
 
             //TODO: Add actual AI weapons
-            NPCEquipment.Add(DRONE_KEY, Player.EquipmentDictionary["laser"]);
-            NPCEquipment.Add(FIGHTER_KEY, Player.EquipmentDictionary["laser"]);
-            NPCEquipment.Add(BOMBER_KEY, Player.EquipmentDictionary["laser"]);
+            NPCEquipment.Add(DRONE_KEY, new EquipmentData(
+                ContentHandler.Textures[Player.LASER_KEY],
+                750,
+                150,
+                Player.LASER_KEY,
+                Player.COLLISION_SFX,
+                450,
+                10,
+                6,
+                25,
+                1,
+                0,
+                "Pulse Laser"));
+            //TODO: Add other AI class weapons
         }
 
         public static void Generate(Level level)
@@ -60,7 +71,6 @@ namespace AsteroidsInc.Components
 
             //TODO: CHANGE
             EquipmentData temp = NPCEquipment[DRONE_KEY];
-            temp.RefireDelay *= 10;
 
             for (int i = 0; i < level.Mines; i++)
                 NPCs.Add(new NPC(
@@ -79,7 +89,7 @@ namespace AsteroidsInc.Components
                     0, //TODO: Add attributes for all.
                     0,
                     100,
-                    2,
+                    0.05f,
                     10,
                     0f,
                     0f,
@@ -104,7 +114,7 @@ namespace AsteroidsInc.Components
                     0,
                     0,
                     100,
-                    40,
+                    5,
                     40));
 
             for (int i = 0; i < level.Fighters; i++)
@@ -124,7 +134,7 @@ namespace AsteroidsInc.Components
                     0,
                     0,
                     0,
-                    0,
+                    8,
                     0,
                     0));
 

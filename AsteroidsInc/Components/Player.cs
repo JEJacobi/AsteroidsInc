@@ -91,6 +91,7 @@ namespace AsteroidsInc.Components
         public const string IMPACT_SFX = "quickimpact";
         public const string DEATH_SFX = "death";
         public const string WIN_SFX = "win";
+        public const string WARP_SFX = "warp";
 
         public const string SLOT_1_INITIAL = LASER_KEY;
         public const string SLOT_2_INITIAL = TORPEDO_KEY;
@@ -449,6 +450,7 @@ namespace AsteroidsInc.Components
                 if (ProjectileManager.IsHit(Ship, out outprojectile, FoF_Ident.Friendly))
                 {
                     Health -= outprojectile.Damage;
+                    TriggerShield();
                 }
 
                 Camera.CenterPosition = Vector2.Clamp(Ship.WorldCenter, Camera.UL_CORNER, Camera.BR_CORNER); //center the camera

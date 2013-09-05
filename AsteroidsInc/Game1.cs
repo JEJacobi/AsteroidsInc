@@ -161,6 +161,7 @@ namespace AsteroidsInc
             ContentHandler.SFX.Add(Player.SLIVER_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.SLIVER_KEY));
             ContentHandler.SFX.Add(Player.MISSILE_KEY, Content.Load<SoundEffect>(SOUND_DIR + Player.MISSILE_KEY));
             ContentHandler.SFX.Add(Player.WIN_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.WIN_SFX));
+            ContentHandler.SFX.Add(Player.WARP_SFX, Content.Load<SoundEffect>(SOUND_DIR + Player.WARP_SFX));
 
             ContentHandler.SFX.Add(NPCManager.MINE_KEY + NPCManager.DAMAGE_POSTFIX, Content.Load<SoundEffect>(SOUND_DIR + Player.IMPACT_SFX)); //TODO: Add proper SFX
             ContentHandler.SFX.Add(NPCManager.DRONE_KEY + NPCManager.DAMAGE_POSTFIX, Content.Load<SoundEffect>(SOUND_DIR + Player.IMPACT_SFX));
