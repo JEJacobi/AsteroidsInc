@@ -25,9 +25,10 @@ namespace AsteroidsInc
             GameUI.Add("oreSprite", new UISprite(ContentHandler.Textures["smallOre"], new Vector2(0.01f, 0.01f), Color.White, true, 1f, 0f, false));
             GameUI.Add("x", new UIString<string>("x", new Vector2(0.035f, 0.02f), ContentHandler.Fonts["lcd"], Color.White, true, 1f, 0f, false));
             GameUI.Add("warning", new UIString<string>("HULL INTEGRITY CRITICAL", new Vector2(0.5f, 0.95f), ContentHandler.Fonts["lcd"], Color.Red));
-            GameUI.Add("sector", new UIString<string>("Sector: 1" + LevelManager.CurrentLevel.Description, new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
+            GameUI.Add("sector", new UIString<string>("Sector: 1/8", new Vector2(0.5f, 0.03f), ContentHandler.Fonts["lcd"], Color.White, true));
             GameUI.Add("levelcomplete", new UIString<string>("Sector Clear - Press Escape to Exit", new Vector2(0.5f, 0.4f), ContentHandler.Fonts["lcd"], Color.White));
-            GameUI.Add("orecollected", new UIString<string>("All crystals collected!", new Vector2(0.5f, 0.08f), ContentHandler.Fonts["lcd"], Color.LimeGreen));
+            GameUI.Add("pointer", new UISprite(ContentHandler.Textures["arrow"], new Vector2(0.8f, 0.9f), Color.White, true));
+            GameUI.Add("distance", new UIString<int>(0, new Vector2(0.85f, 0.9f), ContentHandler.Fonts["lcd"], Color.White, true));
 
             //MENU UI
             MenuUI.Add("title", new UIString<string>("Asteroids", new Vector2(0.5f, 0.2f), ContentHandler.Fonts["title"], Color.White, true));

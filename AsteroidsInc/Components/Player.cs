@@ -17,6 +17,7 @@ namespace AsteroidsInc.Components
         #region Declarations
 
         public static GameObject Ship { get; set; } //main player sprite
+        public static Circle SpawnCircle { get; set; }
         public static int Health { get; set; }
         public static int CurrentOre { get; set; }
         public static int StoredOre { get; set; }
@@ -130,6 +131,8 @@ namespace AsteroidsInc.Components
         public const int STARTING_ORE = 0;
 
         public const float SHIP_DEPTH = 0.5f; //draw depth
+
+        public const int MIN_SPAWN_DISTANCE = 700;
 
         public const float ROT_VEL_BOUNCE_CHANGE = 20f; //randomization for collision
 
@@ -319,6 +322,8 @@ namespace AsteroidsInc.Components
             #endregion
 
             StoredOre = 100; //TEMP
+
+            SpawnCircle = new Circle(Ship.WorldCenter, MIN_SPAWN_DISTANCE);
         }
 
         public static void Update(GameTime gameTime)

@@ -16,7 +16,6 @@ namespace AsteroidsInc.Components
         public int Fighters;
         public int Bombers;
         public int Music;
-        public string Description;
 
         public int TotalNPCs { get { return Mines + Drones + Fighters + Bombers; } }
 
@@ -30,8 +29,7 @@ namespace AsteroidsInc.Components
             int drones,
             int fighters,
             int bombers,
-            int music,
-            string description)
+            int music)
         {
             WorldSizeX = worldX;
             WorldSizeY = worldY;
@@ -43,7 +41,6 @@ namespace AsteroidsInc.Components
             Fighters = fighters;
             Bombers = bombers;
             Music = music;
-            Description = description;
         }
     }
 }

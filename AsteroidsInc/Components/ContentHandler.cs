@@ -70,18 +70,14 @@ namespace AsteroidsInc.Components
         {
             if (ShouldPlaySFX)
             {
-                try //hacky use of try/catch
-                {
-                    SFX[key].Play(); //try accessing at non-instanced static sfx dictionary
-                }
-                catch (Exception)
-                {
+                if(SFX.ContainsKey(key)) //does the static SFX dictionary contain the key?
+                    SFX[key].Play();
+                else
                     InstanceSFX[key].Play(); //if not, try accessing the instanced dictionary
-                }
             }
         }
 
-        public static void PlayOnceSFX(string key)
+        public static void PlayOnceSFX(string key) //play an SFX once, then add it to the already played list
         {
             if (alreadyPlayed.Contains(key) == false)
             {
@@ -90,7 +86,7 @@ namespace AsteroidsInc.Components
             }
         }
 
-        public static void ClearPlayOnce()
+        public static void ClearPlayOnce() //reset the played list, triggered on level end/game over
         {
             alreadyPlayed = new List<string>();
         }

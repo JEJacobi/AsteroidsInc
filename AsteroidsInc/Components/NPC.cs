@@ -50,7 +50,7 @@ namespace AsteroidsInc.Components
                 Target = Vector2.Normalize(value - Ship.WorldCenter);
             }
         }
-        bool attacking = true;
+        bool attacking = false;
         bool accelerating = false;
         bool firing = false;
         bool lastActivated = false;
@@ -63,6 +63,8 @@ namespace AsteroidsInc.Components
         int shieldfade = 0;
         int randCounter = 0;
         int randTargetTime;
+        int shotsBeforeCooldown;
+        int shotsCounter;
         Projectile outProjectile;
 
         //Misc constants
@@ -79,6 +81,8 @@ namespace AsteroidsInc.Components
         const int CLOSE_CANCEL_EVADE_THRESHOLD = 75;
         const int FAR_CANCEL_EVADE_THRESHOLD = 1000;
         const int RAM_THRESHOLD = 400;
+        const int COOLDOWN_MIN = 5;
+        const int COOLDOWN_MAX = 25;
 
         //Engine trail particle emitter config
         const string TRAIL_PARTICLE = "particle";
@@ -198,6 +202,11 @@ namespace AsteroidsInc.Components
             evadeTime = Util.rnd.Next(
                 EVADE_TIME_MIN,
                 EVADE_TIME_MAX);
+
+            shotsBeforeCooldown = Util.rnd.Next(
+                COOLDOWN_MIN,
+                COOLDOWN_MAX);
+            shotsCounter = 0;
         }
 
         public void Update(GameTime gameTime)
@@ -246,6 +255,8 @@ namespace AsteroidsInc.Components
                     Ship.Rotation,
                     Ship.Velocity,
                     Identification);
+
+                shotsCounter++;
 
                 //reset the refire delay
                 firecounter = Weapon.RefireDelay;

@@ -55,8 +55,7 @@ namespace AsteroidsInc.Components
                     int.Parse(values[6]),
                     int.Parse(values[7]),
                     int.Parse(values[8]),
-                    int.Parse(values[9]),
-                    values[10]);
+                    int.Parse(values[9]));
             }
 
             reader.Close();

@@ -145,6 +145,7 @@ namespace AsteroidsInc
 
             ContentHandler.Textures.Add("smallOre", Content.Load<Texture2D>(TEXTURE_DIR + "smallOre"));
             ContentHandler.Textures.Add("staticship", Content.Load<Texture2D>(TEXTURE_DIR + "staticship"));
+            ContentHandler.Textures.Add("arrow", Content.Load<Texture2D>(TEXTURE_DIR + "arrow"));
 
             ContentHandler.Textures.Add("particle", //General generated particle texture
                 Util.GetColorTexture(GraphicsDevice, Color.White, 2, 2));
@@ -450,21 +451,57 @@ namespace AsteroidsInc
                     ContentHandler.StopInstancedSFX("alarm");
             }
 
-            //check for all ore collected
-            if (Player.CurrentOre >= LevelManager.CurrentLevel.CollectableOre)
-            {
-                GameUI["orecollected"].Active = true;
-                ContentHandler.PlayOnceSFX("win"); //play a win sfx
-            }
-
             //get health / set color
             ((UIString<int>)GameUI["oreCount"]).Value = Player.CurrentOre;
             //get ore count
-            ((UIString<string>)GameUI["sector"]).Value = "Sector: " + 
-                (LevelManager.Counter + 1).ToString() + " -" + LevelManager.CurrentLevel.Description;
+            ((UIString<string>)GameUI["sector"]).Value = "Sector: " +
+                (LevelManager.Counter + 1).ToString() + "/8";
 
-            foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
-                elementPair.Value.Update(gameTime);
+
+            //FIND THE CLOSEST NPC
+
+            NPC currentMin = null; //the current closest NPC
+            float currentDist = 0; //the current minimum distance
+            float newDist = 0; //the distance of the next NPC in the list
+            if (NPCManager.NPCs.Count != 0)
+            {
+                foreach (NPC npc in NPCManager.NPCs)
+                {
+                    if (currentMin != null)
+                    {
+                        newDist = Vector2.DistanceSquared(npc.Ship.BoundingCircle.Position, Player.Ship.BoundingCircle.Position);
+                        if (newDist < currentDist)
+                        {
+                            currentDist = newDist;
+                            currentMin = npc;
+                        }
+                    }
+                    else
+                    {
+                        currentMin = npc;
+                        currentDist = Vector2.DistanceSquared(npc.Ship.BoundingCircle.Position, Player.Ship.BoundingCircle.Position);
+                    }
+                }
+
+                //Point the direction arrow to it
+                float dY = Player.Ship.WorldCenter.Y - currentMin.Ship.WorldCenter.Y;
+                float dX = Player.Ship.WorldCenter.X - currentMin.Ship.WorldCenter.X;
+
+                GameUI["pointer"].Rotation = MathHelper.ToRadians(((float)Math.Atan2(dY, dX) * 180 / MathHelper.Pi) - 90);
+                //use some fancy trig plus unfancy addition to find the direction to rotate the pointer arrow
+
+                float realDistance = (float)Math.Sqrt(currentDist);
+                ((UIString<int>)GameUI["distance"]).Value = (int)Math.Round(realDistance, 0); 
+                //round the distance to the closest NPC, as well as sqrting the current minimum distance
+
+                foreach (KeyValuePair<string, UIBase> elementPair in GameUI)
+                    elementPair.Value.Update(gameTime);
+            }
+            else
+            {
+                GameUI["pointer"].Active = false;
+                GameUI["distance"].Active = false;
+            }
         }
 
         #endregion
@@ -540,7 +577,8 @@ namespace AsteroidsInc
                 AsteroidManager.RegenerateAsteroids = true;
                 GameUI["warning"].Active = false;
                 GameUI["levelcomplete"].Active = false;
-                GameUI["orecollected"].Active = false;
+                GameUI["pointer"].Active = true;
+                GameUI["distance"].Active = true;
                 LevelManager.NextLevel();
                 SwitchGameState(GameState.Upgrade);
             }

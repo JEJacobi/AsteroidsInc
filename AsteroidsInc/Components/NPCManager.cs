@@ -89,7 +89,7 @@ namespace AsteroidsInc.Components
                     0, //TODO: Add attributes for all.
                     0,
                     100,
-                    0.05f,
+                    0.5f,
                     10,
                     0f,
                     0f,
